@@ -1,9 +1,9 @@
 ## zha 
 
-##Reading:
-+[Zigbee Home Automation](https://www.home-assistant.io/integrations/zha/)
-+[ZHA Device Handlers For Home Assistant](https://pypi.org/project/zha-quirks/)
-+[zigpy/zha-device-handlers](https://github.com/zigpy/zha-device-handlers)
+## Reading:
++ [Zigbee Home Automation](https://www.home-assistant.io/integrations/zha/)
++ [ZHA Device Handlers For Home Assistant](https://pypi.org/project/zha-quirks/)
++ [zigpy/zha-device-handlers](https://github.com/zigpy/zha-device-handlers)
 
 
 ## Contents
