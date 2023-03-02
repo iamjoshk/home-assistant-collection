@@ -15,3 +15,6 @@ Collection of various Home Assistant projects and guides
 ## `lovelace UI`
 + room_card.yaml: example of some `card-mod` changes to create custom room cards
 
+## `automations`
++ various automation examples that I use in Home Assistant
+
