@@ -1,0 +1,30 @@
+alias: rtl_433 Frequency Switch
+description: Switch to 915Mhz for a few minutes at the end of the day.
+trigger:
+  - platform: time
+    at: "23:53:00"
+    id: switch-to-915
+  - platform: time
+    at: "23:59:00"
+    id: switch-to-433
+condition: []
+action:
+  - if:
+      - condition: trigger
+        id: switch-to-915
+    then:
+      - service: shell_command.rtl_433_915
+        data: {}
+      - service: hassio.addon_restart
+        data:
+          addon: 9b13b3f4_rtl433-next
+  - if:
+      - condition: trigger
+        id: switch-to-433
+    then:
+      - service: shell_command.rtl_433_433
+        data: {}
+      - service: hassio.addon_restart
+        data:
+          addon: 9b13b3f4_rtl433-next
+mode: single
