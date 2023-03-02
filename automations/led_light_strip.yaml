@@ -1,0 +1,415 @@
+alias: kid's LED Light Strip
+description: ""
+trigger:
+  - platform: event
+    event_type: zha_event
+    id: press-on
+    event_data:
+      device_ieee: b0:ce:18:14:03:6a:10:20
+      unique_id: b0:ce:18:14:03:6a:10:20:1:0x0006
+      device_id: 18063a02016a5f1c93d6bee56ab7bb8f
+      endpoint_id: 1
+      cluster_id: 6
+      command: "on"
+      args: []
+      params: {}
+    enabled: true
+  - platform: event
+    event_type: zha_event
+    id: double-on
+    event_data:
+      device_ieee: b0:ce:18:14:03:6a:10:20
+      unique_id: b0:ce:18:14:03:6a:10:20:1:0x0006
+      device_id: 18063a02016a5f1c93d6bee56ab7bb8f
+      endpoint_id: 1
+      cluster_id: 6
+      command: on_double
+      args: []
+      params: {}
+    enabled: true
+  - platform: event
+    event_type: zha_event
+    id: hold-on
+    event_data:
+      device_ieee: b0:ce:18:14:03:6a:10:20
+      unique_id: b0:ce:18:14:03:6a:10:20:1:0x0006
+      device_id: 18063a02016a5f1c93d6bee56ab7bb8f
+      endpoint_id: 1
+      cluster_id: 6
+      command: on_long
+      args: []
+      params: {}
+    enabled: true
+  - platform: event
+    event_type: zha_event
+    id: dim-up
+    event_data:
+      device_ieee: b0:ce:18:14:03:6a:10:20
+      unique_id: b0:ce:18:14:03:6a:10:20:1:0x0008
+      device_id: 18063a02016a5f1c93d6bee56ab7bb8f
+      endpoint_id: 1
+      cluster_id: 8
+      command: step
+      args:
+        - 0
+      params: {}
+    enabled: true
+  - platform: event
+    event_type: zha_event
+    id: dim-down
+    event_data:
+      device_ieee: b0:ce:18:14:03:6a:10:20
+      unique_id: b0:ce:18:14:03:6a:10:20:1:0x0008
+      device_id: 18063a02016a5f1c93d6bee56ab7bb8f
+      endpoint_id: 1
+      cluster_id: 8
+      command: step
+      args:
+        - 1
+      params: {}
+    enabled: true
+  - platform: event
+    event_type: zha_event
+    id: press-off
+    event_data:
+      device_ieee: b0:ce:18:14:03:6a:10:20
+      unique_id: b0:ce:18:14:03:6a:10:20:1:0x0006
+      device_id: 18063a02016a5f1c93d6bee56ab7bb8f
+      endpoint_id: 1
+      cluster_id: 6
+      command: "off"
+      args: []
+      params: {}
+    enabled: true
+  - platform: event
+    event_type: zha_event
+    id: double-off
+    event_data:
+      device_ieee: b0:ce:18:14:03:6a:10:20
+      unique_id: b0:ce:18:14:03:6a:10:20:1:0x0006
+      device_id: 18063a02016a5f1c93d6bee56ab7bb8f
+      endpoint_id: 1
+      cluster_id: 6
+      command: off_double
+      args: []
+      params: {}
+    enabled: true
+  - platform: event
+    event_type: zha_event
+    id: hold-off
+    event_data:
+      device_ieee: b0:ce:18:14:03:6a:10:20
+      unique_id: b0:ce:18:14:03:6a:10:20:1:0x0006
+      device_id: 18063a02016a5f1c93d6bee56ab7bb8f
+      endpoint_id: 1
+      cluster_id: 6
+      command: off_long
+      args: []
+      params: {}
+    enabled: true
+  - device_id: 18063a02016a5f1c93d6bee56ab7bb8f
+    domain: zha
+    platform: device
+    type: remote_button_long_press
+    subtype: dim_down
+    id: hold-dim-down
+  - device_id: 18063a02016a5f1c93d6bee56ab7bb8f
+    domain: zha
+    platform: device
+    type: remote_button_long_press
+    subtype: dim_up
+    id: hold-dim-up
+condition: []
+action:
+  - if:
+      - condition: trigger
+        id: press-on
+      - condition: trigger
+        id: double-on
+      - condition: trigger
+        id: hold-on
+      - condition: trigger
+        id: press-off
+      - condition: trigger
+        id: hold-off
+    then:
+      - if:
+          - condition: state
+            entity_id: input_boolean.kid_light_color_loop
+            state: "on"
+        then:
+          - service: input_boolean.turn_off
+            data: {}
+            target:
+              entity_id: input_boolean.kid_light_color_loop
+  - if:
+      - condition: trigger
+        id: press-on
+    then:
+      - service: light.turn_on
+        data:
+          brightness: 255
+          kelvin: 3700
+        target:
+          entity_id: light.kids_led_strip
+  - if:
+      - condition: trigger
+        id: double-on
+    then:
+      - service: input_select.select_next
+        data:
+          cycle: true
+        target:
+          entity_id: input_select.kid_light_color_select
+      - service: light.turn_on
+        data:
+          color_name: "{{ states('input_select.kid_light_color_select') }}"
+        target:
+          entity_id: light.kids_led_strip
+    enabled: true
+  - if:
+      - condition: trigger
+        id: hold-on
+    then:
+      - service: input_boolean.turn_on
+        data: {}
+        target:
+          entity_id: input_boolean.kid_s_dance_party
+  - if:
+      - condition: trigger
+        id: dim-up
+      - condition: template
+        value_template: >-
+          {% if is_state('light.kids_led_strip','on') %}
+          {{(state_attr('light.kids_led_strip','brightness') | float) <
+          250}}
+
+          {% endif %}
+    then:
+      - service: light.turn_on
+        data:
+          brightness_step: 25
+        target:
+          entity_id: light.kids_led_strip
+    else:
+      - if:
+          - condition: state
+            entity_id: light.kids_led_strip
+            state: "on"
+          - condition: trigger
+            id: dim-up
+        then:
+          - repeat:
+              count: 2
+              sequence:
+                - type: turn_off
+                  device_id: 011ae94cb25345198f95db17e8e23b30
+                  entity_id: light.kids_led_strip
+                  domain: light
+                - delay:
+                    hours: 0
+                    minutes: 0
+                    seconds: 0
+                    milliseconds: 125
+                - type: turn_on
+                  device_id: 011ae94cb25345198f95db17e8e23b30
+                  entity_id: light.kids_led_strip
+                  domain: light
+                - delay:
+                    hours: 0
+                    minutes: 0
+                    seconds: 0
+                    milliseconds: 125
+            enabled: true
+  - if:
+      - condition: trigger
+        id: hold-dim-up
+      - condition: template
+        value_template: >-
+          {% if is_state('light.kids_led_strip','on') %}
+          {{(state_attr('light.kids_led_strip','brightness') | float) <
+          254}}
+
+          {% endif %}
+    then:
+      - service: light.turn_on
+        data:
+          brightness_step: 10
+        target:
+          entity_id: light.kids_led_strip
+    else:
+      - if:
+          - condition: state
+            entity_id: light.kids_led_strip
+            state: "on"
+          - condition: trigger
+            id: hold-dim-up
+        then:
+          - repeat:
+              count: 2
+              sequence:
+                - type: turn_off
+                  device_id: 011ae94cb25345198f95db17e8e23b30
+                  entity_id: light.kids_led_strip
+                  domain: light
+                - delay:
+                    hours: 0
+                    minutes: 0
+                    seconds: 0
+                    milliseconds: 125
+                - type: turn_on
+                  device_id: 011ae94cb25345198f95db17e8e23b30
+                  entity_id: light.kids_led_strip
+                  domain: light
+                - delay:
+                    hours: 0
+                    minutes: 0
+                    seconds: 0
+                    milliseconds: 125
+            enabled: true
+  - if:
+      - condition: trigger
+        id: dim-down
+      - condition: template
+        value_template: >-
+          {% if is_state('light.kids_led_strip','on') %}
+          {{(state_attr('light.kids_led_strip','brightness') | float) > 10}}
+
+          {% endif %}
+    then:
+      - service: light.turn_on
+        data:
+          brightness_step: -25
+        target:
+          entity_id: light.kids_led_strip
+    else:
+      - if:
+          - condition: state
+            entity_id: light.kids_led_strip
+            state: "on"
+          - condition: trigger
+            id: dim-down
+        then:
+          - repeat:
+              count: 2
+              sequence:
+                - type: turn_off
+                  device_id: 011ae94cb25345198f95db17e8e23b30
+                  entity_id: light.kids_led_strip
+                  domain: light
+                - delay:
+                    hours: 0
+                    minutes: 0
+                    seconds: 0
+                    milliseconds: 125
+                - type: turn_on
+                  device_id: 011ae94cb25345198f95db17e8e23b30
+                  entity_id: light.kids_led_strip
+                  domain: light
+                - delay:
+                    hours: 0
+                    minutes: 0
+                    seconds: 0
+                    milliseconds: 125
+            enabled: true
+  - if:
+      - condition: trigger
+        id: hold-dim-down
+      - condition: template
+        value_template: >-
+          {% if is_state('light.kids_led_strip','on') %}
+          {{(state_attr('light.kids_led_strip','brightness') | float) > 10}}
+
+          {% endif %}
+    then:
+      - service: light.turn_on
+        data:
+          brightness_step: -10
+        target:
+          entity_id: light.kids_led_strip
+    else:
+      - if:
+          - condition: state
+            entity_id: light.kids_led_strip
+            state: "on"
+          - condition: trigger
+            id: hold-dim-down
+        then:
+          - repeat:
+              count: 2
+              sequence:
+                - type: turn_off
+                  device_id: 011ae94cb25345198f95db17e8e23b30
+                  entity_id: light.kids_led_strip
+                  domain: light
+                - delay:
+                    hours: 0
+                    minutes: 0
+                    seconds: 0
+                    milliseconds: 125
+                - type: turn_on
+                  device_id: 011ae94cb25345198f95db17e8e23b30
+                  entity_id: light.kids_led_strip
+                  domain: light
+                - delay:
+                    hours: 0
+                    minutes: 0
+                    seconds: 0
+                    milliseconds: 125
+            enabled: true
+  - if:
+      - condition: trigger
+        id: press-off
+    then:
+      - service: input_boolean.turn_off
+        data: {}
+        target:
+          entity_id: input_boolean.kid_s_dance_party
+      - delay:
+          hours: 0
+          minutes: 0
+          seconds: 0
+          milliseconds: 250
+      - service: light.turn_off
+        data: {}
+        target:
+          entity_id: light.kids_led_strip
+  - if:
+      - condition: trigger
+        id: double-off
+    then:
+      - service: input_boolean.turn_on
+        data: {}
+        target:
+          entity_id: input_boolean.kid_light_color_loop
+      - repeat:
+          until:
+            - condition: state
+              entity_id: input_boolean.kid_light_color_loop
+              state: "off"
+          sequence:
+            - service: input_select.select_next
+              data:
+                cycle: true
+              target:
+                entity_id: input_select.kid_light_color_select
+            - delay:
+                hours: 0
+                minutes: 0
+                seconds: 2
+                milliseconds: 0
+            - service: light.turn_on
+              data:
+                color_name: "{{ states('input_select.kid_light_color_select') }}"
+              target:
+                entity_id: light.kids_led_strip
+    enabled: true
+  - if:
+      - condition: trigger
+        id: hold-off
+    then:
+      - service: input_boolean.turn_off
+        data: {}
+        target:
+          entity_id: input_boolean.kid_s_dance_party
+mode: restart
