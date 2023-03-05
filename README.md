@@ -18,3 +18,7 @@ Collection of various Home Assistant projects and guides
 ## `automations`
 + various automation examples that I use in Home Assistant
 
+## `hardware`
++ hardware in use
++ upgrade RPi4 to SSD instructions
+
