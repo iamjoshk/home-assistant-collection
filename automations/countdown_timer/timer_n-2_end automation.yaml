@@ -1,0 +1,16 @@
+alias:  timer N-2 end automation
+description: ""
+trigger:
+  - platform: event
+    event_type: timer.finished
+    event_data:
+      entity_id: timer.timer.n_2_timer
+condition: []
+action:
+  - service: script.light_off_warning
+    data: {}
+  - service: timer.start
+    data: {}
+    target:
+      entity_id: timer.timer_2_minutes
+mode: single
