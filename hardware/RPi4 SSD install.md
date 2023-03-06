@@ -34,3 +34,4 @@ Notes:
     - Based on [this comment](https://community.home-assistant.io/t/addons-not-starting/450322/44), I completely shut down the RPi4, waiting about 30 seconds, and then restarted. The addons were in sync again after this.
 
  + Overall system performance was greatly improved. Everything is more responsive, screens load faster, boot up after restart is faster. I am very pleased with this simple upgrade.
+ + If you use `PiHole` or `AdGuard`, you may want to disable blocking while booting up the clean instance of HA for the first time (before you restore).
