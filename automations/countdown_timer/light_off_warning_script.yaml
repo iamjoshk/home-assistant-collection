@@ -1,0 +1,33 @@
+alias: light off warning script
+sequence:
+  - if:
+      - condition: device
+        type: is_on
+        device_id: your_device_id
+        entity_id: light.your_light_id
+        domain: light
+    then:
+      - repeat:
+          count: 2
+          sequence:
+            - type: turn_off
+              device_id: your_device_id
+              entity_id: light.your_light_id
+              domain: light
+            - delay:
+                hours: 0
+                minutes: 0
+                seconds: 0
+                milliseconds: 250
+            - type: turn_on
+              device_id: your_device_id
+              entity_id: light.your_light_id
+              domain: light
+            - delay:
+                hours: 0
+                minutes: 0
+                seconds: 0
+                milliseconds: 250
+    else:
+      - stop: The light is already off.
+mode: single
