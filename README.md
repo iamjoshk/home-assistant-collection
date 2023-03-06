@@ -17,6 +17,8 @@ Collection of various Home Assistant projects and guides
 
 ## `automations`
 + various automation examples that I use in Home Assistant
++ scripts
++ helpers
 
 ## `hardware`
 + hardware in use
