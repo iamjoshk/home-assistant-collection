@@ -174,6 +174,7 @@ mode: single
 + To see the overall time left before the light turns off, use `N timer` in an `entities` card
 + To see how much time before the warning, use `N-2 timer` in an `entities` card
 + To see how much time remains after the warning, use `timer 2 minutes` in an `entities` card
++ there may be simpler and more efficient ways of implementing these; this is only intended as a starting point
 
 
 
