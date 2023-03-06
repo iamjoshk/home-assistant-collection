@@ -1,0 +1,12 @@
+alias: turn light off after timer
+trigger:
+  - platform: event
+    event_type: timer.finished
+    event_data:
+      entity_id: timer.timer_2_minutes
+action:
+  - service: light.turn_off
+    target:
+      entity_id: light.your_light_entity
+    data: {}
+mode: single
