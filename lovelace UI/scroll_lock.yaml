@@ -1,0 +1,14 @@
+# block scrolling and disable the header on the dashboard
+# https://github.com/thomasloven/lovelace-card-mod/blob/master/README-themes.md
+# 
+#
+scroll_lock:
+  card-mod-theme: scroll_lock
+  card-mod-root-yaml: |
+    .: |
+      :host {
+        position: fixed;  # disable scrolling
+      }
+      app-header {
+        display: none;  # disable header
+      }
