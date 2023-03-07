@@ -13,7 +13,7 @@ Collection of various Home Assistant projects and guides
 + custom_zha_quirks: custom zha_quirk files
 
 ## [`lovelace UI`](https://github.com/iamjoshk/home-assistant-collection/tree/main/lovelace%20UI)
-+ room_card.yaml: example of some `card-mod` changes to create custom room cards
++ various card-mod examples for cards and themes
 
 ## [`automations`](https://github.com/iamjoshk/home-assistant-collection/tree/main/automations)
 + various automation examples that I use in Home Assistant
