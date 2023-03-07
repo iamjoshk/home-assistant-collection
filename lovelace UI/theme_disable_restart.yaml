@@ -1,0 +1,10 @@
+disable_restart:
+  card-mod-theme: disable_restart
+  card-mod-card-yaml: |
+    .: |
+      mwc-button.warning {
+        {% if (not is_state('timer.timer_2_minutes','idle')) or (not is_state('timer.n_2_timer','idle')) %} pointer-events: none;
+        {% else %} pointer-events: auto;
+        {% endif %}
+      }
+# disables restart if a timer helper is in a state other than idle - such as active or paused
