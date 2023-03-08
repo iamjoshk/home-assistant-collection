@@ -1,0 +1,34 @@
+uart:
+  rx_pin: GPIO35
+  tx_pin: GPIO32
+  baud_rate: 9600
+
+sensor:
+  - platform: mhz19
+    co2:
+      name: "MH-Z19 CO2 Value"
+    temperature:
+      name: "MH-Z19 Temperature"
+      filters:
+      - lambda: return x * (9.0/5.0) + 32.0 + 2.0; # converts C to F
+      unit_of_measurement: "°F"
+    update_interval: 15s
+    automatic_baseline_calibration: false
+    id: mhz19b_co2
+
+button: # re-calibrates the zero point of the sensor. Use when it's been outside for at least 20 minutes. Baseline 400ppm outside.
+  - platform: template
+    name: "Calibrate Zero (20 minutes at 400ppm)"
+    id: calibrate_zero
+    entity_category: diagnostic
+    on_press:
+      - mhz19.calibrate_zero: mhz19b_co2
+
+switch: #switches automatic baseline calibration on and off
+  - platform: template
+    name: "MH-Z19 ABC"
+    optimistic: true
+    on_turn_on:
+      mhz19.abc_enable: mhz19b_co2
+    on_turn_off:
+      mhz19.abc_disable: mhz19b_co2
