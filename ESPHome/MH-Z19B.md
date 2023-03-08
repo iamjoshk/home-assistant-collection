@@ -4,7 +4,7 @@ Details on [MZ-Z19B](https://esphome.io/components/sensor/mhz19.html) connected 
 
 ## Pinout
 + Only `Tx` `Rx` `Gnd` and `Vin` need to be connected to ESP32 as indicated on esphome.io
-+ For version with wiring harness:
++ For version with jst harness:
 
 | Position | Pinout | Color |
 |----|----|----|
@@ -15,4 +15,5 @@ Details on [MZ-Z19B](https://esphome.io/components/sensor/mhz19.html) connected 
 | 5 | Rx | Blue |
 | 6 | Tx | Green |
 | 7 |    | Yellow |
+
 
