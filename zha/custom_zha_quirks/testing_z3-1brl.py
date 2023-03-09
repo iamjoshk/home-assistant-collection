@@ -49,16 +49,6 @@ from zhaquirks.const import (
 )
 
 
-class LutronAuroraZ31BRLOnOffCluster(CustomCluster, OnOff):
-    """Lutron Aurora Z3-1BRL  OnOff cluster."""
-
-    def __init__(self, *args, **kwargs):
-        """Init."""
-
-        super().__init__(*args, **kwargs)
-
-        self.endpoint.device.on_off_bus.add_listener(self)
-
 class LutronAuroraZ31BRLLevelControlCluster(CustomCluster, LevelControl):
     """Lutron Aurora Z3-1BRL LevelControl cluster."""
 
@@ -76,47 +66,47 @@ class LutronAuroraZ31BRLManufacturerSpecificCluster(CustomCluster):
     name = "Lutron Manufacturer Specific"
     ep_attribute = "lutron_manufacturer_specific"
 
-    server_commands = {
-        0x0000: foundation.ZCLCommandDef(
-            name="command",
-            schema={
-                "param1": t.uint8_t,
-                "param2": t.uint8_t,
-                "param3": t.uint8_t,
-                "param4": t.uint8_t,
-            },
-            is_reply=False,
-            is_manufacturer_specific=True,
-        )
-    }
-
-    def handle_cluster_request(
-        self,
-        hdr: foundation.ZCLHeader,
-        args: List[Any],
-        *,
-        dst_addressing: Optional[
-            Union[t.Addressing.Group, t.Addressing.IEEE, t.Addressing.NWK]
-        ] = None,
-    ):
-        """Handle cluster request."""
-
-        if args[0] == 1:
-            self.endpoint.device.level_control_bus.listener_event(
-                "listener_event", ZHA_SEND_EVENT, COMMAND_ON, [255]
-            )
-        elif args[0] == 2:
-            self.endpoint.device.level_control_bus.listener_event(
-                "listener_event", ZHA_SEND_EVENT, COMMAND_STEP, [50]
-            )
-        elif args[0] == 3:
-            self.endpoint.device.level_control_bus.listener_event(
-                 "listener_event", ZHA_SEND_EVENT, COMMAND_STEP, [50]
-            )
-        elif args[0] == 4:
-            self.endpoint.device.level_control_bus.listener_event(
-                "listener_event", ZHA_SEND_EVENT, COMMAND_OFF, [0]
-            )         
+#    server_commands = {
+#       0x0000: foundation.ZCLCommandDef(
+#          name="command",
+#            schema={
+#                "param1": t.uint8_t,
+#                "param2": t.uint8_t,
+#                "param3": t.uint8_t,
+#                "param4": t.uint8_t,
+#            },
+#            is_reply=False,
+#            is_manufacturer_specific=True,
+#        )
+#    }
+#
+#    def handle_cluster_request(
+#        self,
+#        hdr: foundation.ZCLHeader,
+#        args: List[Any],
+#        *,
+#        dst_addressing: Optional[
+#            Union[t.Addressing.Group, t.Addressing.IEEE, t.Addressing.NWK]
+#        ] = None,
+#    ):
+#        """Handle cluster request."""
+#
+#        if args[0] == 1:
+#            self.endpoint.device.level_control_bus.listener_event(
+#                "listener_event", ZHA_SEND_EVENT, COMMAND_ON, [255]
+#            )
+#        elif args[0] == 2:
+#            self.endpoint.device.level_control_bus.listener_event(
+#                "listener_event", ZHA_SEND_EVENT, COMMAND_STEP, [50]
+#            )
+#        elif args[0] == 3:
+#            self.endpoint.device.level_control_bus.listener_event(
+#                 "listener_event", ZHA_SEND_EVENT, COMMAND_STEP, [50]
+#            )
+#        elif args[0] == 4:
+#            self.endpoint.device.level_control_bus.listener_event(
+#                "listener_event", ZHA_SEND_EVENT, COMMAND_OFF, [0]
+#            )         
 
 
        
@@ -126,7 +116,6 @@ class LutronAurora(CustomDevice):
     def __init__(self, *args, **kwargs):
         """Init."""
 
-        self.on_off_bus = Bus()
         self.level_control_bus = Bus()
 
         super().__init__(*args, **kwargs)
@@ -178,7 +167,7 @@ class LutronAurora(CustomDevice):
                 OUTPUT_CLUSTERS: [
                     Identify.cluster_id,
                     Groups.cluster_id,
-                    LutronAuroraZ31BRLOnOffCluster,
+                    OnOff.cluster_id,
                     LutronAuroraZ31BRLLevelControlCluster,
                     Ota.cluster_id,
                     LightLink.cluster_id,
