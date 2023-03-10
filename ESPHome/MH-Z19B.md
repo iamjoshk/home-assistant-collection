@@ -16,4 +16,4 @@ Details on [MZ-Z19B](https://esphome.io/components/sensor/mhz19.html) connected 
 | 6 | Green  | Tx | GPIO35 |
 | 7 | Yellow |    |
 
-> \* Note: when using 3V3 instead of 5V for CO2 and Temp readings were high (temp was +10°F and CO2 was steady 5000ppm)
+> \* Note: when using 3V3 instead of 5V the CO2 and Temp readings were high (temp was +10°F and CO2 was steady 5000ppm)
