@@ -1,6 +1,6 @@
 ## Overview
 
-Details on [MZ-Z19B](https://esphome.io/components/sensor/mhz19.html) connected to ESP32-WROOM-32D
+Details on [MZ-Z19B](https://esphome.io/components/sensor/mhz19.html) connected to ESP32-WROOM-32D / ESP32-DevKitC-V4
 
 ## Pinout
 + Only `Tx` `Rx` `Gnd` and `Vin` need to be connected to ESP32 as indicated on esphome.io
