@@ -11,7 +11,7 @@ Details on [MZ-Z19B](https://esphome.io/components/sensor/mhz19.html) connected 
 | 1 | Brown  | Vo |
 | 2 | White  |    |
 | 3 | Black  | Gnd| Gnd    |
-| 4 | Red    | Vin| 5v     |
+| 4 | Red    | Vin| 3V3    |
 | 5 | Blue   | Rx | GPIO32 |
 | 6 | Green  | Tx | GPIO35 |
 | 7 | Yellow |    |
