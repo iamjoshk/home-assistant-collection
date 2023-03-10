@@ -14,3 +14,6 @@
   + `Itron 100WRD` add-on to legacy Neptune meter (seen as SCMplus)
     + Protocol 154
  
++ PIR Motion Sensor
+  + `1byOne 6-SP07NA07`(seen as Smoke-GS558)
+    + Protocol 86 
