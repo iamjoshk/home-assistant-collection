@@ -1,0 +1,13 @@
+  - platform: dht
+    pin: 23
+    temperature:
+      device_class: temperature
+#C to F conversion plus 2 degrees F
+      filters:
+      - lambda: return x * (9.0/5.0) + 32.0 + 2.0; 
+      unit_of_measurement: "°F"
+      name: "Office Temperature"
+      accuracy_decimals: 1
+    humidity:
+      name: "Office Humidity"
+    update_interval: 15s  
