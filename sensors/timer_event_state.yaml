@@ -9,10 +9,10 @@ template:
           - timer.cancelled
           - timer.finished
         event_data:
-          entity_id: timer.countdown #this is any specific timer helper
+          entity_id: timer.countdown #this is any specific timer helper, replace `name`, `unique_id`, and `timer.countdown` below as well
     sensor:
       - name: Countdown Timer State History
-        unique_id: countdown_light_timer_state_history
+        unique_id: countdown_light_timer_state_history 
         state: >
           {% if trigger.event.event_type == 'timer.started' %}
             started
@@ -31,6 +31,6 @@ template:
             {% set new = [{
               "event": trigger.event.event_type[6:],
               "time": now().isoformat() }] %}
-            {% if trigger.event.data.entity_id == 'timer.countdown' %} #replace timer.countownd with time specified in `entity_id` above
+            {% if trigger.event.data.entity_id == 'timer.countdown' %} 
               {{ (new + current)[:10] }}
             {% endif %}
