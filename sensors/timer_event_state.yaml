@@ -1,0 +1,36 @@
+template:
+   - trigger:
+   
+      - platform: event
+        event_type:
+          - timer.started
+          - timer.paused
+          - timer.restarted
+          - timer.cancelled
+          - timer.finished
+        event_data:
+          entity_id: timer.countdown
+    sensor:
+      - name: Countdown Timer State History
+        unique_id: countdown_light_timer_state_history
+        state: >
+          {% if trigger.event.event_type == 'timer.started' %}
+            started
+          {% elif trigger.event.event_type == 'timer.paused' %}
+            paused
+          {% elif trigger.event.event_type == 'timer.restarted' %}
+            restarted
+          {% elif trigger.event.event_type == 'timer.cancelled' %}
+            cancelled
+          {% elif trigger.event.event_type == 'timer.finished' %}
+            finished
+          {% endif %}
+        attributes:
+          history: >
+            {% set current = this.attributes.get('history', []) %}
+            {% set new = [{
+              "event": trigger.event.event_type[6:],
+              "time": now().isoformat() }] %}
+            {% if trigger.event.data.entity_id == 'timer.countdown' %}
+              {{ (new + current)[:10] }}
+            {% endif %}
