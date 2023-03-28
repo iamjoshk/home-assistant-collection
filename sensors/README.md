@@ -4,7 +4,7 @@ Sensors that I've created for various purposes.
 
 ## Sensors
 + `timer_event_state` sensor sets the timer events as the state of the sensor and keeps a recent history in attributes. This extends functionality of timers in automations, scripts, and other elsewhere.
-  + State is sent to the most recent timer event
+  + State is from the most recent timer event
     + timer.started
     + timer.paused
     + timer.restarted
