@@ -1,13 +1,14 @@
-
+{# created for a Lutron Aurora dimmer, but this should be adaptable to any Zigbee rotating device. Adjustments to `params` or adding `cluster_id`, `endpoint_id`, or `args` in the event data may be necessary. #}
 template:
   - trigger:
       - platform: event
         event_type:
           - zha_event
         event_data:
-          device_ieee: ff:ff:00:0f:e7:fa:d1:b6
-          unique_id: ff:ff:00:0f:e7:fa:d1:b6:1:0x0008
-          device_id: 2ccd341cf88670faeae4fce73076513b
+{# Developer Tools -> Events -> Listen to `zha_event` -> use your controller to get `device_ieee` `unique_id` or `device_id`. You should only really need one of them. Remove the ones you do not use. #}        
+          device_ieee:  
+          unique_id: 
+          device_id: 
 
     sensor:
       - name: Lutron Z3-1BRL Controller
