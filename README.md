@@ -29,3 +29,6 @@ Collection of various Home Assistant projects and guides
 
 ## [`NUT`](https://github.com/iamjoshk/home-assistant-collection/tree/main/NUT)
 + Network UPS Tools set up
+
+## [`sensors`](https://github.com/iamjoshk/home-assistant-collection/tree/main/sensors)
++ various sensors of interest that I have created
