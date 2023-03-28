@@ -25,3 +25,6 @@ Sensors that I've created for various purposes.
       + action_type
       + rotate_right - enables continuous rotation to the right
       + rotate_left - enables continuous rotation to the left
+      + debounce_time - the debounce attributes are accomodations and attempts to ignore for multiple events that are fired by the device. Probably need tweaking.
+      + debounce_diff
+      + debounce_level
