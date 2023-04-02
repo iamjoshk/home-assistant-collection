@@ -22,7 +22,7 @@ sequence:
     enabled: true
   - service: input_number.set_value
     data:
-      value: 0
+      value: 1800
     target:
       entity_id: input_number.countdown_timer_incrementer
 mode: queued
