@@ -10,7 +10,7 @@ Specific Equipment used:
 ## Activities
 
 1. Make a full backup of your HAOS instance and move it to a location you can retreive it later (not on your existing SD card running HAOS).
-    - Having the `tar` file for your backup on the computer your will be using to access your HA instance will be helpful later.
+    - Having the `tar` file for your backup on the computer you will be using to access your HA instance will be helpful later.
 2. Completely power down your RPi4 running HAOS. 
 3. Remove your SD card with your HAOS on it
 4. Using a different SD card of any size, use Raspberry Pi Imager to create a Bootloader - USB Boot image on the second SD card
