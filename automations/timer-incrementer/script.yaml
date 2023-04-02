@@ -1,0 +1,30 @@
+alias: Countdown Timer Add 5 Minutes
+sequence:
+  - service: timer.pause
+    data: {}
+    target:
+      entity_id: timer.countdown
+  - service: input_number.set_value
+    data:
+      value: >-
+        {% set r = (state_attr('timer.countdown','remaining')|default(300,true)) %}
+        {% set rta = (r[2:-3]|int(1) * 60 + r[5:]|int(1)) %}
+        {% set nt = rta + 300%}
+        {{ nt|string }}
+    target:
+      entity_id: input_number.countdown_timer_incrementer
+  - service: timer.start
+    data:
+      duration: |
+        {{ states('input_number.countdown_timer_incrementer')|int }}
+    target:
+      entity_id: timer.countdown
+    enabled: true
+  - service: input_number.set_value
+    data:
+      value: 0
+    target:
+      entity_id: input_number.countdown_timer_incrementer
+mode: queued
+icon: mdi:timer-plus-outline
+max: 12
