@@ -5,10 +5,9 @@ template:
         event_type:
           - zha_event
         event_data:
-{# Developer Tools -> Events -> Listen to `zha_event` -> use your controller to get `device_ieee` `unique_id` or `device_id`. You should only really need one of them. Remove the ones you do not use. #}        
-          device_ieee:  
-          unique_id: 
-          device_id: 
+          device_ieee: ff:ff:00:0f:e7:fa:d1:b6
+          unique_id: ff:ff:00:0f:e7:fa:d1:b6:1:0x0008
+          device_id: 2ccd341cf88670faeae4fce73076513b
 
     sensor:
       - name: Lutron Z3-1BRL Controller
@@ -18,28 +17,32 @@ template:
 
         attributes:
           time_fired: >
-              {{ trigger.event.time_fired }}
+            {{ trigger.event.time_fired }}
           debounce_time: >
+            {{ this.attributes.get('time_fired', []) }}  
+          debounce_time_new_calc: >
+            {% set tf = trigger.event.time_fired|as_timestamp %}
+            {% set ptf = this.attributes.get('time_fired', [])|as_timestamp %}
+            {% if tf - ptf < 0.0045 %}
+              {{ trigger.event.time_fired }}
+            {% else %}
               {{ this.attributes.get('time_fired', []) }}
+            {% endif %}
           debounce_level: >
             {{ this.attributes.get('level', []) }}
           debounce_diff: >
-            {% set ddiff = ((trigger.event.time_fired|as_timestamp(1)) - ((this.attributes.get('debounce_time', [])|as_timestamp(1))))|round(3) %}
-            {% if ddiff == 0 %}
-              1
-            {% else %}
+            {% set ddiff = ((this.attributes.get('time_fired')|as_timestamp(1)) - ((this.attributes.get('debounce_time')|as_timestamp(1))))|round(3) %}
               {{ ddiff }}
-            {% endif %}
           level: >
             {{ trigger.event.data.params.level }} 
           previous_level: >
             {% set ldiff = this.attributes.get('debounce_diff') %}
             {% if (trigger.event.data.params.level == 255) or (trigger.event.data.params.level) == 0 %}
               {{ trigger.event.data.params.level }}
-            {% elif ldiff > 0.01 %} 
-              {{ this.attributes.get('debounce_level', []) }}
-            {% else %}
+            {% elif ldiff > 0.199 %}
               {{ this.attributes.get('level', []) }}
+            {% else %}
+              {{ this.attributes.get('debounce_level', []) }}
             {% endif %}            
           transition_time: >
               {{ trigger.event.data.params.transition_time }}
@@ -89,4 +92,12 @@ template:
               {{ this.attributes.get('time_fired')[20:-9] }}
             {% else %}
               0
-            {% endif %}         
+            {% endif %}     
+          click: >
+            {% set click = (trigger.event.data.params.transition_time|int(0)) == 7 %}
+            {% set minclick = (trigger.event.data.params.transition_time|int(0)) == 2 and (trigger.event.data.params.level|int(0)) == 0 %}
+            {% if click or minclick %}
+              {{ this.attributes.get('time_fired')[20:-9] }}
+            {% else %}
+              0
+            {% endif %}
