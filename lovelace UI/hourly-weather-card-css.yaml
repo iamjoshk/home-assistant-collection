@@ -77,6 +77,9 @@ card_mod:
       div.clear-night>.condition-icon > ha-icon {
         color: #777777 !important;
       }
+      .condition-icon > ha-icon {
+        filter: none !important;
+      }
       .bar-block-left {
         height: 100px !important;
         border-left-color: grey !important;
