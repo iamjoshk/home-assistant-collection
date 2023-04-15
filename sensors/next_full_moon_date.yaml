@@ -1,0 +1,35 @@
+rest:
+  - resource: http://192.xxx:[port]/api/calendars/calendar.your_calendar
+    method: GET
+    scan_interval: 21600
+    headers:
+      authorization: !secret calendar_rest_token
+    params:
+      start: >
+        {{ utcnow().strftime('%Y-%m-%dT%H:%M:%S.000Z') }}
+      end: >
+        {{ (utcnow() + timedelta(days=30)).strftime('%Y-%m-%dT%H:%M:%S.000Z') }}
+    sensor: 
+    - name: Next Full Moon Date
+      unique_id: next_full_moon_date
+      json_attributes_path: "$."
+      value_template: >
+        {% set phase0 = value_json[0] | string %}
+        {% set phase1 = value_json[1] | string %}
+        {% set phase2 = value_json[2] | string %}        
+        {% set phase3 = value_json[3] | string %}
+        {% if 'Full moon' in phase0 %}
+          {% set phase0json = value_json[0] %}
+          {{ phase0json.start.date }}
+        {% elif 'Full moon' in phase1 %}
+          {% set phase1json = value_json[1] %}
+          {{ phase1json.start.date }}
+        {% elif 'Full moon' in phase2 %}
+          {% set phase2json = value_json[2] %}
+          {{ phase2json.start.date }}
+        {% elif 'Full moon' in phase3 %}
+          {% set phase3json = value_json[3] %}
+          {{ phase3json.start.date }}
+        {% else %}
+        MOON GONE
+        {% endif %}
