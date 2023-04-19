@@ -1,5 +1,5 @@
 rest:
-  - resource: http://192.xxx:[port]/api/calendars/calendar.your_calendar
+  - resource: !secret calendar_rest_resource
     method: GET
     scan_interval: 21600
     headers:
