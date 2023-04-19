@@ -28,3 +28,7 @@ Sensors that I've created for various purposes.
       + debounce_time - the debounce attributes are accomodations and attempts to ignore for multiple events that are fired by the device. Probably need tweaking.
       + debounce_diff
       + debounce_level
+
+<br>
+
++ `next_full_moon_date` sensor uses RESTful sensor to look through the next 30 days of events for a specified calendar integration in HA, in this case Google's moonphase calendar. It finds the event that contains `Full moon` and populates that date (as a string format) as the state.
