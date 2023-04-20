@@ -1,7 +1,7 @@
 rest:
   - resource: !secret calendar_rest_resource
     method: GET
-    scan_interval: 21600
+    scan_interval: 3600
     headers:
       authorization: !secret calendar_rest_token
     params:
