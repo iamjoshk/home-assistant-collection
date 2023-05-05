@@ -95,64 +95,65 @@ card_mod:
         border-right-color: grey !important;
         border-left-color: transparent !important;        
       }
-      .bar-block:nth-child(1) div.hour::before {
-          content: " {% set t = now() %}{% set td = (t + timedelta(hours = 1)).day %}{{ td }}{% if td in [1,21,31] %}st{% elif td in [2,22] %}nd{% elif td in [3,23] %}rd{% else %}th{% endif %} ";
-          display: flex !important;
-          flex-direction: column;
-          font-size: 14px;
-      }
-      .bar-block:nth-child(3) div.hour::before {
-          content: " {% set t = now() %}{% set td = (t + timedelta(hours = 5)).day %}{{ td }}{% if td in [1,21,31] %}st{% elif td in [2,22] %}nd{% elif td in [3,23] %}rd{% else %}th{% endif %} ";
-          display: flex !important;
-          flex-direction: column;
-          font-size: 14px;
-      }
-      .bar-block:nth-child(5) div.hour::before {
-          content: " {% set t = now() %}{% set td = (t + timedelta(hours = 9)).day %}{{ td }}{% if td in [1,21,31] %}st{% elif td in [2,22] %}nd{% elif td in [3,23] %}rd{% else %}th{% endif %} ";
-          display: flex !important;
-          flex-direction: column;
-          font-size: 14px;
-      }
-      .bar-block:nth-child(7) div.hour::before {
-          content: " {% set t = now() %}{% set td = (t + timedelta(hours = 13)).day %}{{ td }}{% if td in [1,21,31] %}st{% elif td in [2,22] %}nd{% elif td in [3,23] %}rd{% else %}th{% endif %} ";
-          display: flex !important;
-          flex-direction: column;
-          font-size: 14px;
-      }
-      .bar-block:nth-child(9) div.hour::before {
-          content: " {% set t = now() %}{% set td = (t + timedelta(hours = 17)).day %}{{ td }}{% if td in [1,21,31] %}st{% elif td in [2,22] %}nd{% elif td in [3,23] %}rd{% else %}th{% endif %} ";
-          display: flex !important;
-          flex-direction: column;
-          font-size: 14px;
-      }
-      .bar-block:nth-child(11) div.hour::before {
-          content: " {% set t = now() %}{% set td = (t + timedelta(hours = 21)).day %}{{ td }}{% if td in [1,21,31] %}st{% elif td in [2,22] %}nd{% elif td in [3,23] %}rd{% else %}th{% endif %} ";
-          display: flex !important;
-          flex-direction: column;
-          font-size: 14px;
-      }
-      .bar-block:nth-child(13) div.hour::before {
-          content: " {% set t = now() %}{% set td = (t + timedelta(hours = 25)).day %}{{ td }}{% if td in [1,21,31] %}st{% elif td in [2,22] %}nd{% elif td in [3,23] %}rd{% else %}th{% endif %} ";
-          display: flex !important;
-          flex-direction: column;
-          font-size: 14px;
-      }
-      .bar-block:nth-child(15) div.hour::before {
-          content: " {% set t = now() %}{% set td = (t + timedelta(hours = 29)).day %}{{ td }}{% if td in [1,21,31] %}st{% elif td in [2,22] %}nd{% elif td in [3,23] %}rd{% else %}th{% endif %} ";
-          display: flex !important;
-          flex-direction: column;
-          font-size: 14px;
-      }
-      .bar-block:nth-child(17) div.hour::before {
-          content: " {% set t = now() %}{% set td = (t + timedelta(hours = 33)).day %}{{ td }}{% if td in [1,21,31] %}st{% elif td in [2,22] %}nd{% elif td in [3,23] %}rd{% else %}th{% endif %} ";
-          display: flex !important;
-          flex-direction: column;
-          font-size: 14px;
-      }
-      .bar-block:nth-child(even) div.hour::before {
-          content: " {{ (now() + timedelta(hours = 3)).day }} ";
-          display: flex !important;
-          flex-direction: column;
-          font-size: 14px;
-          color: transparent;
-      }
+# as of hourly weather card v4.11.0 the card-mod below is no longer needed because show_date is now configurable #
+#      .bar-block:nth-child(1) div.hour::before {
+#          content: " {% set t = now() %}{% set td = (t + timedelta(hours = 1)).day %}{{ td }}{% if td in [1,21,31] %}st{% elif td in [2,22] %}nd{% elif td in [3,23] %}rd{% else %}th{% endif %} ";
+#          display: flex !important;
+#          flex-direction: column;
+#          font-size: 14px;
+#      }
+#      .bar-block:nth-child(3) div.hour::before {
+#          content: " {% set t = now() %}{% set td = (t + timedelta(hours = 5)).day %}{{ td }}{% if td in [1,21,31] %}st{% elif td in [2,22] %}nd{% elif td in [3,23] %}rd{% else %}th{% endif %} ";
+#         display: flex !important;
+#          flex-direction: column;
+#          font-size: 14px;
+#      }
+#      .bar-block:nth-child(5) div.hour::before {
+#          content: " {% set t = now() %}{% set td = (t + timedelta(hours = 9)).day %}{{ td }}{% if td in [1,21,31] %}st{% elif td in [2,22] %}nd{% elif td in [3,23] %}rd{% else %}th{% endif %} ";
+#          display: flex !important;
+#          flex-direction: column;
+#          font-size: 14px;
+#      }
+#      .bar-block:nth-child(7) div.hour::before {
+#          content: " {% set t = now() %}{% set td = (t + timedelta(hours = 13)).day %}{{ td }}{% if td in [1,21,31] %}st{% elif td in [2,22] %}nd{% elif td in [3,23] %}rd{% else %}th{% endif %} ";
+#          display: flex !important;
+#          flex-direction: column;
+#          font-size: 14px;
+#      }
+#      .bar-block:nth-child(9) div.hour::before {
+#          content: " {% set t = now() %}{% set td = (t + timedelta(hours = 17)).day %}{{ td }}{% if td in [1,21,31] %}st{% elif td in [2,22] %}nd{% elif td in [3,23] %}rd{% else %}th{% endif %} ";
+#          display: flex !important;
+#          flex-direction: column;
+#          font-size: 14px;
+#      }
+#      .bar-block:nth-child(11) div.hour::before {
+#          content: " {% set t = now() %}{% set td = (t + timedelta(hours = 21)).day %}{{ td }}{% if td in [1,21,31] %}st{% elif td in [2,22] %}nd{% elif td in [3,23] %}rd{% else %}th{% endif %} ";
+#          display: flex !important;
+#          flex-direction: column;
+#          font-size: 14px;
+#      }
+#      .bar-block:nth-child(13) div.hour::before {
+#          content: " {% set t = now() %}{% set td = (t + timedelta(hours = 25)).day %}{{ td }}{% if td in [1,21,31] %}st{% elif td in [2,22] %}nd{% elif td in [3,23] %}rd{% else %}th{% endif %} ";
+#          display: flex !important;
+#          flex-direction: column;
+#          font-size: 14px;
+#      }
+#      .bar-block:nth-child(15) div.hour::before {
+#          content: " {% set t = now() %}{% set td = (t + timedelta(hours = 29)).day %}{{ td }}{% if td in [1,21,31] %}st{% elif td in [2,22] %}nd{% elif td in [3,23] %}rd{% else %}th{% endif %} ";
+#          display: flex !important;
+#          flex-direction: column;
+#          font-size: 14px;
+#      }
+#      .bar-block:nth-child(17) div.hour::before {
+#          content: " {% set t = now() %}{% set td = (t + timedelta(hours = 33)).day %}{{ td }}{% if td in [1,21,31] %}st{% elif td in [2,22] %}nd{% elif td in [3,23] %}rd{% else %}th{% endif %} ";
+#          display: flex !important;
+#          flex-direction: column;
+#          font-size: 14px;
+#      }
+#      .bar-block:nth-child(even) div.hour::before {
+#          content: " {{ (now() + timedelta(hours = 3)).day }} ";
+#          display: flex !important;
+#          flex-direction: column;
+#          font-size: 14px;
+#          color: transparent;
+#      }
