@@ -80,21 +80,31 @@ card_mod:
       .condition-icon > ha-icon {
         filter: none !important;
       }
-      .bar-block-left {
-        height: 100px !important;
-        border-left-color: grey !important;
-        border-right-color: transparent !important;
-      }
-      .bar-block-right {
-        height: 100px !important;
-        border-right-color: grey !important;
-        border-left-color: transparent !important;
-      }
-      .bar-block:last-child .bar-block-right {
-        height:100px !important;
-        border-right-color: grey !important;
-        border-left-color: transparent !important;        
-      }
+# changes to .bar-block required for v5.0
+        .bar-block-left {
+          height: 60px !important;
+          border-left-color: grey !important;
+          border-right-color: transparent !important;
+          position: relative !important;
+          top: 30px !important;
+          border-width: 0px 1px 0px 1px !important;
+        }
+        .bar-block-right {
+          height: 60px !important;
+          border-left-color: grey !important;
+          border-right-color: transparent !important;
+          position: relative !important;
+          top: 30px !important;
+          border-width: 0px 1px 0px 1px !important;
+        }
+        .bar-block:last-child .bar-block-right {
+          height: 60px !important;
+          border-left-color: grey !important;
+          border-right-color: transparent !important;
+          position: relative !important;
+          top: 30px !important;
+          border-width: 0px 1px 0px 1px !important;
+        }
 # as of hourly weather card v4.11.0 the card-mod below is no longer needed because show_date is now configurable #
 #      .bar-block:nth-child(1) div.hour::before {
 #          content: " {% set t = now() %}{% set td = (t + timedelta(hours = 1)).day %}{{ td }}{% if td in [1,21,31] %}st{% elif td in [2,22] %}nd{% elif td in [3,23] %}rd{% else %}th{% endif %} ";
