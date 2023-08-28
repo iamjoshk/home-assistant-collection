@@ -1,0 +1,44 @@
+esphome:
+  name: soilmoisture-1
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: "removed"
+
+ota:
+  password: "removed"
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Soilmoisture-1 Fallback Hotspot"
+    password: "I0oeqRAxTSv5"
+
+captive_portal:
+
+
+sensor:
+  - platform: adc
+    pin: 32
+    id: moisture_sensor
+    name: "Soil Moisture"
+    update_interval: 5s
+    unit_of_measurement: V
+    accuracy_decimals: 1
+    filters: # Sensor dry around 1.05100 Volt, sensor wet around 0.92 Volt. Volts are were flickering
+#      - calibrate_linear:
+#        - 1.05 -> 0.00
+#        - 0.93 -> 100.0
+  
