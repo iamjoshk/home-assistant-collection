@@ -1,93 +1,83 @@
-"""Xiaomi aqara single key wall switch devices."""
-import logging
-
-from zigpy import types as t
-from zigpy.profiles import zha
+"""Xiaomi aqara single rocker switch devices."""
+import logging                                                 
+from zigpy.profiles import zgp, zha
+from zigpy.quirks import CustomDevice
 from zigpy.zcl.clusters.general import (
-    AnalogInput,
+    Alarms,
     Basic,
-    BinaryOutput,
-    DeviceTemperature,
+    GreenPowerProxy,
     Groups,
     Identify,
-    MultistateInput,
     OnOff,
     Ota,
     Scenes,
     Time,
 )
 
-from zhaquirks import EventableCluster
 from zhaquirks.const import (
     ARGS,
-    ATTRIBUTE_ID,
-    ATTRIBUTE_NAME,
+    ATTR_ID,
     BUTTON,
-    BUTTON_1,
-    BUTTON_2,
     CLUSTER_ID,
     COMMAND,
-    COMMAND_ATTRIBUTE_UPDATED,
     COMMAND_DOUBLE,
     COMMAND_HOLD,
-    COMMAND_RELEASE,
+    COMMAND_SINGLE,
     DEVICE_TYPE,
+    DOUBLE_PRESS,
     ENDPOINT_ID,
     ENDPOINTS,
     INPUT_CLUSTERS,
+    LONG_PRESS,
     MODELS_INFO,
     OUTPUT_CLUSTERS,
+    PRESS_TYPE,
     PROFILE_ID,
-    SKIP_CONFIGURATION,
+    SHORT_PRESS,
     VALUE,
 )
 from zhaquirks.xiaomi import (
     LUMI,
     BasicCluster,
+    DeviceTemperatureCluster,
     OnOffCluster,
-    XiaomiCustomDevice,
-    XiaomiPowerConfiguration,
+    XiaomiMeteringCluster,
 )
+from zhaquirks.xiaomi.aqara.opple_remote import MultistateInputCluster
+from zhaquirks.xiaomi.aqara.opple_switch import OppleSwitchCluster
 
-ATTRIBUTE_ON_OFF = "on_off"
-DOUBLE = "double"
-HOLD = "long press"
-PRESS_TYPES = {0: "long press", 1: "single", 2: "double"}
-SINGLE = "single"
-STATUS_TYPE_ATTR = 0x0055  # decimal = 85
-XIAOMI_CLUSTER_ID = 0xFFFF
-XIAOMI_DEVICE_TYPE = 0x5F01
-XIAOMI_DEVICE_TYPE2 = 0x5F02
-XIAOMI_DEVICE_TYPE3 = 0x5F03
-
-_LOGGER = logging.getLogger(__name__)
-
-# click attr 0xF000
-# single click 0x3FF1F00
-# double click 0xCFF1F00
+XIAOMI_COMMAND_SINGLE = "41_single"
+XIAOMI_COMMAND_DOUBLE = "41_double"
+XIAOMI_COMMAND_HOLD = "1_hold"
 
 
-class BasicClusterDecoupled(BasicCluster):
-    """Adds attributes for decoupled mode."""
+class AqaraUSC03SingleRocker(CustomDevice):
+    """Device automation triggers for the Aqara WS-USC03 Single Rocker Switches"""
 
-    # Known Options for 'decoupled_mode_<button>':
-    # * 254 (decoupled)
-    # * 18 (relay controlled)
-    attributes = BasicCluster.attributes.copy()
-    attributes.update(
-        {
-            0xFF22: ("decoupled_mode_left", t.uint8_t, True),
-            0xFF23: ("decoupled_mode_right", t.uint8_t, True),
-        }
-    )
+    device_automation_triggers = {
+        (SHORT_PRESS, BUTTON): {
+            ENDPOINT_ID: 41,
+            CLUSTER_ID: 18,
+            COMMAND: XIAOMI_COMMAND_SINGLE,
+            ARGS: {ATTR_ID: 0x0055, PRESS_TYPE: COMMAND_SINGLE, VALUE: 1},
+        },
+        (DOUBLE_PRESS, BUTTON): {
+            ENDPOINT_ID: 41,
+            CLUSTER_ID: 18,
+            COMMAND: XIAOMI_COMMAND_DOUBLE,
+            ARGS: {ATTR_ID: 0x0055, PRESS_TYPE: COMMAND_DOUBLE, VALUE: 2},
+        },
+        (LONG_PRESS, BUTTON): {
+            ENDPOINT_ID: 1,
+            CLUSTER_ID: 64704,
+            COMMAND: XIAOMI_COMMAND_HOLD,
+            ARGS: {ATTR_ID: 0x00FC, PRESS_TYPE: COMMAND_HOLD, VALUE: 0},
+        },
+    }
 
 
-class WallSwitchOnOffCluster(EventableCluster, OnOff):
-    """WallSwitchOnOffCluster: fire events corresponding to press type."""
-
-
-class CtrlNeutral(XiaomiCustomDevice):
-    """Aqara single key switch device."""
+class AqaraUSC03SingleRockerSwitchWithNeutral(AqaraUSC03SingleRocker):
+    """Aqara WS-USC03 Single Rocker Switch (with neutral)."""
 
     signature = {
         MODELS_INFO: [
@@ -125,36 +115,42 @@ class CtrlNeutral(XiaomiCustomDevice):
     }
 
     replacement = {
-        SKIP_CONFIGURATION: True,
         ENDPOINTS: {
             1: {
-                PROFILE_ID: 0x0104,
-                DEVICE_TYPE: 0x0100,
+                PROFILE_ID: zha.PROFILE_ID,
+                DEVICE_TYPE: zha.DeviceType.ON_OFF_LIGHT,
                 INPUT_CLUSTERS: [
-                    0x0000,
-                    0x0002,
-                    0x0003,
-                    0x0004,
-                    0x0005,
-                    0x0006,
-                    0x0009,
-                    0x0702,
-                    0x0b04,
-                    BasicClusterDecoupled,
+                    BasicCluster,  # 0
+                    DeviceTemperatureCluster.cluster_id,  # 2
+                    Identify.cluster_id,  # 3
+                    Groups.cluster_id,  # 4
+                    Scenes.cluster_id,  # 5
+                    OnOffCluster,  # 6
+                    Alarms.cluster_id,  # 9
+                    MultistateInputCluster,  # 18
+                    XiaomiMeteringCluster.cluster_id,  # 0x0702
+                    OppleSwitchCluster,  # 0xFCC0 / 64704
+                    0x0B04,
                 ],
                 OUTPUT_CLUSTERS: [
-                    0x000a,
-                    0x0019
-                ]
+                    Time.cluster_id,
+                    Ota.cluster_id,
+                ],
+            },
+            41: {
+                PROFILE_ID: zha.PROFILE_ID,
+                DEVICE_TYPE: zha.DeviceType.ON_OFF_SWITCH,
+                INPUT_CLUSTERS: [
+                    MultistateInputCluster,  # 18
+                ],
+                OUTPUT_CLUSTERS: [],
             },
             242: {
-                PROFILE_ID: 0xa1e0,
-                DEVICE_TYPE: 0x0061,
+                PROFILE_ID: zgp.PROFILE_ID,
+                DEVICE_TYPE: zgp.DeviceType.PROXY_BASIC,
                 INPUT_CLUSTERS: [],
-                OUTPUT_CLUSTERS: [
-                    0x0021
-                ]
-            }
+                OUTPUT_CLUSTERS: [GreenPowerProxy.cluster_id],
+            },
         },
     }
 
