@@ -16,6 +16,7 @@ Some tricks and workarounds:
 Various other links I found helpful while creating these:
 - https://github.com/sjhilt/esphome-display/blob/main/esphome_display.yaml
 - https://github.com/landonr/lilygo-tdisplays3-esphome/blob/main/example.yaml
+- https://community.home-assistant.io/t/esphome-replace-with-a-new-line-n/545403
 - https://community.home-assistant.io/t/eink-multi-line-text/255814
 - https://community.home-assistant.io/t/shell-command-running-into-timeout/249190/12
 - https://esphome.io/components/display/index.html
