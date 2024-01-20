@@ -6,3 +6,5 @@
 + SONOFF Zigbee 3.0 USB Dongle Plus Gateway
 + Tripp Lite INTERNET550U UPS
 + Anker 4-Port USB 3.0 Hub (not powered)
++ Sabrent 4 port USB 3.0 Hub (powered)
++ Coral USB Accelerator 
