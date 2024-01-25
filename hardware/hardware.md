@@ -8,3 +8,4 @@
 + Anker 4-Port USB 3.0 Hub (not powered)
 + Sabrent 4 port USB 3.0 Hub (powered)
 + Coral USB Accelerator 
++ CC1101 / E07-MD1101 V2
