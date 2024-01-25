@@ -5,6 +5,7 @@ OpenMQTTGateway (https://docs.openmqttgateway.com/) project to add a ceiling fan
 + Remote uses frequency 303.94MHz to transmit codes.
 
 + Several attempts were made to use ESPHome for this solution, but ultimately, it was set up using OpenMQTTGateway.
++ Ceiling fan was a cheap low profile remote-only fan from Home Depot, under their brand Home Decorators. FCC info: https://fccid.io/Y7ZDL4112T
 
 + Hardware used:
  + ESP32dev board
