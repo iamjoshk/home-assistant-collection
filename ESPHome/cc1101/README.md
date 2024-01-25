@@ -1,10 +1,10 @@
 A project to use an ESP32 and CC1101 to transmit and receive RF commands for a ceiling fan.
 
-CC1101 from here: https://www.amazon.com/dp/B0C8RRG88V
+CC1101 / E07-M1101D v2.0 pin reference
 
-CC1101 pin reference
+![image](https://github.com/iamjoshk/home-assistant-collection/assets/28068117/d9cf1781-25ec-45c2-b368-92a99d9123a9)
 
-![image](https://github.com/iamjoshk/home-assistant-collection/assets/28068117/2812e21e-8c56-4ca1-a945-5a1c3f9465d6)
+
 
 ESP32 pin mapping (from https://github.com/LSatan/SmartRC-CC1101-Driver-Lib/tree/master)
 
