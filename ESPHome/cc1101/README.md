@@ -10,6 +10,11 @@ ESP32 pin mapping (from https://github.com/LSatan/SmartRC-CC1101-Driver-Lib/tree
 
 ![image](https://github.com/iamjoshk/home-assistant-collection/assets/28068117/3e9dd5a0-52a7-4813-874a-ccd67b5ba4ca)
 
+or
+
+![image](https://github.com/iamjoshk/home-assistant-collection/assets/28068117/780a5f14-d59b-4140-92a5-80dd9060d700)
+
+
 
 ```
 18, // SCK
