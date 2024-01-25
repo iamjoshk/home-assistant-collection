@@ -21,8 +21,8 @@ Notes: This was a struggle to get set up. I really wanted this to work through E
 
 ## To Do:
  + add fan control
-  + on/off
-  + low
-  + med
-  + high
+   + on/off
+   + low
+   + med
+   + high
  + coordinate states of light and fan in HA 
