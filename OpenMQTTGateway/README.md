@@ -18,3 +18,11 @@ OpenMQTTGateway (https://docs.openmqttgateway.com/) project to add a ceiling fan
     + Frequency	303.9
    
 Notes: This was a struggle to get set up. I really wanted this to work through ESPHome, but I just couldn't get the transmitter set up correctly. It may work for others, but I used the great work by dbuezas (https://github.com/dbuezas/esphome-cc1101) as a starting point. I made some changes to `cc11001.h` that I will share here. Unfortunately, I stupidly deleted my ESPHome yaml in a fit of frustration. I will share the pin configurations here, as well.
+
+## To Do:
+ + add fan control
+  + on/off
+  + low
+  + med
+  + high
+ + coordinate states of light and fan in HA 
