@@ -8,8 +8,8 @@ OpenMQTTGateway (https://docs.openmqttgateway.com/) project to add a ceiling fan
 + Ceiling fan was a cheap low profile remote-only fan from Home Depot, under their brand Home Decorators. FCC info: https://fccid.io/Y7ZDL4112T
 
 + Hardware used:
- + ESP32dev board
- + CC1101 / E07-M1101D V2 for rx/tx
+  + ESP32dev board
+  + CC1101 / E07-M1101D V2 for rx/tx
 
 + Software:
   + OpenMQTTGateway
