@@ -4,8 +4,8 @@
 + Crucial BX500 240GB SSD with UGREEN SATA to USB 3.0 Adapter Cable
 + RTL-SDR Blog V3 R860 RTL2832U dongle
 + SONOFF Zigbee 3.0 USB Dongle Plus Gateway
++ Sabrent 4 port USB 3.0 Hub (powered)
 + Tripp Lite INTERNET550U UPS
 + Anker 4-Port USB 3.0 Hub (not powered)
-+ Sabrent 4 port USB 3.0 Hub (powered)
-+ Coral USB Accelerator 
-+ CC1101 / E07-MD1101 V2
++ Coral USB Accelerator (for use with Frigate)
++ CC1101 / E07-MD1101 V2 (for rx/tx RF)
