@@ -32,3 +32,6 @@ Collection of various Home Assistant projects and guides
 
 ## [`sensors`](https://github.com/iamjoshk/home-assistant-collection/tree/main/sensors)
 + various sensors of interest that I have created
+
+## [`OpenMQTTGateway`](https://github.com/iamjoshk/home-assistant-collection/tree/main/OpenMQTTGateway)
++ OpenMQTTGatway projects
