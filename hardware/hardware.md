@@ -9,3 +9,5 @@
 + Anker 4-Port USB 3.0 Hub (not powered)
 + Coral USB Accelerator (for use with Frigate)
 + CC1101 / E07-MD1101 V2 (for rx/tx RF)
++ ESP32 dev boards
++ Sinilink XY-WFUSB (ESP8266) flashed with ESPHome
