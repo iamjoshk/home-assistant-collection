@@ -13,7 +13,7 @@ In Home Assistant
 
 1. Install rtl_433 add on
     - https://github.com/pbkhrv/rtl_433-hass-addons
-        > Note: this repo is no longer active and has been forked by catduckgnaf at https://github.com/catduckgnaf/rtl_433_ha. They are also working on a new auto discovery script.
+        > Note: this repo is no longer active and has been forked by @catduckgnaf at https://github.com/catduckgnaf/rtl_433_ha. They are also working on a new auto discovery script.
         > Using this new repo means changing your `rtl_433.conf.template` file to use the `rtl_433.conf` format found in the new repo. 
     - run once to create `rtl_433.conf.template` in the `config/rtl_433` folder
     - modify the `rtl_433.conf.template` file to configure rtl_433 to output data
