@@ -1,0 +1,45 @@
+
+#mqtt:
+#  sensor:
+#
+# Manually configured MQTT sensors for OpenMQTTGateway status
+#
+
+  - name: "OMG Ceiling Fan SYS"
+    state_topic: "home/omg_ceiling_fan/SYStoMQTT"
+    unique_id: omg_ceiling_fan_sys
+    qos: 0
+    value_template: |
+      {{ value_json.mac | to_json }}
+    json_attributes_topic: "home/omg_ceiling_fan/SYStoMQTT"
+    device: {
+      connections: [["mac","08:3A:F2:B7:E3:D4"]],
+      name: 'OMG Ceiling Fan Gateway',
+      suggested_area: "Living Room",
+    }
+
+  - name: "OMG Ceiling Fan RF"
+    state_topic: "home/omg_ceiling_fan/RFtoMQTT"
+    unique_id: omg_ceiling_fan_rf
+    qos: 0
+    value_template: |
+      {{ value_json.frequency | to_json }}
+    json_attributes_topic: "home/omg_ceiling_fan/RFtoMQTT"
+    device: {
+      connections: [["mac","08:3A:F2:B7:E3:D4"]],
+      name: 'OMG Ceiling Fan Gateway',
+      suggested_area: "Living Room",
+    }
+
+  - name: "OMG Ceiling Fan RLS"
+    state_topic: "home/omg_ceiling_fan/RLStoMQTT"
+    unique_id: omg_ceiling_fan_rls
+    qos: 0
+    value_template: |
+      {{ value_json.installed_version | to_json }}
+    json_attributes_topic: "home/omg_ceiling_fan/RLStoMQTT"
+    device: {
+      connections: [["mac","08:3A:F2:B7:E3:D4"]],
+      name: 'OMG Ceiling Fan Gateway',
+      suggested_area: "Living Room",
+    }
