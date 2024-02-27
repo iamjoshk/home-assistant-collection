@@ -1,0 +1,27 @@
+
+light:
+  - platform: template
+    lights:
+      living_room_fan_light:
+        friendly_name: "Living Room Fan Light"
+        unique_id: living_room_fan_light
+#        value_template: >
+#          {{ state_attr('sensor.living_room_fan_light_state','raw') }}
+#          {% if state_attr('sensor.living_room_fan_light_state','state' == ['off','on']%}
+        turn_on: 
+          service: mqtt.publish
+          data:
+            qos: 0
+#            retain: true
+            payload_template: >-
+              {"value":1982,"protocol":8,"length":12,"delay":321,"tre_state":"-","binary":"011110110111","raw":"on","frequency":303.9}
+            topic: home/omg_ceiling_fan/commands/MQTTto433
+        turn_off:
+          service: mqtt.publish
+          data:
+            qos: 0
+#            retain: true
+            payload_template: >-
+              {"value":1982,"protocol":8,"length":12,"delay":321,"tre_state":"-","binary":"011110110111","raw":"off","frequency":303.9}
+            topic: home/omg_ceiling_fan/commands/MQTTto433
+            
