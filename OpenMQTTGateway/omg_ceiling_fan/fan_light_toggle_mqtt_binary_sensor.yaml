@@ -1,0 +1,40 @@
+
+mqtt:
+  binary_sensor:
+################        
+#Ceiling Fan Light Switch Toggle and Battery    
+       
+  - name: "Battery"
+    state_topic: "homeassistant/events/DSC-Security/2700721"
+    unique_id: living_room_fan_light_switch_battery
+    device_class: battery
+    qos: 0
+    force_update: true
+    payload_on: 0
+    payload_off: 1
+    value_template: |
+      {{ value_json.battery_ok }}
+    device: {
+        model: "DSC-Security",
+        identifiers: ["2700721"],
+        name: "Living Room Fan Light",
+        suggested_area: "Living Room"
+        }
+          
+  - name: "Toggle"
+    state_topic: "homeassistant/events/DSC-Security/2700721"
+    unique_id: living_room_fan_light_toggle
+#    device_class: light
+    qos: 0
+    force_update: true
+    payload_on: 1
+    payload_off: 0
+    value_template: |
+      {{ value_json.closed }}
+    device: {
+        model: "DSC-Security",
+        identifiers: ["2700721"],
+        name: "Living Room Fan Light",
+        suggested_area: "Living Room"
+        }
+          
