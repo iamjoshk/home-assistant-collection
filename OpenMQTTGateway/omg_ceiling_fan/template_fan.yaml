@@ -1,39 +1,38 @@
 ### in the `configuration.yaml` file ###
 
-
 fan:
   - platform: template
     fans:
       living_room_fan:
         friendly_name: "Living Room Fan"
         unique_id: living_room_fan
-        value_template: "{{ states('binary_sensor.ceiling_fan_running') }}"   # helper that checks if the fan is running 
-#        direction_template: "{{ states('input_select.direction') }}"
+        value_template: "{{ states('binary_sensor.ceiling_fan_running') }}"
         turn_on: 
           service: mqtt.publish
           data:
             qos: 0
-            retain: true
-            payload: >-
-              {"value":1975,"protocol":8,"length":12,"delay":321,"tre_state":"-","binary":"011110110111","raw":"33","frequency":303.9}
+#            retain: true
+            payload_template: >-
+              {"value":1975,"protocol":8,"length":12,"delay":321,"tre_state":"-","binary":"011110110111","frequency":303.9}
             topic: home/omg_ceiling_fan/commands/MQTTto433
         turn_off:
           service: mqtt.publish
           data:
             qos: 0
-            retain: true
+#            retain: true
             payload: >-
-              {"value":1981,"protocol":8,"length":12,"delay":321,"tre_state":"-","binary":"011110110111","raw":"on","frequency":303.9}
+              {"value":1981,"protocol":8,"length":12,"delay":321,"tre_state":"-","binary":"011110110111","frequency":303.9}
             topic: home/omg_ceiling_fan/commands/MQTTto433
-        speed_count: 3  # number of fan speed options (low, med, high ... off does not count)
+        speed_count: 3
         set_percentage:
-          - service: input_select.select_option      
+          - service: input_select.select_option
             target:
-              entity_id: input_select.living_room_fan_speed      #helper to set the percentage
+              entity_id: input_select.living_room_fan_speed
             data:
               option: "{{ percentage }}"
-          - service: script.living_room_fan_speed  # script that evaluates the percentage to pusblish the correct MQTT message to turn the fan on/off
+          - service: script.living_room_fan_speed
         percentage_template: "{{ states('input_select.living_room_fan_speed') }}"
+#        direction_template: "{{ states('input_select.direction') }}"
 #        set_direction:
 #          service: script.fan_direction
 #          data:
