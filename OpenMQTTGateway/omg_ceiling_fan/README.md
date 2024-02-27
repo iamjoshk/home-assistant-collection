@@ -22,6 +22,6 @@ Notes: This was a struggle to get set up. I really wanted this to work through E
 ## To Do:
  + ~~add fan controla~~
  + coordinate states in HA
-   + fan
-   + light 
+   + fan - uses the state value sent in the MQTT payload plus a contact sensor in the fan housing to determine if the fan is moving.
+   + light - uses the state value sent in the MQTT payload to determine the state of the light. Added a contact sensor connected to a light switch toggle to provide a dedicated physical switch. Still possible for this to get out of sync.
 
