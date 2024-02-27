@@ -1,3 +1,4 @@
+### in the `configuration.yaml` file ###
 
 light:
   - platform: template
