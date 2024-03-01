@@ -1,0 +1,42 @@
+alias: A History Lesson
+sequence:
+  - service: google_generative_ai_conversation.generate_content
+    metadata: {}
+    data:
+      prompt: >
+        Provide a brief casual description in the style of Dr. Seuss of a
+        historical event that happened on {{ now() | as_timestamp |
+        timestamp_custom('%B %d') }}. Include a formal style title with the name
+        of the historical event.
+    response_variable: history
+  - service: tts.speak
+    metadata: {}
+    data:
+      cache: false
+      media_player_entity_id: media_player.first_floor
+      message: |
+        {{ history.text | replace("**","",none) }}
+    target:
+      entity_id: tts.home_assistant_cloud
+    enabled: false
+  - variables:
+      history: "{{ history }}"
+  - service: mqtt.publish
+    metadata: {}
+    data:
+      qos: "0"
+      retain: true
+      topic: homeassistant/responses/ai/history
+      payload_template: "{{ history.text | replace(\"**\",\"\",none) }}"
+  - service: notify.mobile_app_josh                 # actionable notification that links to a dashboard with AI responses.
+    metadata: {}                                    #
+    enabled: true                                   #
+    data:                                           #
+      message: There is a new history lesson!       #
+      data:                                         #
+        tag: history_lesson                         # this `tag` will let the next history lesson notification overwrite the previous one
+        actions:                                    # `actions` are the secret sauce for actionable notifications:
+          - action: URI                             #  https://companion.home-assistant.io/docs/notifications/actionable-notifications/
+            title: Read                             #
+            uri: /ai-responses/0                    #
+mode: single
