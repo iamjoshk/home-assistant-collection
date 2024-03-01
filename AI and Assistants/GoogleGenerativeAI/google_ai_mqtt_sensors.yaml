@@ -1,1 +1,38 @@
+mqtt:
+  sensor:
+#####################
+# Google Generative AI Responses
 
+  - name: "History Lesson"
+    state_topic: "homeassistant/responses/ai/history"
+    unique_id: ai_history_lesson
+    qos: 0
+    value_template: |
+      {{ now() | as_timestamp | timestamp_custom('%B %d') }}
+    json_attributes_topic: "homeassistant/responses/ai/history"
+    json_attributes_template: >
+      {
+        "response": {{ value | string | to_json }}
+      }
+    device: { # not required, but this lets me group the entities together in a single device
+      connections: [["ai","f140:ccc4:9bca:d4f2:3c24"]], # required if you use `device`. I just used an identifier and a random hex generator to make something that looked nice. Similar to how you might use a MAC address here.
+      name: 'Google AI Responses',
+      suggested_area: "Forest Hills",
+    }
+
+  - name: "Music Across Time"
+    state_topic: "homeassistant/responses/ai/music"
+    unique_id: ai_music
+    qos: 0
+    value_template: |
+      {{ now() | as_timestamp | timestamp_custom('%B %d') }}
+    json_attributes_topic: "homeassistant/responses/ai/music"
+    json_attributes_template: >
+      {
+        "response": {{ value }}
+      }
+    device: {
+      connections: [["ai","f140:ccc4:9bca:d4f2:3c24"]],
+    	name: 'Google AI Responses',
+    	suggested_area: "area",
+    }
