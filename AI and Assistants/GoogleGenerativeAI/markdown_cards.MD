@@ -18,9 +18,8 @@ content: >
 
 
   {{ state_attr('sensor.music_across_time','response')['song_name'] }} by
-  {{state_attr('sensor.music_across_time','response')['band_name'] }}
+  {{ state_attr('sensor.music_across_time','response')['band_name'] }}
 
-  Released on {{
-  state_attr('sensor.music_across_time','response')['date_released'] }}
+  Released on {{ state_attr('sensor.music_across_time','response')['date_released'] }}
 title: Song of the Day
 ```
