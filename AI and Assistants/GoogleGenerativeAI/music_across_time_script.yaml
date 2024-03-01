@@ -1,0 +1,39 @@
+alias: Music Across Time
+sequence:
+  - service: google_generative_ai_conversation.generate_content
+    metadata: {}
+    data:
+      prompt: >
+        Provide a song that was released in the past on {{ (now() | as_timestamp
+        | timestamp_custom('%B %d')) }}. Include the song_name, band_name, and
+        date_released as a dictionary. 'Leap Day by Taylor Swift' is not a real
+        song.
+    response_variable: music
+  - variables:
+      music: "{{ music }}"
+  - service: mqtt.publish
+    metadata: {}
+    data:
+      qos: "0"
+      retain: true
+      topic: homeassistant/responses/ai/music
+      payload_template: "{{ music.text | replace(\"```\",\"\",none) }}"  # cleans up the response for the MQTT sensor 
+  - service: notify.mobile_app_josh
+    metadata: {}
+    data:
+      message: >-
+        {{ state_attr('sensor.music_across_time','response')['song_name'] }} by
+        {{ state_attr('sensor.music_across_time','response')['band_name'] }}
+      title: Song of the Day!
+      data:
+        tag: music
+    enabled: true
+  - service: google_assistant_sdk.send_text_command
+    data:
+      command: >-
+        Play {{ state_attr('sensor.music_across_time','response')['song_name']
+        }} by {{state_attr('sensor.music_across_time','response')['band_name']
+        }} on Spotify.
+      media_player: media_player.first_floor
+    enabled: false
+mode: single
