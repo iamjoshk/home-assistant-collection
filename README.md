@@ -1,5 +1,5 @@
 # home-assistant-collection
-Collection of various Home Assistant projects and guides
+Collection of various Home Assistant projects and guides in various states of completeness. 
 
 ## [`rtl_433`](https://github.com/iamjoshk/home-assistant-collection/tree/main/rtl_433)
 + rtl_433 MQTT set up: Instructions on how to create sensors using rtl_433 and MQTT in Home Assistant
