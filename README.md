@@ -35,3 +35,6 @@ Collection of various Home Assistant projects and guides
 
 ## [`OpenMQTTGateway`](https://github.com/iamjoshk/home-assistant-collection/tree/main/OpenMQTTGateway)
 + OpenMQTTGatway projects
+
+## [`AI and Assistants`](https://github.com/iamjoshk/home-assistant-collection/tree/main/AI%20and%20Assistants)
++ projects using AI and voice assistants
