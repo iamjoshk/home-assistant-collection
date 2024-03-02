@@ -7,33 +7,63 @@ sequence:
         Provide a song that was released in the past on {{ (now() | as_timestamp
         | timestamp_custom('%B %d')) }}. Include the song_name, band_name, and
         date_released as a dictionary. 'Leap Day by Taylor Swift' is not a real
-        song.
+        song. date_released should be in MM-DD-YYYY format.
     response_variable: music
   - variables:
       music: "{{ music }}"
+      spotify_uri: "{{ spotify_uri }}"
   - service: mqtt.publish
     metadata: {}
     data:
       qos: "0"
       retain: true
       topic: homeassistant/responses/ai/music
-      payload_template: "{{ music.text | replace(\"```\",\"\",none) }}"  # cleans up the response for the MQTT sensor 
+      payload_template: "{{ music.text | replace(\"```\",\"\",none) }}"   # cleans up the response for the MQTT sensor
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 0
+      milliseconds: 250
+  - service: mass.search
+    data:
+      limit: 1
+      media_type:
+        - track
+      artist: "{{state_attr('sensor.music_across_time','response')['band_name'] }}"
+      name: "{{ state_attr('sensor.music_across_time','response')['song_name'] }}"
+    response_variable: spotify_uri
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 0
+      milliseconds: 500
+  - service: mqtt.publish
+    metadata: {}
+    data:
+      qos: "0"
+      retain: true
+      topic: homeassistant/responses/mass/spotify
+      payload_template: "{{ spotify_uri.tracks[0].uri }}"   # isolates and only grabs the Spotify link for the MQTT sensor
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 0
+      milliseconds: 250
   - service: notify.mobile_app_josh
     metadata: {}
     data:
       message: >-
         {{ state_attr('sensor.music_across_time','response')['song_name'] }} by
-        {{ state_attr('sensor.music_across_time','response')['band_name'] }}
+        {{ state_attr('sensor.music_across_time','response')['band_name'] }} in
+        {{
+        state_attr('sensor.music_across_time','response')['date_released'][6:]
+        }}
       title: Song of the Day!
       data:
         tag: music
+        actions:
+          - action: URI
+            title: Listen in Spotify
+            uri: deep-link://{{ spotify_uri.tracks[0].uri }}  # adds the actionable button on the notification
     enabled: true
-  - service: google_assistant_sdk.send_text_command
-    data:
-      command: >-
-        Play {{ state_attr('sensor.music_across_time','response')['song_name']
-        }} by {{state_attr('sensor.music_across_time','response')['band_name']
-        }} on Spotify.
-      media_player: media_player.first_floor
-    enabled: false
 mode: single
