@@ -4,3 +4,6 @@
 
 - **Music Across Time** - A script that uses the Google Generative AI integration to generate a `response_variable` that provides a song, band, and date released as a dictionary. The response is sent as a notificaton to a phone and is published to an MQTT sensor. The sensor is displayed on a markdown card.
   - Updated the actionable notification to include a deep link to the song on Spotify. Getting the Spotify link uses a combination of Spotcast and Music Assistant addons. Unfortunately, Spotcast's search feature is terribly unreliable and would return results way off the mark. Music Assistant has a much better search and I grab the Spotify link from the results and provide that to Spotcast to start playing the song on a specific speaker. 
+  - Added 2 buttons on a wall mounted dashboard:
+    - Request a new song
+    - Play the song on specific speakers
