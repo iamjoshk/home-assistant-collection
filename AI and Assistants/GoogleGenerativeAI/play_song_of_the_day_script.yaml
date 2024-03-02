@@ -1,0 +1,13 @@
+alias: Play Song of the Day
+sequence:
+  - service: spotcast.start
+    data:
+      repeat: "off"
+      shuffle: false
+      offset: 0
+      ignore_fully_played: false
+      entity_id: media_player.first_floor
+      country: US
+      uri: >-
+        {{ state_attr('sensor.music_assistant_search','spotify_link') | replace('//','',none) | replace('/',':',none) }}  # cleans up the Spotify link formatting for the expected format for Spotcast
+mode: single
