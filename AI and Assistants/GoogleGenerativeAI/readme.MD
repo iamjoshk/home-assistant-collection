@@ -14,3 +14,5 @@
   - `play_song_of_the_day_script.yaml`
 
 
+- **School Bus Reminder** - An automation with a time-based trigger that uses Google Generative AI to create a new, random reminder to get ready for the school bus on school days. Google discontinued Family Bell which we were using. Family Bell had limitations such as a static message, no consideration for holidays, etc. I took the opportunity to migrate the reminder from Family Bell to an HA automation. This let me set up the automation to only run on school days and to have a new randomly generated message every day. Super simple and the kids love it.
+
