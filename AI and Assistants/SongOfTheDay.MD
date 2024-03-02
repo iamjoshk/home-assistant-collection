@@ -1,8 +1,8 @@
-## Song of the Day
-# How to create a song of the day randomizer based on the current day and month, with an actionable notification to play the song on your (android) phone or to various speakers.
+# Song of the Day
+## How to create a song of the day randomizer based on the current day and month, with an actionable notification to play the song on your (android) phone or to various speakers.
 
 
-# Prerequisites
+## Prerequisites
 - (Google Generative AI)[https://www.home-assistant.io/integrations/google_generative_ai_conversation/] integration (or similar)
 - (Spotify)[https://www.home-assistant.io/integrations/spotify/] integration (or similar)
 - (Spotcast)[https://github.com/fondberg/spotcast] addon integration
@@ -12,7 +12,7 @@
 - MQTT and MQTT broker integrations
   - There are lots of options for MQTT brokers. I use the Mosquitto addon as my MQTT broker. It's easy and self-contained within HAOS.
 
-# Steps
+## Steps
 
 1. Install the Google Generative AI integration and follow configuration instructions
 2. Install the Spotify integration
