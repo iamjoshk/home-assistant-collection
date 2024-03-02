@@ -1,0 +1,28 @@
+alias: Bus Reminder
+description: ""
+trigger:
+  - platform: time
+    at: "08:06:00"
+condition:
+  - condition: state
+    entity_id: sensor.school_today
+    state: "Yes"
+action:
+  - service: google_generative_ai_conversation.generate_content
+    metadata: {}
+    data:
+      prompt: >-
+        Create a kind and humorous reminder that it is time to get ready for the
+        school bus.
+    response_variable: bus_reminder
+  - service: tts.speak
+    metadata: {}
+    data:
+      cache: true
+      media_player_entity_id: media_player.all_speakers
+      message: "{{ bus_reminder.text }}"
+    target:
+      entity_id: tts.home_assistant_cloud
+  - variables:
+      bus_reminder: "{{ bus_reminder }}"
+mode: single
