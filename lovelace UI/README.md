@@ -13,3 +13,4 @@ The dashboard requires:
 + creating an [automation](https://github.com/iamjoshk/home-assistant-collection/blob/main/lovelace%20UI/automation_room_togglers.yaml) to prevent multiple room view toggles from being on at the same time
 
 
+![dashboard](https://github.com/user-attachments/assets/30f192ae-3640-4e9b-926b-be8273c8e580)
