@@ -1,0 +1,399 @@
+alias: Room Togglers
+description: ""
+trigger:
+  - platform: state
+    entity_id:
+      - input_boolean.camera_toggle
+    from: "off"
+    to: "on"
+    id: camera
+  - platform: state
+    entity_id:
+      - input_boolean.attic_toggle
+    from: "off"
+    to: "on"
+    id: attic
+  - platform: state
+    entity_id:
+      - input_boolean.living_room_toggle
+    from: "off"
+    to: "on"
+    id: livingroom
+  - platform: state
+    entity_id:
+      - input_boolean.garage_toggle
+    from: "off"
+    to: "on"
+    id: garage
+  - platform: state
+    entity_id:
+      - input_boolean.office_toggle
+    from: "off"
+    to: "on"
+    id: office
+  - platform: state
+    entity_id:
+      - input_boolean.bedroom_toggle
+    from: "off"
+    to: "on"
+    id: bedroom
+  - platform: state
+    entity_id:
+      - input_boolean.kitchen_toggle
+    from: "off"
+    to: "on"
+    id: kitchen
+  - platform: state
+    entity_id:
+      - input_boolean.basement_toggle
+    from: "off"
+    to: "on"
+    id: basement
+  - platform: state
+    entity_id:
+      - input_boolean.exterior
+    from: "off"
+    to: "on"
+    id: exterior
+  - platform: state
+    entity_id:
+      - input_boolean.breezeway_toggle
+    from: "off"
+    to: "on"
+    id: breezeway
+  - platform: state
+    entity_id:
+      - input_boolean.dining_room_toggle
+    from: "off"
+    to: "on"
+    id: diningroom
+  - platform: state
+    entity_id:
+      - input_boolean.guest_room_toggle
+    from: "off"
+    to: "on"
+    id: guestroom
+  - platform: state
+    entity_id:
+      - input_boolean.kida_room
+    from: "off"
+    to: "on"
+    id: kida
+  - platform: state
+    entity_id:
+      - input_boolean.kidb_room
+    from: "off"
+    to: "on"
+    id: kidb
+condition: []
+action:
+  - choose:
+      - conditions:
+          - condition: trigger
+            id:
+              - attic
+        sequence:
+          - target:
+              entity_id:
+                - input_boolean.camera_toggle
+                - input_boolean.garage_toggle
+                - input_boolean.basement_toggle
+                - input_boolean.bedroom_toggle
+                - input_boolean.breezeway_toggle
+                - input_boolean.dining_room_toggle
+                - input_boolean.kida_room
+                - input_boolean.kidb_room
+                - input_boolean.exterior
+                - input_boolean.living_room_toggle
+                - input_boolean.office_toggle
+                - input_boolean.kitchen_toggle
+                - input_boolean.guest_room_toggle
+            data: {}
+            action: input_boolean.turn_off
+      - conditions:
+          - condition: trigger
+            id:
+              - camera
+        sequence:
+          - target:
+              entity_id:
+                - input_boolean.attic_toggle
+                - input_boolean.garage_toggle
+                - input_boolean.basement_toggle
+                - input_boolean.bedroom_toggle
+                - input_boolean.breezeway_toggle
+                - input_boolean.dining_room_toggle
+                - input_boolean.kida_room
+                - input_boolean.kidb_room
+                - input_boolean.exterior
+                - input_boolean.living_room_toggle
+                - input_boolean.office_toggle
+                - input_boolean.kitchen_toggle
+                - input_boolean.guest_room_toggle
+            data: {}
+            action: input_boolean.turn_off
+      - conditions:
+          - condition: trigger
+            id:
+              - garage
+        sequence:
+          - target:
+              entity_id:
+                - input_boolean.attic_toggle
+                - input_boolean.camera_toggle
+                - input_boolean.basement_toggle
+                - input_boolean.bedroom_toggle
+                - input_boolean.breezeway_toggle
+                - input_boolean.dining_room_toggle
+                - input_boolean.kida_room
+                - input_boolean.kidb_room
+                - input_boolean.exterior
+                - input_boolean.living_room_toggle
+                - input_boolean.office_toggle
+                - input_boolean.kitchen_toggle
+                - input_boolean.guest_room_toggle
+            data: {}
+            action: input_boolean.turn_off
+      - conditions:
+          - condition: trigger
+            id:
+              - basement
+        sequence:
+          - target:
+              entity_id:
+                - input_boolean.attic_toggle
+                - input_boolean.garage_toggle
+                - input_boolean.camera_toggle
+                - input_boolean.bedroom_toggle
+                - input_boolean.breezeway_toggle
+                - input_boolean.dining_room_toggle
+                - input_boolean.kida_room
+                - input_boolean.kidb_room
+                - input_boolean.exterior
+                - input_boolean.living_room_toggle
+                - input_boolean.office_toggle
+                - input_boolean.kitchen_toggle
+                - input_boolean.guest_room_toggle
+            data: {}
+            action: input_boolean.turn_off
+      - conditions:
+          - condition: trigger
+            id:
+              - bedroom
+        sequence:
+          - target:
+              entity_id:
+                - input_boolean.attic_toggle
+                - input_boolean.garage_toggle
+                - input_boolean.camera_toggle
+                - input_boolean.basement_toggle
+                - input_boolean.breezeway_toggle
+                - input_boolean.dining_room_toggle
+                - input_boolean.kida_room
+                - input_boolean.kidb_room
+                - input_boolean.exterior
+                - input_boolean.living_room_toggle
+                - input_boolean.office_toggle
+                - input_boolean.kitchen_toggle
+                - input_boolean.guest_room_toggle
+            data: {}
+            action: input_boolean.turn_off
+      - conditions:
+          - condition: trigger
+            id:
+              - breezeway
+        sequence:
+          - target:
+              entity_id:
+                - input_boolean.attic_toggle
+                - input_boolean.garage_toggle
+                - input_boolean.camera_toggle
+                - input_boolean.bedroom_toggle
+                - input_boolean.basement_toggle
+                - input_boolean.dining_room_toggle
+                - input_boolean.kida_room
+                - input_boolean.kidb_room
+                - input_boolean.exterior
+                - input_boolean.living_room_toggle
+                - input_boolean.office_toggle
+                - input_boolean.kitchen_toggle
+                - input_boolean.guest_room_toggle
+            data: {}
+            action: input_boolean.turn_off
+      - conditions:
+          - condition: trigger
+            id:
+              - diningroom
+        sequence:
+          - target:
+              entity_id:
+                - input_boolean.attic_toggle
+                - input_boolean.garage_toggle
+                - input_boolean.camera_toggle
+                - input_boolean.bedroom_toggle
+                - input_boolean.breezeway_toggle
+                - input_boolean.basement_toggle
+                - input_boolean.kida_room
+                - input_boolean.kidb_room
+                - input_boolean.exterior
+                - input_boolean.living_room_toggle
+                - input_boolean.office_toggle
+                - input_boolean.kitchen_toggle
+                - input_boolean.guest_room_toggle
+            data: {}
+            action: input_boolean.turn_off
+      - conditions:
+          - condition: trigger
+            id:
+              - kida
+        sequence:
+          - target:
+              entity_id:
+                - input_boolean.attic_toggle
+                - input_boolean.garage_toggle
+                - input_boolean.camera_toggle
+                - input_boolean.bedroom_toggle
+                - input_boolean.breezeway_toggle
+                - input_boolean.basement_toggle
+                - input_boolean.dining_room_toggle
+                - input_boolean.kidb_room
+                - input_boolean.exterior
+                - input_boolean.living_room_toggle
+                - input_boolean.office_toggle
+                - input_boolean.kitchen_toggle
+                - input_boolean.guest_room_toggle
+            data: {}
+            action: input_boolean.turn_off
+      - conditions:
+          - condition: trigger
+            id:
+              - kidb
+        sequence:
+          - target:
+              entity_id:
+                - input_boolean.attic_toggle
+                - input_boolean.garage_toggle
+                - input_boolean.camera_toggle
+                - input_boolean.bedroom_toggle
+                - input_boolean.breezeway_toggle
+                - input_boolean.basement_toggle
+                - input_boolean.kida_room
+                - input_boolean.dining_room_toggle
+                - input_boolean.exterior
+                - input_boolean.living_room_toggle
+                - input_boolean.office_toggle
+                - input_boolean.kitchen_toggle
+                - input_boolean.guest_room_toggle
+            data: {}
+            action: input_boolean.turn_off
+      - conditions:
+          - condition: trigger
+            id:
+              - exterior
+        sequence:
+          - target:
+              entity_id:
+                - input_boolean.attic_toggle
+                - input_boolean.garage_toggle
+                - input_boolean.camera_toggle
+                - input_boolean.bedroom_toggle
+                - input_boolean.breezeway_toggle
+                - input_boolean.basement_toggle
+                - input_boolean.kida_room
+                - input_boolean.kidb_room
+                - input_boolean.dining_room_toggle
+                - input_boolean.living_room_toggle
+                - input_boolean.office_toggle
+                - input_boolean.kitchen_toggle
+                - input_boolean.guest_room_toggle
+            data: {}
+            action: input_boolean.turn_off
+      - conditions:
+          - condition: trigger
+            id:
+              - livingroom
+        sequence:
+          - target:
+              entity_id:
+                - input_boolean.attic_toggle
+                - input_boolean.garage_toggle
+                - input_boolean.camera_toggle
+                - input_boolean.bedroom_toggle
+                - input_boolean.breezeway_toggle
+                - input_boolean.basement_toggle
+                - input_boolean.kida_room
+                - input_boolean.kidb_room
+                - input_boolean.exterior
+                - input_boolean.dining_room_toggle
+                - input_boolean.office_toggle
+                - input_boolean.kitchen_toggle
+                - input_boolean.guest_room_toggle
+            data: {}
+            action: input_boolean.turn_off
+      - conditions:
+          - condition: trigger
+            id:
+              - office
+        sequence:
+          - target:
+              entity_id:
+                - input_boolean.attic_toggle
+                - input_boolean.garage_toggle
+                - input_boolean.camera_toggle
+                - input_boolean.bedroom_toggle
+                - input_boolean.breezeway_toggle
+                - input_boolean.basement_toggle
+                - input_boolean.kida_room
+                - input_boolean.kidb_room
+                - input_boolean.exterior
+                - input_boolean.living_room_toggle
+                - input_boolean.dining_room_toggle
+                - input_boolean.kitchen_toggle
+                - input_boolean.guest_room_toggle
+            data: {}
+            action: input_boolean.turn_off
+      - conditions:
+          - condition: trigger
+            id:
+              - kitchen
+        sequence:
+          - target:
+              entity_id:
+                - input_boolean.attic_toggle
+                - input_boolean.garage_toggle
+                - input_boolean.camera_toggle
+                - input_boolean.bedroom_toggle
+                - input_boolean.breezeway_toggle
+                - input_boolean.basement_toggle
+                - input_boolean.kida_room
+                - input_boolean.kidb_room
+                - input_boolean.exterior
+                - input_boolean.living_room_toggle
+                - input_boolean.office_toggle
+                - input_boolean.dining_room_toggle
+                - input_boolean.guest_room_toggle
+            data: {}
+            action: input_boolean.turn_off
+      - conditions:
+          - condition: trigger
+            id:
+              - guestroom
+        sequence:
+          - target:
+              entity_id:
+                - input_boolean.attic_toggle
+                - input_boolean.garage_toggle
+                - input_boolean.camera_toggle
+                - input_boolean.bedroom_toggle
+                - input_boolean.breezeway_toggle
+                - input_boolean.basement_toggle
+                - input_boolean.kida_room
+                - input_boolean.kidb_room
+                - input_boolean.exterior
+                - input_boolean.living_room_toggle
+                - input_boolean.office_toggle
+                - input_boolean.kitchen_toggle
+                - input_boolean.dining_room_toggle
+            data: {}
+            action: input_boolean.turn_off
+mode: single
