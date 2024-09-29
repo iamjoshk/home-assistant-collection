@@ -1,0 +1,706 @@
+wallpanel: # use wallpanel add-on to hide the toolbar at the top of the screen
+  enabled: true  # append /?edit=1 to URL to edit dashboard with wallpanel enabled OR /?wp_enabled=false&edit=1 to URL to edit dashboard with wallpanel disabled
+  hide_toolbar: true
+  hide_sidebar: false
+  fullscreen: false
+  show_images: false
+  idle_time: 0 # remove first 7 rows if not using wallpanel add-on
+views:
+  - title: Home
+    type: sections
+    sections:
+
+############### BEGIN HEADER #################
+# Example of header card with mushroom       #
+# chips as toggles to change rooms           #
+##############################################
+
+      - type: grid
+        cards:
+          - type: custom:mushroom-chips-card
+            chips:
+              - type: conditional # menu button is only visible to specific users. Prevents other users from moving past the specific dashboard.
+                conditions:
+                  - condition: user
+                    users:
+                      - 27752b7e64f44d3fb946511a04a4f9f0
+                chip:
+                  type: menu
+                  card_mod: # sets CSS style for mushroom menu chip
+                    style: |
+                      ha-card.type-menu {
+                        border-radius: 10px;
+                        height: 38px;
+                        width: 1vw;
+                      }      
+              - type: entity
+                entity: input_boolean.exterior
+                content_info: name
+                icon_color: primary
+                name: Exterior
+                icon: mdi:post-lamp
+                tap_action:
+                  action: toggle
+                card_mod: # sets CSS style for mushroom entity chip
+                  style: | 
+                    ha-card.type-entity {
+                      border-radius: 10px;
+                      height: 38px;
+                      width: 23vw;
+                    }
+              - type: entity
+                entity: input_boolean.breezeway_toggle
+                content_info: name
+                icon_color: primary
+                name: Breeze Way
+                icon: mdi:chandelier
+                tap_action:
+                  action: toggle
+                card_mod:
+                  style: |
+                    ha-card.type-entity {
+                      border-radius: 10px;
+                      height: 38px;
+                      width: 23vw;
+                    }
+              - type: entity
+                entity: input_boolean.kitchen_toggle
+                content_info: name
+                icon_color: primary
+                name: Kitchen
+                icon: mdi:countertop
+                tap_action:
+                  action: toggle
+                card_mod:
+                  style: |
+                    ha-card.type-entity {
+                      border-radius: 10px;
+                      height: 38px;
+                      width: 23vw;
+                    }
+              - type: entity
+                entity: input_boolean.dining_room_toggle
+                content_info: name
+                icon_color: primary
+                name: Dining Room
+                icon: mdi:table-chair
+                tap_action:
+                  action: toggle
+                card_mod:
+                  style: |
+                    ha-card.type-entity {
+                      border-radius: 10px;
+                      height: 38px;
+                      width: 23vw;
+                    }
+              - type: entity
+                entity: input_boolean.living_room_toggle
+                content_info: name
+                icon_color: primary
+                name: Living Room
+                icon: mdi:sofa
+                tap_action:
+                  action: toggle
+                card_mod:
+                  style: |
+                    ha-card.type-entity {
+                      border-radius: 10px;
+                      height: 38px;
+                      width: 23vw;
+                    }
+              - type: entity
+                entity: input_boolean.kida_room
+                content_info: name
+                icon_color: primary
+                name: Kid A
+                icon: mdi:bed
+                tap_action:
+                  action: toggle
+                card_mod:
+                  style: |
+                    ha-card.type-entity {
+                      border-radius: 10px;
+                      height: 38px;
+                      width: 23vw;
+                    }
+              - type: entity
+                entity: input_boolean.kidb_room
+                content_info: name
+                icon_color: primary
+                name: Kid B
+                icon: mdi:bed
+                tap_action:
+                  action: toggle
+                card_mod:
+                  style: |
+                    ha-card.type-entity {
+                      border-radius: 10px;
+                      height: 38px;
+                      width: 23vw;
+                    }
+              - type: entity
+                entity: input_boolean.guest_room_toggle
+                content_info: name
+                icon_color: primary
+                name: Guest Room
+                icon: mdi:bed-queen
+                tap_action:
+                  action: toggle
+                card_mod:
+                  style: |
+                    ha-card.type-entity {
+                      border-radius: 10px;
+                      height: 38px;
+                      width: 23vw;
+                    }
+              - type: entity
+                entity: input_boolean.bedroom_toggle
+                content_info: name
+                icon_color: primary
+                name: Bedroom
+                icon: mdi:bed-king
+                tap_action:
+                  action: toggle
+                card_mod:
+                  style: |
+                    ha-card.type-entity {
+                      border-radius: 10px;
+                      height: 38px;
+                      width: 23vw;
+                    }
+              - type: entity
+                entity: input_boolean.attic_toggle
+                content_info: name
+                icon_color: primary
+                name: Attic
+                icon: mdi:home-roof
+                tap_action:
+                  action: toggle
+                card_mod:
+                  style: |
+                    ha-card.type-entity {
+                      border-radius: 10px;
+                      height: 38px;
+                      width: 23vw;
+                    }
+              - type: entity
+                entity: input_boolean.basement_toggle
+                content_info: name
+                icon_color: primary
+                name: Basement
+                icon: mdi:stairs-down
+                tap_action:
+                  action: toggle
+                card_mod:
+                  style: |
+                    ha-card.type-entity {
+                      border-radius: 10px;
+                      height: 38px;
+                      width: 23vw;
+                    }
+              - type: entity
+                entity: input_boolean.garage_toggle
+                content_info: name
+                icon_color: primary
+                name: Garage
+                icon: mdi:garage
+                tap_action:
+                  action: toggle
+                card_mod:
+                  style: |
+                    ha-card.type-entity {
+                      border-radius: 10px;
+                      height: 38px;
+                      width: 23vw;
+                    }
+              - type: entity
+                entity: input_boolean.office_toggle
+                content_info: name
+                icon_color: primary
+                name: Office
+                icon: mdi:office-building
+                tap_action:
+                  action: toggle
+                card_mod:
+                  style: |
+                    ha-card.type-entity {
+                      border-radius: 10px;
+                      height: 38px;
+                      width: 23vw;
+                    }      
+              - type: entity
+                entity: input_boolean.camera_toggle
+                content_info: name
+                icon_color: primary
+                name: Camera
+                icon: mdi:cctv
+                tap_action:
+                  action: toggle
+                card_mod:
+                  style: |
+                    ha-card.type-entity {
+                      border-radius: 10px;
+                      height: 38px;
+                      width: 23vw;
+                    }
+            alignment: center
+            layout_options:
+              grid_columns: 4
+              grid_rows: 3
+            card_mod: # sets CSS style for the header. Setting the class will apply the CSS only to this specific card. Addtional CSS set in card-mod theme
+              class: header
+              style:
+                .: |
+                  ha-card.header {
+                    box-shadow: none;
+                    border-radius: 0px;
+                    border: none;
+                    position: fixed;
+                    top: 0%;
+                    width: 100%;
+                  }
+        column_span: 1
+        
+############### END OF HEADER ################
+# add additional sections after the header.  #
+# These sections should correspond to the    #
+# toggles you create for the header section. #
+# Below is one example section.              #
+##############################################
+
+      - type: grid
+        cards:
+          - type: custom:mushroom-light-card
+            entity: light.driveway_light_huelight
+            name: Driveway 
+            icon: mdi:post-lamp
+            use_light_color: true
+            show_brightness_control: true
+            show_color_temp_control: true
+            show_color_control: true
+            fill_container: true
+          - type: custom:mushroom-light-card
+            entity: light.garage_exterior
+            name: Garage Exterior
+            icon: mdi:light-flood-down
+            use_light_color: true
+            show_brightness_control: true
+            show_color_temp_control: true
+            show_color_control: false
+            fill_container: true
+          - type: custom:mushroom-light-card
+            entity: light.deck_lights
+            icon: mdi:light-flood-down
+            use_light_color: true
+            show_brightness_control: true
+            show_color_temp_control: false
+            show_color_control: false
+            fill_container: true
+            name: Deck Lights
+          - type: custom:mushroom-template-card
+            primary: Front Light
+            secondary: '{{ states(''switch.front_door_light'') | title }}'
+            icon: mdi:outdoor-lamp
+            entity: switch.front_door_light
+            icon_color: |-
+              {% if is_state('switch.front_door_light','on') %} orange
+              {% else %} grey
+              {% endif %}
+            fill_container: true
+            layout_options: # only appears in the YAML when overriding the default layout for the card in the UI
+              grid_columns: 2
+              grid_rows: 2
+          - type: custom:mushroom-template-card
+            primary: String Lights
+            secondary: '{{ states(''switch.tp_link_smart_plug_d70f_left'') | title }}'
+            icon: mdi:string-lights
+            entity: switch.tp_link_smart_plug_d70f_left
+            icon_color: >-
+              {% if is_state('switch.tp_link_smart_plug_d70f_left','on') %}
+              orange
+
+              {% else %} grey
+
+              {% endif %}
+            tap_action:
+              action: toggle
+            fill_container: true
+            layout_options:
+              grid_columns: 2
+              grid_rows: 1
+          - type: custom:mushroom-entity-card
+            entity: binary_sensor.shed_door
+            name: Shed
+            fill_container: true
+            layout_options:
+              grid_columns: 2
+              grid_rows: 1
+            layout: default
+          - graph: line
+            type: sensor
+            entity: sensor.exterior_temperature
+            detail: 1
+            name: Temperature
+            icon: none    
+        column_span: 1 #width of section set in UI
+        visibility: # visibility for entire section
+          - condition: state
+            entity: input_boolean.exterior
+            state: 'on'
+        title: Exterior # the title gets hidden by the card-mod theme. Personal preference to include a title and hide it using card-mod, but it makes it easier to identify the section when editing
+
+ ### add any additional sections ###
+ 
+############### BEGIN FOOTER #################
+# Example of footer section with conditional #
+# mushroom chips that are visible when       #
+# conditions are met.                        #
+##############################################
+
+      - type: grid
+        cards:
+          - type: custom:mushroom-chips-card
+            chips:
+              - type: conditional
+                conditions:
+                  - condition: state
+                    entity: light.lumi_lumi_switch_b1naus01_light
+                    state: 'on'
+                chip:
+                  type: light
+                  entity: light.lumi_lumi_switch_b1naus01_light
+                  name: Breezeway
+                  content_info: name
+                  icon: mdi:chandelier
+                  use_light_color: true
+                  tap_action:
+                    action: more-info
+                  card_mod: # sets CSS style for mushroom light chip
+                    style: |
+                      ha-card.type-light {
+                        border-radius: 10px;
+                        height: 34px;
+                        width: 23vw;
+                      }  
+              - type: conditional
+                conditions:
+                  - condition: state
+                    entity: light.living_room_group
+                    state: 'on'
+                chip:
+                  type: template
+                  entity: light.living_room_group
+                  content: Living Room
+                  icon: mdi:lamps
+                  icon_color: orange
+                  tap_action:
+                    action: more-info
+                  card_mod: # sets CSS style for mushroom template chip
+                    style: |
+                      ha-card.type-template {
+                        border-radius: 10px;
+                        height: 34px;
+                        width: 23vw;
+                      }  
+              - type: conditional
+                conditions:
+                  - condition: state
+                    entity: light.kitchen_light_group
+                    state: 'on'
+                chip:
+                  type: light
+                  entity: light.kitchen_light_group
+                  tap_action:
+                    action: more-info
+                  name: Kitchen
+                  use_light_color: true
+                  content_info: name
+                  card_mod:
+                    style: |
+                      ha-card.type-light {
+                        border-radius: 10px;
+                        height: 34px;
+                        width: 23vw;
+                      }  
+              - type: conditional
+                conditions:
+                  - condition: state
+                    entity: light.lumi_lumi_switch_b1laus01_light
+                    state: 'on'
+                chip:
+                  type: light
+                  entity: light.lumi_lumi_switch_b1laus01_light
+                  tap_action:
+                    action: more-info
+                  name: Dining Room
+                  content_info: name
+                  icon: mdi:chandelier
+                  use_light_color: true
+                  card_mod:
+                    style: |
+                      ha-card.type-light {
+                        border-radius: 10px;
+                        height: 34px;
+                        width: 23vw;
+                      }  
+              - type: conditional
+                conditions:
+                  - condition: state
+                    entity: light.signify_netherlands_b_v_lwa003_huelight_2
+                    state: 'on'
+                chip:
+                  type: light
+                  entity: light.signify_netherlands_b_v_lwa003_huelight_2
+                  content_info: name
+                  name: Bedroom
+                  use_light_color: true
+                  tap_action:
+                    action: more-info
+                  card_mod:
+                    style: |
+                      ha-card.type-light {
+                        border-radius: 10px;
+                        height: 34px;
+                        width: 23vw;
+                      }  
+              - type: conditional
+                conditions:
+                  - condition: state
+                    entity: lock.front_door_lock
+                    state: unlocked
+                chip:
+                  type: entity
+                  entity: lock.front_door_lock
+                  content_info: name
+                  icon_color: red
+                  icon: mdi:lock-open
+                  name: Front Door
+                  tap_action:
+                    action: more-info
+                  hold_action:
+                    action: more-info
+                  double_tap_action:
+                    action: more-info
+                  card_mod:
+                    style: |
+                      ha-card.type-entity {
+                        border-radius: 10px;
+                        height: 34px;
+                        width: 23vw;
+                      }  
+              - type: conditional
+                conditions:
+                  - condition: state
+                    entity: binary_sensor.front_door_sensor_opening
+                    state: 'on'
+                chip:
+                  type: entity
+                  entity: binary_sensor.front_door_sensor_opening
+                  content_info: name
+                  name: Front Door
+                  icon: mdi:door-open
+                  icon_color: red
+                  card_mod:
+                    style: |
+                      ha-card.type-entity {
+                        border-radius: 10px;
+                        height: 34px;
+                        width: 23vw;
+                      }  
+              - type: conditional
+                conditions:
+                  - condition: state
+                    entity: binary_sensor.kitchen_motion_group
+                    state: 'on'
+                chip:
+                  type: entity
+                  entity: binary_sensor.kitchen_motion_group
+                  name: Kitchen
+                  icon: mdi:motion-sensor
+                  content_info: name
+                  icon_color: primary
+                  card_mod:
+                    style: |
+                      ha-card.type-entity {
+                        border-radius: 10px;
+                        height: 34px;
+                        width: 23vw;
+                      }  
+              - type: conditional
+                conditions:
+                  - condition: state
+                    entity: binary_sensor.living_room_motion_group
+                    state: 'on'
+                chip:
+                  type: entity
+                  entity: binary_sensor.living_room_motion_group
+                  content_info: name
+                  icon_color: primary
+                  icon: mdi:motion-sensor
+                  name: Living Room
+                  card_mod:
+                    style: |
+                      ha-card.type-entity {
+                        border-radius: 10px;
+                        height: 34px;
+                        width: 23vw;
+                      }  
+              - type: conditional
+                conditions:
+                  - condition: state
+                    entity: binary_sensor.breezeway_motion_group
+                    state: 'on'
+                chip:
+                  type: entity
+                  entity: binary_sensor.breezeway_motion_group
+                  name: Breezeway
+                  content_info: name
+                  icon_color: primary
+                  card_mod:
+                    style: |
+                      ha-card.type-entity {
+                        border-radius: 10px;
+                        height: 34px;
+                        width: 23vw;
+                      }  
+              - type: conditional
+                conditions:
+                  - condition: state
+                    entity: binary_sensor.bedroom_occupancy
+                    state: 'on'
+                chip:
+                  type: entity
+                  entity: binary_sensor.bedroom_occupancy
+                  name: Bedroom
+                  icon: mdi:location-enter
+                  content_info: name
+                  icon_color: primary
+                  card_mod:
+                    style: |
+                      ha-card.type-entity {
+                        border-radius: 10px;
+                        height: 34px;
+                        width: 23vw;
+                      }  
+              - type: conditional
+                conditions:
+                  - condition: state
+                    entity: sensor.hvac
+                    state_not: idle
+                chip:
+                  type: template
+                  tap_action:
+                    action: more-info
+                  entity: climate.hestia
+                  icon: mdi:hvac
+                  icon_color: green
+                  content: Hestia
+                  hold_action:
+                    action: more-info
+                  double_tap_action:
+                    action: more-info
+                  card_mod:
+                    style: |
+                      ha-card.type-template {
+                        border-radius: 10px;
+                        height: 34px;
+                        width: 23vw;
+                      }  
+              - type: conditional
+                conditions:
+                  - condition: state
+                    entity: light.elinore_s_lights
+                    state: 'on'
+                chip:
+                  type: light
+                  entity: light.elinore_s_lights
+                  tap_action:
+                    action: more-info
+                  name: Elinore
+                  use_light_color: true
+                  content_info: name
+                  card_mod:
+                    style: |
+                      ha-card.type-light {
+                        border-radius: 10px;
+                        height: 34px;
+                        width: 23vw;
+                      }  
+              - type: conditional
+                conditions:
+                  - condition: state
+                    entity: light.everett_s_lights
+                    state: 'on'
+                chip:
+                  type: light
+                  entity: light.everett_s_lights
+                  tap_action:
+                    action: more-info
+                  name: Everett
+                  content_info: name
+                  use_light_color: true
+                  card_mod:
+                    style: |
+                      ha-card.type-light {
+                        border-radius: 10px;
+                        height: 34px;
+                        width: 23vw;
+                      }  
+              - type: conditional
+                conditions:
+                  - condition: state
+                    entity: light.exterior_lights
+                    state: 'on'
+                chip:
+                  type: light
+                  entity: light.exterior_lights
+                  tap_action:
+                    action: more-info
+                  name: Exterior
+                  content_info: name
+                  use_light_color: true
+                  card_mod:
+                    style: |
+                      ha-card.type-light {
+                        border-radius: 10px;
+                        height: 34px;
+                        width: 23vw;
+                      }  
+              - type: conditional
+                conditions:
+                  - condition: state
+                    entity: binary_sensor.laundry
+                    state: 'on'
+                chip:
+                  type: template
+                  entity: binary_sensor.laundry
+                  icon: mdi:washing-machine
+                  content: Laundry
+                  icon_color: green
+                  card_mod:
+                    style: |
+                      ha-card.type-template {
+                        border-radius: 10px;
+                        height: 34px;
+                        width: 23vw;
+                      }  
+            layout_options:
+              grid_columns: full
+              grid_rows: 4
+            alignment: center
+            card_mod: # sets CSS style for the footer. Setting the class will apply the CSS only to this specific card. Addtional CSS set in card-mod theme
+              class: footer
+              style:
+                .: |
+                  ha-card.footer {
+                    box-shadow: none;
+                    border-radius: 0px;
+                    border: none;
+                    position: fixed;
+                    bottom: 0%;
+                    width: 100%;
+                  }
+        column_span: 1
+    max_columns: 4
+    theme: stinking_badges
+    cards: []
