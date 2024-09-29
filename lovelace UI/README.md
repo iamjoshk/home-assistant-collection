@@ -1,3 +1,6 @@
+
+
+
 ## Dashboards
 
 Current [mobile dashboard](https://github.com/iamjoshk/home-assistant-collection/blob/main/lovelace%20UI/mobile_dashboard.yaml) with fixed header and footer using sections.
@@ -13,5 +16,6 @@ The dashboard requires:
 + creating an [automation](https://github.com/iamjoshk/home-assistant-collection/blob/main/lovelace%20UI/automation_room_togglers.yaml) to prevent multiple room view toggles from being on at the same time
 
 
+https://github.com/user-attachments/assets/136d01c0-d433-41d9-b7e4-5ae318d675a7
 
 
