@@ -1,0 +1,52 @@
+#
+#
+#
+#
+stinking_badges:
+
+  card-mod-theme: stinking_badges
+  
+  card-mod-view-yaml: |
+    hui-sections-view:
+      $:
+        ha-sortable:
+          div:
+            div:
+              .: |
+                div.section-header {
+                  display: none;
+                }
+              hui-section:
+                hui-grid-section:
+                  $:
+                    ha-sortable: 
+                      div:
+                        div:
+                          hui-card:
+                            mushroom-chips-card:
+                              $:
+                                ha-card:
+                                .: |
+                                  ha-card.footer {
+                                    z-index: 2;
+                                  }
+                                  ha-card.header {
+                                    z-index: 2;
+                                  }
+                                ha-card.footer:
+                                  .: |
+                                    div.chip-container {
+                                      padding: 2px 0px !important;
+                                      gap: 2px;
+                                      background: var(--lovelace-background);
+                                      justify-content: flex-start !important;
+                                    }
+                                ha-card.header:
+                                  .: |
+                                    div.chip-container {
+                                      padding: 2px 0px !important;
+                                      gap: 2px;
+                                      background: var(--lovelace-background);
+                                      justify-content: flex-start !important;
+                                    }
+                          
