@@ -10,6 +10,6 @@ The dashboard requires:
 + creating helpers:
   - Toggle (input_boolean) helpers to turn room views on and off in the header chips
   - Group helpers for the quick status chips in the footer
-+ creating an automation to prevent multiple room view toggles from being on at the same time
++ creating an [automation](https://github.com/iamjoshk/home-assistant-collection/blob/main/lovelace%20UI/automation_room_togglers.yaml) to prevent multiple room view toggles from being on at the same time
 
 
