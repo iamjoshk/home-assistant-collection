@@ -1,6 +1,6 @@
 ## Dashboards
 
-Current mobile dashboard with fixed header and footer using sections.
+Current [mobile dashboard](https://github.com/iamjoshk/home-assistant-collection/blob/main/lovelace%20UI/mobile_dashboard.yaml) with fixed header and footer using sections.
 The dashboard requires:
 + using Sections view in the dashboard
 + using the Wallpanel add-on: https://github.com/j-a-n/lovelace-wallpanel
