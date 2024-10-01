@@ -11,10 +11,8 @@ The dashboard requires:
   - card-mod in cards
   - [card-mod theme](https://github.com/iamjoshk/home-assistant-collection/blob/main/lovelace%20UI/card_mod_theme.yaml)
 + creating helpers:
-  - Toggle (input_boolean) helpers to turn room views on and off in the header chips
+  - Dropdown (input_select) helpers to turn room views on and off in the header chips
   - Group helpers for the quick status chips in the footer
-+ creating an [automation](https://github.com/iamjoshk/home-assistant-collection/blob/main/lovelace%20UI/automation_room_togglers.yaml) to prevent multiple room view toggles from being on at the same time
-
 
 https://github.com/user-attachments/assets/136d01c0-d433-41d9-b7e4-5ae318d675a7
 
