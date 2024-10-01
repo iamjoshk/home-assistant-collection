@@ -148,14 +148,14 @@ views:
                   target:
                     entity_id: input_select.room_togglers
                   data:
-                    option: Elinore
+                    option: Kid A
                 entity: input_select.room_togglers
                 icon: mdi:bed
                 icon_color: >
                   {{
-                  iif(is_state('input_select.room_togglers','Elinore'),'blue','grey')
+                  iif(is_state('input_select.room_togglers','Kid A'),'blue','grey')
                   }} 
-                content: Elinore
+                content: Kid A
                 card_mod:
                   style: |
                     ha-card.type-template {
@@ -170,14 +170,14 @@ views:
                   target:
                     entity_id: input_select.room_togglers
                   data:
-                    option: Everett
+                    option: Kid B
                 entity: input_select.room_togglers
                 icon: mdi:bed
                 icon_color: >
                   {{
-                  iif(is_state('input_select.room_togglers','Everett'),'blue','grey')
+                  iif(is_state('input_select.room_togglers','Kid B'),'blue','grey')
                   }} 
-                content: Everett
+                content: Kid B
                 card_mod:
                   style: |
                     ha-card.type-template {
@@ -704,14 +704,14 @@ views:
               - type: conditional
                 conditions:
                   - condition: state
-                    entity: light.elinore_s_lights
+                    entity: light.kida_s_lights
                     state: 'on'
                 chip:
                   type: light
-                  entity: light.elinore_s_lights
+                  entity: light.kida_s_lights
                   tap_action:
                     action: more-info
-                  name: Elinore
+                  name: kida
                   use_light_color: true
                   content_info: name
                   card_mod:
@@ -724,14 +724,14 @@ views:
               - type: conditional
                 conditions:
                   - condition: state
-                    entity: light.everett_s_lights
+                    entity: light.kidb_s_lights
                     state: 'on'
                 chip:
                   type: light
-                  entity: light.everett_s_lights
+                  entity: light.kidb_s_lights
                   tap_action:
                     action: more-info
-                  name: Everett
+                  name: Kid B
                   content_info: name
                   use_light_color: true
                   card_mod:
