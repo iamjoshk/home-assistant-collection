@@ -33,212 +33,307 @@ views:
                         height: 38px;
                         width: 1vw;
                       }      
-              - type: entity
-                entity: input_boolean.exterior
-                content_info: name
-                icon_color: primary
-                name: Exterior
+              - type: template
+                tap_action:
+                  action: perform-action
+                  perform_action: input_select.select_option
+                  target:
+                    entity_id: input_select.room_togglers
+                  data:
+                    option: Exterior
+                entity: input_select.room_togglers
                 icon: mdi:post-lamp
-                tap_action:
-                  action: toggle
-                card_mod: # sets CSS style for mushroom entity chip
-                  style: | 
-                    ha-card.type-entity {
+                icon_color: >
+                  {{
+                  iif(is_state('input_select.room_togglers','Exterior'),'blue','grey')
+                  }} 
+                content: Exterior
+                card_mod:  # sets CSS for mushroom template chip
+                  style: |
+                    ha-card.type-template {
                       border-radius: 10px;
                       height: 38px;
                       width: 23vw;
                     }
-              - type: entity
-                entity: input_boolean.breezeway_toggle
-                content_info: name
-                icon_color: primary
-                name: Breeze Way
+              - type: template
+                tap_action:
+                  action: perform-action
+                  perform_action: input_select.select_option
+                  target:
+                    entity_id: input_select.room_togglers
+                  data:
+                    option: Breezeway
+                entity: input_select.room_togglers
                 icon: mdi:chandelier
-                tap_action:
-                  action: toggle
+                icon_color: >
+                  {{
+                  iif(is_state('input_select.room_togglers','Breezeway'),'blue','grey')
+                  }} 
+                content: Breeze Way
                 card_mod:
                   style: |
-                    ha-card.type-entity {
+                    ha-card.type-template {
                       border-radius: 10px;
                       height: 38px;
                       width: 23vw;
                     }
-              - type: entity
-                entity: input_boolean.kitchen_toggle
-                content_info: name
-                icon_color: primary
-                name: Kitchen
+              - type: template
+                tap_action:
+                  action: perform-action
+                  perform_action: input_select.select_option
+                  target:
+                    entity_id: input_select.room_togglers
+                  data:
+                    option: Kitchen
+                entity: input_select.room_togglers
                 icon: mdi:countertop
-                tap_action:
-                  action: toggle
+                icon_color: >
+                  {{
+                  iif(is_state('input_select.room_togglers','Kitchen'),'blue','grey')
+                  }} 
+                content: Kitchen
                 card_mod:
                   style: |
-                    ha-card.type-entity {
+                    ha-card.type-template {
                       border-radius: 10px;
                       height: 38px;
                       width: 23vw;
                     }
-              - type: entity
-                entity: input_boolean.dining_room_toggle
-                content_info: name
-                icon_color: primary
-                name: Dining Room
+              - type: template
+                tap_action:
+                  action: perform-action
+                  perform_action: input_select.select_option
+                  target:
+                    entity_id: input_select.room_togglers
+                  data:
+                    option: Dining Room
+                entity: input_select.room_togglers
                 icon: mdi:table-chair
-                tap_action:
-                  action: toggle
+                icon_color: >
+                  {{ iif(is_state('input_select.room_togglers','Dining
+                  Room'),'blue','grey') }} 
+                content: Dining Room
                 card_mod:
                   style: |
-                    ha-card.type-entity {
+                    ha-card.type-template {
                       border-radius: 10px;
                       height: 38px;
                       width: 23vw;
                     }
-              - type: entity
-                entity: input_boolean.living_room_toggle
-                content_info: name
-                icon_color: primary
-                name: Living Room
+              - type: template
+                tap_action:
+                  action: perform-action
+                  perform_action: input_select.select_option
+                  target:
+                    entity_id: input_select.room_togglers
+                  data:
+                    option: Living Room
+                entity: input_select.room_togglers
                 icon: mdi:sofa
-                tap_action:
-                  action: toggle
+                icon_color: >
+                  {{ iif(is_state('input_select.room_togglers','Living
+                  Room'),'blue','grey') }} 
+                content: Living Room
                 card_mod:
                   style: |
-                    ha-card.type-entity {
+                    ha-card.type-template {
                       border-radius: 10px;
                       height: 38px;
                       width: 23vw;
                     }
-              - type: entity
-                entity: input_boolean.kida_room
-                content_info: name
-                icon_color: primary
-                name: Kid A
+              - type: template
+                tap_action:
+                  action: perform-action
+                  perform_action: input_select.select_option
+                  target:
+                    entity_id: input_select.room_togglers
+                  data:
+                    option: Elinore
+                entity: input_select.room_togglers
                 icon: mdi:bed
-                tap_action:
-                  action: toggle
+                icon_color: >
+                  {{
+                  iif(is_state('input_select.room_togglers','Elinore'),'blue','grey')
+                  }} 
+                content: Elinore
                 card_mod:
                   style: |
-                    ha-card.type-entity {
+                    ha-card.type-template {
                       border-radius: 10px;
                       height: 38px;
                       width: 23vw;
                     }
-              - type: entity
-                entity: input_boolean.kidb_room
-                content_info: name
-                icon_color: primary
-                name: Kid B
+              - type: template
+                tap_action:
+                  action: perform-action
+                  perform_action: input_select.select_option
+                  target:
+                    entity_id: input_select.room_togglers
+                  data:
+                    option: Everett
+                entity: input_select.room_togglers
                 icon: mdi:bed
-                tap_action:
-                  action: toggle
+                icon_color: >
+                  {{
+                  iif(is_state('input_select.room_togglers','Everett'),'blue','grey')
+                  }} 
+                content: Everett
                 card_mod:
                   style: |
-                    ha-card.type-entity {
+                    ha-card.type-template {
                       border-radius: 10px;
                       height: 38px;
                       width: 23vw;
                     }
-              - type: entity
-                entity: input_boolean.guest_room_toggle
-                content_info: name
-                icon_color: primary
-                name: Guest Room
+              - type: template
+                tap_action:
+                  action: perform-action
+                  perform_action: input_select.select_option
+                  target:
+                    entity_id: input_select.room_togglers
+                  data:
+                    option: Guest Room
+                entity: input_select.room_togglers
                 icon: mdi:bed-queen
-                tap_action:
-                  action: toggle
+                icon_color: >
+                  {{ iif(is_state('input_select.room_togglers','Guest
+                  Room'),'blue','grey') }} 
+                content: Guest Room
                 card_mod:
                   style: |
-                    ha-card.type-entity {
+                    ha-card.type-template {
                       border-radius: 10px;
                       height: 38px;
                       width: 23vw;
                     }
-              - type: entity
-                entity: input_boolean.bedroom_toggle
-                content_info: name
-                icon_color: primary
-                name: Bedroom
+              - type: template
+                tap_action:
+                  action: perform-action
+                  perform_action: input_select.select_option
+                  target:
+                    entity_id: input_select.room_togglers
+                  data:
+                    option: Bedroom
+                entity: input_select.room_togglers
                 icon: mdi:bed-king
-                tap_action:
-                  action: toggle
+                icon_color: >
+                  {{
+                  iif(is_state('input_select.room_togglers','Bedroom'),'blue','grey')
+                  }} 
+                content: Bedroom
                 card_mod:
                   style: |
-                    ha-card.type-entity {
+                    ha-card.type-template {
                       border-radius: 10px;
                       height: 38px;
                       width: 23vw;
                     }
-              - type: entity
-                entity: input_boolean.attic_toggle
-                content_info: name
-                icon_color: primary
-                name: Attic
+              - type: template
+                tap_action:
+                  action: perform-action
+                  perform_action: input_select.select_option
+                  target:
+                    entity_id: input_select.room_togglers
+                  data:
+                    option: Attic
+                entity: input_select.room_togglers
                 icon: mdi:home-roof
-                tap_action:
-                  action: toggle
+                icon_color: >
+                  {{
+                  iif(is_state('input_select.room_togglers','Attic'),'blue','grey')
+                  }} 
+                content: Attic
                 card_mod:
                   style: |
-                    ha-card.type-entity {
+                    ha-card.type-template {
                       border-radius: 10px;
                       height: 38px;
                       width: 23vw;
                     }
-              - type: entity
-                entity: input_boolean.basement_toggle
-                content_info: name
-                icon_color: primary
-                name: Basement
+              - type: template
+                tap_action:
+                  action: perform-action
+                  perform_action: input_select.select_option
+                  target:
+                    entity_id: input_select.room_togglers
+                  data:
+                    option: Basement
+                entity: input_select.room_togglers
                 icon: mdi:stairs-down
-                tap_action:
-                  action: toggle
+                icon_color: >
+                  {{
+                  iif(is_state('input_select.room_togglers','Basement'),'blue','grey')
+                  }} 
+                content: Basement
                 card_mod:
                   style: |
-                    ha-card.type-entity {
+                    ha-card.type-template {
                       border-radius: 10px;
                       height: 38px;
                       width: 23vw;
                     }
-              - type: entity
-                entity: input_boolean.garage_toggle
-                content_info: name
-                icon_color: primary
-                name: Garage
+              - type: template
+                tap_action:
+                  action: perform-action
+                  perform_action: input_select.select_option
+                  target:
+                    entity_id: input_select.room_togglers
+                  data:
+                    option: Garage
+                entity: input_select.room_togglers
                 icon: mdi:garage
-                tap_action:
-                  action: toggle
+                icon_color: >
+                  {{
+                  iif(is_state('input_select.room_togglers','Garage'),'blue','grey')
+                  }} 
+                content: Garage
                 card_mod:
                   style: |
-                    ha-card.type-entity {
+                    ha-card.type-template {
                       border-radius: 10px;
                       height: 38px;
                       width: 23vw;
                     }
-              - type: entity
-                entity: input_boolean.office_toggle
-                content_info: name
-                icon_color: primary
-                name: Office
-                icon: mdi:office-building
+              - type: template
                 tap_action:
-                  action: toggle
+                  action: perform-action
+                  perform_action: input_select.select_option
+                  target:
+                    entity_id: input_select.room_togglers
+                  data:
+                    option: Office
+                entity: input_select.room_togglers
+                icon: mdi:office-building
+                icon_color: >
+                  {{
+                  iif(is_state('input_select.room_togglers','Office'),'blue','grey')
+                  }} 
+                content: Office
                 card_mod:
                   style: |
-                    ha-card.type-entity {
+                    ha-card.type-template {
                       border-radius: 10px;
                       height: 38px;
                       width: 23vw;
-                    }      
-              - type: entity
-                entity: input_boolean.camera_toggle
-                content_info: name
-                icon_color: primary
-                name: Camera
-                icon: mdi:cctv
+                    }    
+              - type: template
                 tap_action:
-                  action: toggle
+                  action: perform-action
+                  perform_action: input_select.select_option
+                  target:
+                    entity_id: input_select.room_togglers
+                  data:
+                    option: Camera
+                entity: input_select.room_togglers
+                icon: mdi:cctv
+                icon_color: >
+                  {{
+                  iif(is_state('input_select.room_togglers','Camera'),'blue','grey')
+                  }} 
+                content: Camera
                 card_mod:
                   style: |
-                    ha-card.type-entity {
+                    ha-card.type-template {
                       border-radius: 10px;
                       height: 38px;
                       width: 23vw;
