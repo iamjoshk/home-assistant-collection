@@ -51,14 +51,13 @@ class LDHD2AZW(CustomDevice):
                 PROFILE_ID: zha.PROFILE_ID,
                 DEVICE_TYPE: zha.DeviceType.IAS_ZONE,
                 INPUT_CLUSTERS: [
-                    "0x0000",
-                    "0x0001",
-                    "0x0003",
-                    "0x0020",
-                    "0x0402",
-                    "0x0500",
-                    "0x0b05",
-                    "0xfd50",
+                    Basic.cluster_id,
+                    PowerConfiguration.cluster_id,
+                    Identify.cluster_id,
+                    PollControl.cluster_id,
+                    TemperatureMeasurement.cluster_id,
+                    IasZone.cluster_id,
+                    Diagnostic.cluster_id,
                 ]
                 OUTPUT_CLUSTERS: [
                     "0x0019",
@@ -73,14 +72,13 @@ class LDHD2AZW(CustomDevice):
                 PROFILE_ID: zha.PROFILE_ID,
                 DEVICE_TYPE: zha.DeviceType.IAS_ZONE,
                 INPUT_CLUSTERS: [
-                    "0x0000",
-                    "0x0001",
-                    "0x0003",
-                    "0x0020",
-                    "0x0402",
-                    "0x0500",
-                    "0x0b05",
-                    "0xfd50",
+                    Basic.cluster_id,
+                    PowerConfiguration.cluster_id,
+                    Identify.cluster_id,
+                    PollControl.cluster_id,
+                    TemperatureMeasurement.cluster_id,
+                    IasZone.cluster_id,
+                    Diagnostic.cluster_id,
                 ]
                 OUTPUT_CLUSTERS: [
                     "0x0019",
