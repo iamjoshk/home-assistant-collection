@@ -38,26 +38,27 @@ from zhaquirks.const import (
     ZHA_SEND_EVENT,
 )
 
-
+class LDHD2AZW(CustomDevice):
+    """Custom device representing Leedarson LDHD2AZW contact sensor."""
 
     signature = {
         MODELS_INFO: [("Leedarson", "LDHD2AZW")],
         ENDPOINTS: {
             1: {
                 PROFILE_ID: "0x0104",
-                DEVICE_TYPE: "0x0402",
+                DEVICE_TYPE: zha.DeviceType.IAS_ZONE,
                 INPUT_CLUSTERS: [
-                  "0x0000",
-                  "0x0001",
-                  "0x0003",
-                  "0x0020",
-                  "0x0402",
-                  "0x0500",
-                  "0x0b05",
-                  "0xfd50"
+                    "0x0000",
+                    "0x0001",
+                    "0x0003",
+                    "0x0020",
+                    "0x0402",
+                    "0x0500",
+                    "0x0b05",
+                    "0xfd50"
                 ]
                 OUTPUT_CLUSTERS: [
-                  "0x0019",
+                    "0x0019",
                 ],
             },
         },
@@ -66,26 +67,21 @@ from zhaquirks.const import (
     replacement = {
         ENDPOINTS: {
             1: {
-                PROFILE_ID: zha.PROFILE_ID,
-                DEVICE_TYPE: "0x0402",
+                PROFILE_ID: "0x0104",
+                DEVICE_TYPE: zha.DeviceType.IAS_ZONE,
                 INPUT_CLUSTERS: [
-                  "0x0000",
-                  "0x0001",
-                  "0x0003",
-                  "0x0020",
-                  "0x0402",
-                  "0x0500",
-                  "0x0b05",
-                  "0xfd50"
+                    "0x0000",
+                    "0x0001",
+                    "0x0003",
+                    "0x0020",
+                    "0x0402",
+                    "0x0500",
+                    "0x0b05",
+                    "0xfd50"
                 ]
                 OUTPUT_CLUSTERS: [
-                  "0x0019",
-                  "0x0020",
-                  "0x0039",
-                  "0x0038",
-                  "0x0037",
-                  "0x0036",
-                  "0x0035",
+                    "0x0019",
+                    PowerConfiguration.cluster_id,
                 ],
             },
         },
