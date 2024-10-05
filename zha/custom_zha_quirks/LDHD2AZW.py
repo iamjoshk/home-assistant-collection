@@ -1,3 +1,6 @@
+"""Custom Device Handler for Leedarson LDHD2AZW contact sensor."""
+
+
 from typing import Any, List, Optional, Union
 
 from zigpy.profiles import zha
