@@ -4,7 +4,7 @@
 from typing import Any, List, Optional, Union
 
 from zigpy.profiles import zha
-from zigpy.quirks import CustomCluster, CustomDevice, PowerConfigurationCluster,
+from zigpy.quirks import CustomCluster, CustomDevice, PowerConfigurationCluster
 import zigpy.types as t
 from zigpy.zcl import foundation
 from zigpy.zcl.clusters.general import (
