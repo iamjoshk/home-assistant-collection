@@ -44,12 +44,49 @@ from zhaquirks.const import (
 class LDHD2AZW(CustomDevice):
     """Custom device representing Leedarson LDHD2AZW contact sensor."""
 
+class LeedarsonPowerConfigurationCluster(CustomCluster, PowerConfiguration):
+    """Common use power configuration cluster."""
+
+    BATTERY_VOLTAGE_ATTR = 0x0020
+    MIN_VOLTS = 1.5  # old 2.1
+    MAX_VOLTS = 2.8  # old 3.2
+
+    def _update_attribute(self, attrid, value):
+        super()._update_attribute(attrid, value)
+        if attrid == self.BATTERY_VOLTAGE_ATTR and value not in (0, 255):
+            super()._update_attribute(
+                self.BATTERY_PERCENTAGE_REMAINING,
+                self._calculate_battery_percentage(value),
+            )
+
+    def _calculate_battery_percentage(self, raw_value):
+        volts = raw_value / 10
+        volts = max(volts, self.MIN_VOLTS)
+        volts = min(volts, self.MAX_VOLTS)
+
+        percent = round(
+            ((volts - self.MIN_VOLTS) / (self.MAX_VOLTS - self.MIN_VOLTS)) * 200
+        )
+
+        self.debug(
+            "Voltage [RAW]:%s [Max]:%s [Min]:%s, Battery Percent: %s",
+            raw_value,
+            self.MAX_VOLTS,
+            self.MIN_VOLTS,
+            percent / 2,
+        )
+
+        return percent
+    
     signature = {
-        MODELS_INFO: [("Leedarson", "LDHD2AZW")],
+        #  <SimpleDescriptor endpoint=1 profile=260 device_type=0x0402
+        #  input_clusters=[0, 1, 3, 32, 1062, 1280, 2821]
+        #  output_clusters=[3, 25]>
+        MODELS_INFO: [(Leedarson, "LDHD2AZW")],
         ENDPOINTS: {
             1: {
-                PROFILE_ID: "0x0104",
-                DEVICE_TYPE: "0x0402",
+                PROFILE_ID: zha.PROFILE_ID,
+                DEVICE_TYPE: zha.DeviceType.IAS_ZONE,
                 INPUT_CLUSTERS: [
                     "0x0000",
                     "0x0001",
@@ -59,7 +96,7 @@ class LDHD2AZW(CustomDevice):
                     "0x0500",
                     "0x0b05",
                     "0xfd50",
-                ]
+                  ],
                 OUTPUT_CLUSTERS: [
                     "0x0019",
                 ],
@@ -70,20 +107,19 @@ class LDHD2AZW(CustomDevice):
     replacement = {
         ENDPOINTS: {
             1: {
-                PROFILE_ID: "0x0104",
-                DEVICE_TYPE: "0x0402",
                 INPUT_CLUSTERS: [
-                  Basic.cluster_id,
-                  PowerConfiguration.cluster_id,
-                  Identify.cluster_id,
-                  PollControl.cluster_id,
-                  TemperatureMeasurement.cluster_id,
-                  IasZone.cluster_id,
-                  Diagnostic.cluster_id,
-                ]
+                    "0x0000",
+                    "0x0001",
+                    "0x0003",
+                    LeedarsonPowerConfigurationCluster.cluster_id,
+                    "0x0402",
+                    "0x0500",
+                    "0x0b05",
+                    "0xfd50",
+                  ],
                 OUTPUT_CLUSTERS: [
-                  "0x0019",
-                  PowerConfiguration.cluster_id,
+                    "0x0019",
+                    
                 ],
             }
         },
