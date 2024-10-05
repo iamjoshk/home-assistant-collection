@@ -48,7 +48,7 @@ class LDHD2AZW(CustomDevice):
         MODELS_INFO: [("Leedarson", "LDHD2AZW")],
         ENDPOINTS: {
             1: {
-                PROFILE_ID: "0x0104",
+                PROFILE_ID: zha.PROFILE_ID,
                 DEVICE_TYPE: zha.DeviceType.IAS_ZONE,
                 INPUT_CLUSTERS: [
                     "0x0000",
@@ -58,7 +58,7 @@ class LDHD2AZW(CustomDevice):
                     "0x0402",
                     "0x0500",
                     "0x0b05",
-                    "0xfd50"
+                    "0xfd50",
                 ]
                 OUTPUT_CLUSTERS: [
                     "0x0019",
@@ -70,7 +70,7 @@ class LDHD2AZW(CustomDevice):
     replacement = {
         ENDPOINTS: {
             1: {
-                PROFILE_ID: "0x0104",
+                PROFILE_ID: zha.PROFILE_ID,
                 DEVICE_TYPE: zha.DeviceType.IAS_ZONE,
                 INPUT_CLUSTERS: [
                     "0x0000",
@@ -80,7 +80,7 @@ class LDHD2AZW(CustomDevice):
                     "0x0402",
                     "0x0500",
                     "0x0b05",
-                    "0xfd50"
+                    "0xfd50",
                 ]
                 OUTPUT_CLUSTERS: [
                     "0x0019",
