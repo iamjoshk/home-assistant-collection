@@ -82,10 +82,10 @@ class LeedarsonPowerConfigurationCluster(CustomCluster, PowerConfiguration):
         #  <SimpleDescriptor endpoint=1 profile=260 device_type=0x0402
         #  input_clusters=[0, 1, 3, 32, 1062, 1280, 2821]
         #  output_clusters=[3, 25]>
-        MODELS_INFO: [(Leedarson, "LDHD2AZW")],
+        MODELS_INFO: [("Leedarson", "LDHD2AZW")],
         ENDPOINTS: {
             1: {
-                PROFILE_ID: zha.PROFILE_ID,
+                PROFILE_ID: "0x0104",
                 DEVICE_TYPE: zha.DeviceType.IAS_ZONE,
                 INPUT_CLUSTERS: [
                     "0x0000",
