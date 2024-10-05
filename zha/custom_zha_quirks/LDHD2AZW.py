@@ -44,7 +44,7 @@ from zhaquirks.const import (
 class LDHD2AZW(CustomDevice):
     """Custom device representing Leedarson LDHD2AZW contact sensor."""
 
-class CustomPowerConfigurationCluster(PowerConfigurationCluster):
+class CustomPowerConfigurationCluster(PowerConfiguration):
 
     cluster_id = 0x0001
     name = "Leedarson Power Configuration"
