@@ -44,6 +44,7 @@ class LDHD2AZW(CustomDevice):
     """Custom device representing Leedarson LDHD2AZW contact sensor."""
 
 class CustomPowerConfigurationCluster(PowerConfigurationCluster):
+    """Custom PowerConfigurationCluster."""
 
     BATTERY_VOLTAGE_ATTR = 0x0020
     MIN_VOLTS = 1.5  # old 2.1
