@@ -44,8 +44,7 @@ from zhaquirks.const import (
 class LDHD2AZW(CustomDevice):
     """Custom device representing Leedarson LDHD2AZW contact sensor."""
 
-class LeedarsonPowerConfigurationCluster(CustomCluster, PowerConfiguration):
-    """Common use power configuration cluster."""
+class CustomPowerConfigurationCluster(CustomCluster, PowerConfiguration):
 
     cluster_id = 0x0001
     name = "Leedarson Power Configuration"
@@ -93,7 +92,7 @@ class LeedarsonPowerConfigurationCluster(CustomCluster, PowerConfiguration):
                 DEVICE_TYPE: zha.DeviceType.IAS_ZONE,
                 INPUT_CLUSTERS: [
                     "0x0000",
-                    "0x0001",
+                    CustomPowerConfigurationCluster.cluster_id,
                     "0x0003",
                     "0x0020",
                     "0x0402",
@@ -115,7 +114,7 @@ class LeedarsonPowerConfigurationCluster(CustomCluster, PowerConfiguration):
                     "0x0000",
                     "0x0001",
                     "0x0003",
-                    LeedarsonPowerConfigurationCluster.cluster_id,
+                    CustomPowerConfigurationCluster.cluster_id,
                     "0x0402",
                     "0x0500",
                     "0x0b05",
