@@ -46,10 +46,6 @@ class LDHD2AZW(CustomDevice):
 
 class CustomPowerConfigurationCluster(PowerConfigurationCluster):
 
-    cluster_id = 0x0001
-    name = "Leedarson Power Configuration"
-    ep_attribute = "leedarson_manufacturer_specific"
-    
     BATTERY_VOLTAGE_ATTR = 0x0020
     MIN_VOLTS = 1.5  # old 2.1
     MAX_VOLTS = 2.8  # old 3.2
