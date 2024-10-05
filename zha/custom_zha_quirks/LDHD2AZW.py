@@ -43,39 +43,7 @@ from zhaquirks.const import (
 class LDHD2AZW(CustomDevice):
     """Custom device representing Leedarson LDHD2AZW contact sensor."""
 
-class CustomPowerConfigurationCluster(PowerConfigurationCluster):
-    """Custom PowerConfigurationCluster."""
 
-    BATTERY_VOLTAGE_ATTR = 0x0020
-    MIN_VOLTS = 1.5  # old 2.1
-    MAX_VOLTS = 2.8  # old 3.2
-
-    def _update_attribute(self, attrid, value):
-        super()._update_attribute(attrid, value)
-        if attrid == self.BATTERY_VOLTAGE_ATTR and value not in (0, 255):
-            super()._update_attribute(
-                self.BATTERY_PERCENTAGE_REMAINING,
-                self._calculate_battery_percentage(value),
-            )
-
-    def _calculate_battery_percentage(self, raw_value):
-        volts = raw_value / 10
-        volts = max(volts, self.MIN_VOLTS)
-        volts = min(volts, self.MAX_VOLTS)
-
-        percent = round(
-            ((volts - self.MIN_VOLTS) / (self.MAX_VOLTS - self.MIN_VOLTS)) * 200
-        )
-
-        self.debug(
-            "Voltage [RAW]:%s [Max]:%s [Min]:%s, Battery Percent: %s",
-            raw_value,
-            self.MAX_VOLTS,
-            self.MIN_VOLTS,
-            percent / 2,
-        )
-
-        return percent
     
     signature = {
         #  <SimpleDescriptor endpoint=1 profile=260 device_type=0x0402
