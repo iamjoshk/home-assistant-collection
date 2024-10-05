@@ -63,7 +63,7 @@ class LDHD2AZW(CustomDevice):
                 OUTPUT_CLUSTERS: [
                     "0x0019",
                 ],
-            },
+            }
         },
     }
 
@@ -85,6 +85,6 @@ class LDHD2AZW(CustomDevice):
                   "0x0019",
                   PowerConfiguration.cluster_id,
                 ],
-            },
+            }
         },
     }
