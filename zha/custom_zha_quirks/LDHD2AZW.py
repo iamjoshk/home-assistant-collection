@@ -14,7 +14,7 @@ from zigpy.zcl.clusters.general import (
     LevelControl,
     OnOff,
     PollControl,
-    PowerConfiguration,
+    PowerConfigurationCluster,
 )
 
 from zhaquirks import Bus
@@ -44,7 +44,7 @@ from zhaquirks.const import (
 class LDHD2AZW(CustomDevice):
     """Custom device representing Leedarson LDHD2AZW contact sensor."""
 
-class CustomPowerConfigurationCluster(PowerConfiguration):
+class CustomPowerConfigurationCluster(PowerConfigurationCluster):
 
     cluster_id = 0x0001
     name = "Leedarson Power Configuration"
@@ -92,16 +92,16 @@ class CustomPowerConfigurationCluster(PowerConfiguration):
                 DEVICE_TYPE: zha.DeviceType.IAS_ZONE,
                 INPUT_CLUSTERS: [
                     "0x0000",
-                    CustomPowerConfigurationCluster.cluster_id,
                     "0x0003",
                     "0x0020",
                     "0x0402",
                     "0x0500",
                     "0x0b05",
                     "0xfd50",
+                    CustomPowerConfigurationCluster.cluster_id,
                   ],
                 OUTPUT_CLUSTERS: [
-                    "0x0019",
+                    "0x0019",CustomPowerConfigurationCluster.cluster_id,
                 ],
             }
         },
@@ -121,7 +121,7 @@ class CustomPowerConfigurationCluster(PowerConfiguration):
                     "0xfd50",
                   ],
                 OUTPUT_CLUSTERS: [
-                    "0x0019",
+                    "0x0019",CustomPowerConfigurationCluster.cluster_id,
                     
                 ],
             }
