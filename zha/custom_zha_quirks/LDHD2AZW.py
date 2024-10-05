@@ -48,19 +48,19 @@ class LDHD2AZW(CustomDevice):
         MODELS_INFO: [("Leedarson", "LDHD2AZW")],
         ENDPOINTS: {
             1: {
-                PROFILE_ID: zha.PROFILE_ID,
-                DEVICE_TYPE: zha.DeviceType.IAS_ZONE,
+                PROFILE_ID: "0x0104",
+                DEVICE_TYPE: "0x0402",
                 INPUT_CLUSTERS: [
-                    Basic.cluster_id,
-                    PowerConfiguration.cluster_id,
-                    Identify.cluster_id,
-                    PollControl.cluster_id,
-                    TemperatureMeasurement.cluster_id,
-                    IasZone.cluster_id,
-                    Diagnostic.cluster_id,
+                  Basic.cluster_id,
+                  PowerConfiguration.cluster_id,
+                  Identify.cluster_id,
+                  PollControl.cluster_id,
+                  TemperatureMeasurement.cluster_id,
+                  IasZone.cluster_id,
+                  Diagnostic.cluster_id,
                 ]
                 OUTPUT_CLUSTERS: [
-                    "0x0019",
+                  "0x0019",
                 ],
             },
         },
@@ -69,20 +69,20 @@ class LDHD2AZW(CustomDevice):
     replacement = {
         ENDPOINTS: {
             1: {
-                PROFILE_ID: zha.PROFILE_ID,
-                DEVICE_TYPE: zha.DeviceType.IAS_ZONE,
+                PROFILE_ID: "0x0104",
+                DEVICE_TYPE: "0x0402",
                 INPUT_CLUSTERS: [
-                    Basic.cluster_id,
-                    PowerConfiguration.cluster_id,
-                    Identify.cluster_id,
-                    PollControl.cluster_id,
-                    TemperatureMeasurement.cluster_id,
-                    IasZone.cluster_id,
-                    Diagnostic.cluster_id,
+                  Basic.cluster_id,
+                  PowerConfiguration.cluster_id,
+                  Identify.cluster_id,
+                  PollControl.cluster_id,
+                  TemperatureMeasurement.cluster_id,
+                  IasZone.cluster_id,
+                  Diagnostic.cluster_id,
                 ]
                 OUTPUT_CLUSTERS: [
-                    "0x0019",
-                    PowerConfiguration.cluster_id,
+                  "0x0019",
+                  PowerConfiguration.cluster_id,
                 ],
             },
         },
