@@ -86,19 +86,19 @@ class CustomPowerConfigurationCluster(PowerConfigurationCluster):
         ENDPOINTS: {
             1: {
                 PROFILE_ID: "0x0104",
-                DEVICE_TYPE: zha.DeviceType.IAS_ZONE,
+                DEVICE_TYPE: "0x0402",
                 INPUT_CLUSTERS: [
                     "0x0000",
+                    "0x0001",
                     "0x0003",
                     "0x0020",
                     "0x0402",
                     "0x0500",
                     "0x0b05",
                     "0xfd50",
-                    PowerConfigurationCluster.cluster_id,
                   ],
                 OUTPUT_CLUSTERS: [
-                    "0x0019",PowerConfigurationCluster.cluster_id,
+                    "0x0019",
                 ],
             }
         },
