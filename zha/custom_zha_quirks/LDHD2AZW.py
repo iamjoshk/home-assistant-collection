@@ -46,11 +46,6 @@ class LDHD2AZW(CustomDevice):
 class CustomPowerConfigurationCluster(PowerConfigurationCluster):
     """Custom PowerConfigurationCluster."""
 
-    
-    BATTERY_VOLTAGE_ATTR = 0x0020
-    MIN_VOLTS = 1.5  # old 2.1
-    MAX_VOLTS = 2.8  # old 3.2
-
     def _update_attribute(self, attrid, value):
         super()._update_attribute(attrid, value)
         if attrid == self.BATTERY_VOLTAGE_ATTR and value not in (0, 255):
@@ -79,10 +74,7 @@ class CustomPowerConfigurationCluster(PowerConfigurationCluster):
         return percent
     
     signature = {
-        #  <SimpleDescriptor endpoint=1 profile=260 device_type=0x0402
-        #  input_clusters=[0, 1, 3, 32, 1062, 1280, 2821]
-        #  output_clusters=[3, 25]>
-        MODELS_INFO: [("Leedarson", "LDHD2AZW"), ("Leedarson LDHD2AZW"), ("LDHD2AZW")],
+        MODELS_INFO: [("LDHD2AZW")],
         ENDPOINTS: {
             1: {
                 PROFILE_ID: "0x0104",
