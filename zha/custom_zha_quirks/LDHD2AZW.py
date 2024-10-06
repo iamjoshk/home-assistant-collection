@@ -101,7 +101,7 @@ class CustomPowerConfigurationCluster(PowerConfigurationCluster):
             1: {
                 INPUT_CLUSTERS: [
                     "0x0000",
-                    CustomPowerConfigurationCluster,
+                    PowerConfigurationCluster,
                     "0x0003",
                     "0x0020",
                     "0x0402",
@@ -110,7 +110,7 @@ class CustomPowerConfigurationCluster(PowerConfigurationCluster):
                     "0xfd50",
                   ],
                 OUTPUT_CLUSTERS: [
-                    "0x0019",CustomPowerConfigurationCluster.cluster_id,
+                    "0x0019",PowerConfigurationCluster.cluster_id,
                     
                 ],
             }
