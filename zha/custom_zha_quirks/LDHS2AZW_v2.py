@@ -1,5 +1,9 @@
 from zigpy.quirks.v2 import QuirkBuilder
 
+from zigpy.zcl.clusters.general import (
+    PowerConfiguration
+)
+
 
 (
   
