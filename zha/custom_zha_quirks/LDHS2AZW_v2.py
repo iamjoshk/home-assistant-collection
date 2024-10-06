@@ -1,8 +1,9 @@
-from zigpy.quirks.v2 import add_to_registry_v2
+from zigpy.quirks.v2 import QuirkBuilder
 
 
 (
   
-  add_to_registry_v2("Leedarson", "LDHD2AZW")
+  QuirkBuilder("Leedarson", "LDHD2AZW")
+  .add_to_registry()
 
 )
