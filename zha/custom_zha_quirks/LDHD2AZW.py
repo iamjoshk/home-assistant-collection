@@ -97,6 +97,7 @@ class CustomPowerConfigurationCluster(PowerConfigurationCluster):
     }
 
     replacement = {
+        SKIP_CONFIGURATION: True,
         ENDPOINTS: {
             1: {
                 INPUT_CLUSTERS: [
