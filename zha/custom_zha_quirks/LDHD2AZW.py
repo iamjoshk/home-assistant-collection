@@ -35,6 +35,7 @@ from zhaquirks.const import (
     PARAMS,
     PROFILE_ID,
     SHORT_PRESS,
+    SKIP_CONFIGURATION,
     TURN_OFF,
     TURN_ON,
     ZHA_SEND_EVENT,
