@@ -75,7 +75,7 @@ class CustomPowerConfigurationCluster(PowerConfigurationCluster):
         return percent
     
     signature = {
-        MODELS_INFO: [("Leedarson", "LDHD2AZW"), ("Leedarson LDHD2AZW")],
+        MODELS_INFO: [("Leedarson", "LDHD2AZW"), ("Leedarson LDHD2AZW"), (LEEDARSON, "LDHD2AZW")],
         ENDPOINTS: {
             1: {
                 PROFILE_ID: "0x0104",
