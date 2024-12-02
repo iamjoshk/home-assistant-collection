@@ -11,6 +11,5 @@
   + [ESPHome BLE Client component](https://esphome.io/components/ble_client.html)
 
 ### Simple Dashboard
-
-
+ ![Simple train control dashboard](https://github.com/iamjoshk/home-assistant-collection/blob/2607c444ae01e66c7a251e0deb6d01f90a233494/ESPHome/LionelController/Screenshot_20241201-210908~2.png)
   
