@@ -6,6 +6,10 @@
   + ESP32 dev board (more RAM is better)
   + Service UUID for your Lionel locomotive (should be able to get this when setting up the BLE Client component
   + Bluetooth MAC address for your Lionel locomotive
+  + To enable and simplify voice assistants, I created two helpers and an automation for limited voice commands.
+    + `input_select` (dropdown) helper to select a train speed
+    + `input_boolean` (toggle) helper to turn the train on and off
+    + automation to press the respective buttons when the train speed was changed and/or the train toggle was turned on or off and keep the state in sync.
 
 ### Notes
   + I believe `service_uuid` is dependent upon the locomotive model
