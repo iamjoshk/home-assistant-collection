@@ -1,0 +1,276 @@
+esphome:
+  name: trainble
+  friendly_name: TrainBLE
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: redacted
+
+ota:
+  - platform: esphome
+    password: redacted
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Trainble Fallback Hotspot"
+    password: redacted
+
+captive_portal:
+    
+esp32_ble_tracker:
+
+ble_client:
+  - mac_address: XX:XX:XX:XX:XX:XX
+    id: christmas_train
+    name: Christmas Train Status
+    auto_connect: true
+    on_connect:
+      then:
+        - lambda: |-
+            id(ble_connected) = true;
+            ESP_LOGD("ble_client_lambda", "Connected to BLE device");
+    on_disconnect:
+      then:
+        - lambda: |-
+            id(ble_connected) = false;
+            ESP_LOGD("ble_client_lambda", "Disconnected from BLE device");
+
+globals:
+  - id: ble_connected
+    type: bool
+    restore_value: no 
+    initial_value: 'false'
+
+binary_sensor:
+  - platform: template 
+    name: Bluetooth
+    id: ble_connection
+    lambda: |- 
+      return id(ble_connected); 
+    device_class: connectivity
+
+button:
+  - platform: template
+    id: train_stop
+    name: Stop
+    on_press: 
+      then:
+        - ble_client.ble_write: 
+            characteristic_uuid: 08590f7e-db05-467e-8757-72f6faeb13d4
+            service_uuid: e20a39f4-73f5-4bc4-a12f-17d1ad07a961
+            value: [0x00, 0x45, 0x00]
+
+  - platform: template
+    id: train_speed_low
+    name: Speed Low
+    on_press: 
+      then:
+        - ble_client.ble_write: 
+            characteristic_uuid: 08590f7e-db05-467e-8757-72f6faeb13d4
+            service_uuid: e20a39f4-73f5-4bc4-a12f-17d1ad07a961
+            value: [0x00, 0x45, 0x02]
+
+  - platform: template
+    id: train_speed_med
+    name: Speed Med
+    on_press: 
+      then:
+        - ble_client.ble_write: 
+            characteristic_uuid: 08590f7e-db05-467e-8757-72f6faeb13d4
+            service_uuid: e20a39f4-73f5-4bc4-a12f-17d1ad07a961
+            value: [0x00, 0x45, 0x07]
+
+  - platform: template
+    id: train_speed_high
+    name: Speed High
+    on_press: 
+      then:
+        - ble_client.ble_write: 
+            characteristic_uuid: 08590f7e-db05-467e-8757-72f6faeb13d4
+            service_uuid: e20a39f4-73f5-4bc4-a12f-17d1ad07a961
+            value: [0x00, 0x45, 0x10]
+
+  - platform: template
+    id: train_forward
+    name: Forward
+    on_press: 
+      then:
+        - ble_client.ble_write: 
+            characteristic_uuid: 08590f7e-db05-467e-8757-72f6faeb13d4
+            service_uuid: e20a39f4-73f5-4bc4-a12f-17d1ad07a961
+            value: [0x00, 0x46, 0x01]
+
+  - platform: template
+    id: train_reverse
+    name: Reverse
+    on_press: 
+      then:
+        - ble_client.ble_write: 
+            characteristic_uuid: 08590f7e-db05-467e-8757-72f6faeb13d4
+            service_uuid: e20a39f4-73f5-4bc4-a12f-17d1ad07a961
+            value: [0x00, 0x46, 0x02]
+
+  - platform: template
+    id: announce_0
+    name: Announcement Random
+    on_press: 
+      then:
+        - ble_client.ble_write: 
+            characteristic_uuid: 08590f7e-db05-467e-8757-72f6faeb13d4
+            service_uuid: e20a39f4-73f5-4bc4-a12f-17d1ad07a961
+            value: [0x00, 0x4d, 0x00, 0x00]
+
+  - platform: template
+    id: announce_1
+    name: Announcement Ready to Roll
+    on_press: 
+      then:
+        - ble_client.ble_write: 
+            characteristic_uuid: 08590f7e-db05-467e-8757-72f6faeb13d4
+            service_uuid: e20a39f4-73f5-4bc4-a12f-17d1ad07a961
+            value: [0x00, 0x4d, 0x01, 0x00]
+
+  - platform: template
+    id: announce_2
+    name: Announcement Hey There
+    on_press: 
+      then:
+        - ble_client.ble_write: 
+            characteristic_uuid: 08590f7e-db05-467e-8757-72f6faeb13d4
+            service_uuid: e20a39f4-73f5-4bc4-a12f-17d1ad07a961
+            value: [0x00, 0x4d, 0x02, 0x00]
+
+  - platform: template
+    id: announce_3
+    name: Announcement Squeaky
+    on_press: 
+      then:
+        - ble_client.ble_write: 
+            characteristic_uuid: 08590f7e-db05-467e-8757-72f6faeb13d4
+            service_uuid: e20a39f4-73f5-4bc4-a12f-17d1ad07a961
+            value: [0x00, 0x4d, 0x03, 0x00]
+
+  - platform: template
+    id: announce_4
+    name: Announcement Water and Fire
+    on_press: 
+      then:
+        - ble_client.ble_write: 
+            characteristic_uuid: 08590f7e-db05-467e-8757-72f6faeb13d4
+            service_uuid: e20a39f4-73f5-4bc4-a12f-17d1ad07a961
+            value: [0x00, 0x4d, 0x04, 0x00]
+
+  - platform: template
+    id: announce_5
+    name: Announcement Fastest Freight
+    on_press: 
+      then:
+        - ble_client.ble_write: 
+            characteristic_uuid: 08590f7e-db05-467e-8757-72f6faeb13d4
+            service_uuid: e20a39f4-73f5-4bc4-a12f-17d1ad07a961
+            value: [0x00, 0x4d, 0x05, 0x00]
+
+  - platform: template
+    id: announce_6
+    name: Announcement Pennsylvania Flyer
+    on_press: 
+      then:
+        - ble_client.ble_write: 
+            characteristic_uuid: 08590f7e-db05-467e-8757-72f6faeb13d4
+            service_uuid: e20a39f4-73f5-4bc4-a12f-17d1ad07a961
+            value: [0x00, 0x4d, 0x06, 0x00]
+
+  - platform: template
+    id: disconnect
+    name: Disconnect Train
+    on_press: 
+      then:
+        - ble_client.ble_write: 
+            characteristic_uuid: 08590f7e-db05-467e-8757-72f6faeb13d4
+            service_uuid: e20a39f4-73f5-4bc4-a12f-17d1ad07a961
+            value: [0x00, 0x4b, 0x00, 0x00]
+
+switch:
+  - platform: template
+    id: train_bell
+    name: Bell
+    optimistic: True
+    turn_on_action: 
+      then:
+        - ble_client.ble_write: 
+            characteristic_uuid: 08590f7e-db05-467e-8757-72f6faeb13d4
+            service_uuid: e20a39f4-73f5-4bc4-a12f-17d1ad07a961
+            value: [0x00, 0x47, 0x01]
+    turn_off_action: 
+      then:
+        - ble_client.ble_write: 
+            characteristic_uuid: 08590f7e-db05-467e-8757-72f6faeb13d4
+            service_uuid: e20a39f4-73f5-4bc4-a12f-17d1ad07a961
+            value: [0x00, 0x47, 0x00]
+
+  - platform: template
+    id: train_horn
+    name: Horn
+    optimistic: True
+    turn_on_action: 
+      then:
+        - ble_client.ble_write: 
+            characteristic_uuid: 08590f7e-db05-467e-8757-72f6faeb13d4
+            service_uuid: e20a39f4-73f5-4bc4-a12f-17d1ad07a961
+            value: [0x00, 0x48, 0x01]
+    turn_off_action: 
+      then:
+        - ble_client.ble_write: 
+            characteristic_uuid: 08590f7e-db05-467e-8757-72f6faeb13d4
+            service_uuid: e20a39f4-73f5-4bc4-a12f-17d1ad07a961
+            value: [0x00, 0x48, 0x00]
+
+  - platform: template
+    id: train_lights
+    name: Lights
+    optimistic: True
+    turn_on_action: 
+      then:
+        - ble_client.ble_write: 
+            characteristic_uuid: 08590f7e-db05-467e-8757-72f6faeb13d4
+            service_uuid: e20a39f4-73f5-4bc4-a12f-17d1ad07a961
+            value: [0x00, 0x51, 0x01]
+    turn_off_action: 
+      then:
+        - ble_client.ble_write: 
+            characteristic_uuid: 08590f7e-db05-467e-8757-72f6faeb13d4
+            service_uuid: e20a39f4-73f5-4bc4-a12f-17d1ad07a961
+            value: [0x00, 0x51, 0x00]
+
+
+
+#All Commands from Property404's repo
+#Horn start: 48 01
+#Horn stop : 48 00
+#Bell start: 47 01
+#Bell stop : 47 00
+#Speech : 4d XX 00 (01 to 06)
+#Set speed : 45 <00-1f> (hex from 00 to 31) (only implemented slow/med/fast)
+#Forward : 46 01
+#Reverse : 46 02
+#Disconnect: 4b 0 0
+#Set master volume: 4b <00-07> (not implemented in current iteration)
+#Set steam chuff volume: 4c <00-07> (not implemented in current iteration)
+#Set horn volume/pitch: 44 01 <00-0f> <fe-02> (not implemented in current iteration)
+#Set bell volume/pitch: 44 02 <00-0f> <fe-02> (not implemented in current iteration)
+#Set speech volume/pitch: 44 03 <00-0f> <fe-02> (not implemented in current iteration)
+#Set engine volume/pitch: 44 04 <00-0f> <fe-02> (not implemented in current iteration)
+#Set lights off: 51 00
