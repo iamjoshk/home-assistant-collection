@@ -16,4 +16,8 @@
  
 + PIR Motion Sensor
   + `1byOne 6-SP07NA07`(seen as Smoke-GS558)
-    + Protocol 86 
+    + Protocol 86
+
++ Doorbell
+  + Generic cheap doorbel using EV1527
+  + Requires flex decoder in config
