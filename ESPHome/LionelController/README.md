@@ -20,6 +20,9 @@
   + This is a very inelegant solution. There is a lot of refining and improvement that could be done. It is very much "good enough" for now.
   + All command values need `0x` preceding them in the `value` element in the ESPHome yaml.
     + For example, to stop the train, the command is `00 45 00` and this would be `[0x00, 0x45, 0x00]` in the yaml.
+  + Updated yaml to use the `select` and `number` components to consolidate the commands for speed and announcements. It also enabled finer speed controls.
+    + Unfortunately, in Home Assistant `number` entities are not compatible with Google Assistant (which I use for voice commands around the house). This meant that I had to make a new `input_select`          helper and update my automation to synchronize everything.
+  + No one else in the house uses it, but it makes me happy! 
 
 ### Resources
   + lots of work decoding Lionel's bluetooth signal done previously by [Property404](https://github.com/Property404) here: https://github.com/Property404/lionchief-controller
