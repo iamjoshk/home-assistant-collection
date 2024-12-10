@@ -22,6 +22,7 @@
     + For example, to stop the train, the command is `00 45 00` and this would be `[0x00, 0x45, 0x00]` in the yaml.
   + Updated yaml to use the `select` and `number` components to consolidate the commands for speed and announcements. It also enabled finer speed controls.
     + Unfortunately, in Home Assistant `number` entities are not compatible with Google Assistant (which I use for voice commands around the house). This meant that I had to make a new `input_select`          helper and update my automation to synchronize everything.
+  + Updated yaml to include shutdown and reboot switches for the ESP32. 
   + No one else in the house uses it, but it makes me happy! 
 
 ### Resources
