@@ -1,0 +1,391 @@
+esphome:
+  name: trainble
+  friendly_name: TrainBLE
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+
+# Enable logging
+logger:
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: "+acuFH9RLqwlk0/gsICbPzPCRoIe0pp8+jMzu6sHnNk="
+
+ota:
+  - platform: esphome
+    password: "ae85ebe55a70074143755d9121827790"
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Trainble Fallback Hotspot"
+    password: "1pkeNuzLWuEb"
+
+captive_portal:
+    
+esp32_ble_tracker:
+
+ble_client:
+  - mac_address: FC:1F:C3:9F:A5:4A
+    id: christmas_train
+    name: Christmas Train Status
+    auto_connect: true
+    on_connect:
+      then:
+        - lambda: |-
+            id(ble_connected) = true;
+            ESP_LOGD("ble_client_lambda", "Connected to BLE device");
+    on_disconnect:
+      then:
+        - lambda: |-
+            id(ble_connected) = false;
+            ESP_LOGD("ble_client_lambda", "Disconnected from BLE device");
+
+globals:
+  - id: ble_connected
+    type: bool
+    restore_value: no 
+    initial_value: 'false'
+
+
+binary_sensor:
+  - platform: template 
+    name: Bluetooth
+    id: ble_connection
+    lambda: |- 
+      return id(ble_connected); 
+    device_class: connectivity
+
+
+#sensor:
+#  - platform: ble_client
+#    ble_client_id: christmas_train
+#    id: train_status7
+#    name: Status7
+#    type: characteristic
+#    service_uuid: e20a39f4-73f5-4bc4-a12f-17d1ad07a961
+#    characteristic_uuid: 08590f7e-db05-467e-8757-72f6faeb14d3
+#    notify: True
+#    update_interval: 10s
+
+number:
+  - platform: template
+    id: train_speed_slider
+    name: Train Speed Throttle
+    initial_value: 0
+    min_value: 0
+    max_value: 100
+    step: 10
+    mode: SLIDER
+    optimistic: True
+    unit_of_measurement: percent
+    on_value: 
+      then:            
+        - if:
+            condition:
+              lambda: |-
+                return (x == 0);
+            then:
+            - ble_client.ble_write: 
+                characteristic_uuid: 08590f7e-db05-467e-8757-72f6faeb13d4
+                service_uuid: e20a39f4-73f5-4bc4-a12f-17d1ad07a961
+                value: [0x00, 0x45, 0x00]
+        - if:
+            condition:
+              lambda: |-
+                return (x == 10);
+            then:
+            - ble_client.ble_write: 
+                characteristic_uuid: 08590f7e-db05-467e-8757-72f6faeb13d4
+                service_uuid: e20a39f4-73f5-4bc4-a12f-17d1ad07a961
+                value: [0x00, 0x45, 0x02]
+        - if:
+            condition:
+              lambda: |-
+                return (x == 20);
+            then:
+            - ble_client.ble_write: 
+                characteristic_uuid: 08590f7e-db05-467e-8757-72f6faeb13d4
+                service_uuid: e20a39f4-73f5-4bc4-a12f-17d1ad07a961
+                value: [0x00, 0x45, 0x04]
+
+        - if:
+            condition:
+              lambda: |-
+                return (x == 30);
+            then:
+            - ble_client.ble_write: 
+                characteristic_uuid: 08590f7e-db05-467e-8757-72f6faeb13d4
+                service_uuid: e20a39f4-73f5-4bc4-a12f-17d1ad07a961
+                value: [0x00, 0x45, 0x06]  
+        - if:
+            condition:
+              lambda: |-
+                return (x == 40);
+            then:
+            - ble_client.ble_write: 
+                characteristic_uuid: 08590f7e-db05-467e-8757-72f6faeb13d4
+                service_uuid: e20a39f4-73f5-4bc4-a12f-17d1ad07a961
+                value: [0x00, 0x45, 0x08]
+        - if:
+            condition:
+              lambda: |-
+                return (x == 50);
+            then:
+            - ble_client.ble_write: 
+                characteristic_uuid: 08590f7e-db05-467e-8757-72f6faeb13d4
+                service_uuid: e20a39f4-73f5-4bc4-a12f-17d1ad07a961
+                value: [0x00, 0x45, 0x0a]
+        - if:
+            condition:
+              lambda: |-
+                return (x == 60);
+            then:
+            - ble_client.ble_write: 
+                characteristic_uuid: 08590f7e-db05-467e-8757-72f6faeb13d4
+                service_uuid: e20a39f4-73f5-4bc4-a12f-17d1ad07a961
+                value: [0x00, 0x45, 0x0c]
+        - if:
+            condition:
+              lambda: |-
+                return (x == 70);
+            then:
+            - ble_client.ble_write: 
+                characteristic_uuid: 08590f7e-db05-467e-8757-72f6faeb13d4
+                service_uuid: e20a39f4-73f5-4bc4-a12f-17d1ad07a961
+                value: [0x00, 0x45, 0x0e]
+        - if:
+            condition:
+              lambda: |-
+                return (x == 80);
+            then:
+            - ble_client.ble_write: 
+                characteristic_uuid: 08590f7e-db05-467e-8757-72f6faeb13d4
+                service_uuid: e20a39f4-73f5-4bc4-a12f-17d1ad07a961
+                value: [0x00, 0x45, 0x10]
+        - if:
+            condition:
+              lambda: |-
+                return (x == 90);
+            then:
+            - ble_client.ble_write: 
+                characteristic_uuid: 08590f7e-db05-467e-8757-72f6faeb13d4
+                service_uuid: e20a39f4-73f5-4bc4-a12f-17d1ad07a961
+                value: [0x00, 0x45, 0x12]
+        - if:
+            condition:
+              lambda: |-
+                return (x == 100);
+            then:
+            - ble_client.ble_write: 
+                characteristic_uuid: 08590f7e-db05-467e-8757-72f6faeb13d4
+                service_uuid: e20a39f4-73f5-4bc4-a12f-17d1ad07a961
+                value: [0x00, 0x45, 0x14]
+
+select:
+  - platform: template
+    name: Conductor Announcement
+    id: train_announcement
+    optimistic: True
+    options:
+      - "Random"
+      - "Fastest Freight"
+      - "Hey There"
+      - "Penna Flyer"
+      - "Ready to Roll"
+      - "Squeaky"
+      - "Water and Fire"
+    initial_option: "Random"
+    on_value:
+          then:
+          - if:
+              condition:
+                lambda: |-
+                  return (id(train_announcement).active_index() == 0);
+              then:
+                - ble_client.ble_write: 
+                    characteristic_uuid: 08590f7e-db05-467e-8757-72f6faeb13d4
+                    service_uuid: e20a39f4-73f5-4bc4-a12f-17d1ad07a961
+                    value: [0x00, 0x4d, 0x00, 0x00]
+          - if:
+              condition:
+                lambda: |-
+                  return (id(train_announcement).active_index() == 1);
+              then:
+                - ble_client.ble_write: 
+                    characteristic_uuid: 08590f7e-db05-467e-8757-72f6faeb13d4
+                    service_uuid: e20a39f4-73f5-4bc4-a12f-17d1ad07a961
+                    value: [0x00, 0x4d, 0x05, 0x00]
+          - if:
+              condition:
+                lambda: |-
+                  return (id(train_announcement).active_index() == 2);
+              then:
+                - ble_client.ble_write: 
+                    characteristic_uuid: 08590f7e-db05-467e-8757-72f6faeb13d4
+                    service_uuid: e20a39f4-73f5-4bc4-a12f-17d1ad07a961
+                    value: [0x00, 0x4d, 0x02, 0x00]
+          - if:
+              condition:
+                lambda: |-
+                  return (id(train_announcement).active_index() == 3);
+              then:
+                - ble_client.ble_write: 
+                    characteristic_uuid: 08590f7e-db05-467e-8757-72f6faeb13d4
+                    service_uuid: e20a39f4-73f5-4bc4-a12f-17d1ad07a961
+                    value: [0x00, 0x4d, 0x06, 0x00]
+          - if:
+              condition:
+                lambda: |-
+                  return (id(train_announcement).active_index() == 4);
+              then:
+                - ble_client.ble_write: 
+                    characteristic_uuid: 08590f7e-db05-467e-8757-72f6faeb13d4
+                    service_uuid: e20a39f4-73f5-4bc4-a12f-17d1ad07a961
+                    value: [0x00, 0x4d, 0x01, 0x00]
+          - if:
+              condition:
+                lambda: |-
+                  return (id(train_announcement).active_index() == 5);
+              then:
+                - ble_client.ble_write: 
+                    characteristic_uuid: 08590f7e-db05-467e-8757-72f6faeb13d4
+                    service_uuid: e20a39f4-73f5-4bc4-a12f-17d1ad07a961
+                    value: [0x00, 0x4d, 0x03, 0x00]
+          - if:
+              condition:
+                lambda: |-
+                  return (id(train_announcement).active_index() == 6);
+              then:
+                - ble_client.ble_write: 
+                    characteristic_uuid: 08590f7e-db05-467e-8757-72f6faeb13d4
+                    service_uuid: e20a39f4-73f5-4bc4-a12f-17d1ad07a961
+                    value: [0x00, 0x4d, 0x04, 0x00]
+
+button:
+  - platform: template
+    id: train_stop
+    name: Stop
+    on_press: 
+      then:
+        - ble_client.ble_write: 
+            characteristic_uuid: 08590f7e-db05-467e-8757-72f6faeb13d4
+            service_uuid: e20a39f4-73f5-4bc4-a12f-17d1ad07a961
+            value: [0x00, 0x45, 0x00]
+
+  - platform: template
+    id: train_forward
+    name: Forward
+    on_press: 
+      then:
+        - ble_client.ble_write: 
+            characteristic_uuid: 08590f7e-db05-467e-8757-72f6faeb13d4
+            service_uuid: e20a39f4-73f5-4bc4-a12f-17d1ad07a961
+            value: [0x00, 0x46, 0x01]
+
+  - platform: template
+    id: train_reverse
+    name: Reverse
+    on_press: 
+      then:
+        - ble_client.ble_write: 
+            characteristic_uuid: 08590f7e-db05-467e-8757-72f6faeb13d4
+            service_uuid: e20a39f4-73f5-4bc4-a12f-17d1ad07a961
+            value: [0x00, 0x46, 0x02]
+
+  - platform: template
+    id: disconnect
+    name: Disconnect Train
+    on_press: 
+      then:
+        - ble_client.ble_write: 
+            characteristic_uuid: 08590f7e-db05-467e-8757-72f6faeb13d4
+            service_uuid: e20a39f4-73f5-4bc4-a12f-17d1ad07a961
+            value: [0x00, 0x4b, 0x00, 0x00]
+
+switch:
+  - platform: template
+    id: train_bell
+    name: Bell
+    optimistic: True
+    turn_on_action: 
+      then:
+        - ble_client.ble_write: 
+            characteristic_uuid: 08590f7e-db05-467e-8757-72f6faeb13d4
+            service_uuid: e20a39f4-73f5-4bc4-a12f-17d1ad07a961
+            value: [0x00, 0x47, 0x01]
+    turn_off_action: 
+      then:
+        - ble_client.ble_write: 
+            characteristic_uuid: 08590f7e-db05-467e-8757-72f6faeb13d4
+            service_uuid: e20a39f4-73f5-4bc4-a12f-17d1ad07a961
+            value: [0x00, 0x47, 0x00]
+
+  - platform: template
+    id: train_horn
+    name: Horn
+    optimistic: True
+    turn_on_action: 
+      then:
+        - ble_client.ble_write: 
+            characteristic_uuid: 08590f7e-db05-467e-8757-72f6faeb13d4
+            service_uuid: e20a39f4-73f5-4bc4-a12f-17d1ad07a961
+            value: [0x00, 0x48, 0x01]
+    turn_off_action: 
+      then:
+        - ble_client.ble_write: 
+            characteristic_uuid: 08590f7e-db05-467e-8757-72f6faeb13d4
+            service_uuid: e20a39f4-73f5-4bc4-a12f-17d1ad07a961
+            value: [0x00, 0x48, 0x00]
+
+  - platform: template
+    id: train_lights
+    name: Lights
+    optimistic: True
+    restore_mode: RESTORE_DEFAULT_ON
+    turn_on_action: 
+      then:
+        - ble_client.ble_write: 
+            characteristic_uuid: 08590f7e-db05-467e-8757-72f6faeb13d4
+            service_uuid: e20a39f4-73f5-4bc4-a12f-17d1ad07a961
+            value: [0x00, 0x51, 0x01]
+    turn_off_action: 
+      then:
+        - ble_client.ble_write: 
+            characteristic_uuid: 08590f7e-db05-467e-8757-72f6faeb13d4
+            service_uuid: e20a39f4-73f5-4bc4-a12f-17d1ad07a961
+            value: [0x00, 0x51, 0x00]
+            
+  - platform: shutdown
+    name: "Train BLE Client Shutdown"
+
+  - platform: restart
+    name: "Train BLE Client Restart"
+
+
+#All Commands
+#Horn start: 48 01
+#Horn stop : 48 00
+#Bell start: 47 01
+#Bell stop : 47 00
+#Speech : 4d XX 00 (01 to 06)
+#Set speed : 45 <00-1f> (hex from 00 to 31)
+#Forward : 46 01
+#Reverse : 46 02
+#Disconnect: 4b 0 0
+#Set master volume: 4b <00-07>
+#Set steam chuff volume: 4c <00-07>
+#Set horn volume/pitch: 44 01 <00-0f> <fe-02>
+#Set bell volume/pitch: 44 02 <00-0f> <fe-02>
+#Set speech volume/pitch: 44 03 <00-0f> <fe-02>
+#Set engine volume/pitch: 44 04 <00-0f> <fe-02>
+#Set lights off: 51 00
+
+
