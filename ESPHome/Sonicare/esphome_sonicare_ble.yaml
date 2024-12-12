@@ -14,24 +14,24 @@ logger:
 # Enable Home Assistant API
 api:
   encryption:
-    key: "u8Ec87GTH6K6fBJcv+tFE451Oba6u8YvCwXsvaWBAFU="
+    key: 
 
 ota:
   - platform: esphome
-    password: "cedaa109b03f2a4a39379e5db3f5c8a9"
+    password: 
 
 wifi:
   ssid: !secret wifi_ssid
   password: !secret wifi_password
   manual_ip:
-    static_ip: 192.168.86.56
-    gateway: 192.168.86.1
+    static_ip: 192.168.xx.xx
+    gateway: 192.168.xx.xx
     subnet: 255.255.255.0
 
   # Enable fallback hotspot (captive portal) in case wifi connection fails
   ap:
     ssid: "Bleclient1 Fallback Hotspot"
-    password: "UiiQNuZEhL1n"
+    password: 
 
 captive_portal:
 
@@ -39,7 +39,7 @@ esp32_ble_tracker:
 
 #BigE's toothbrush
 ble_client:
-  - mac_address: 24:E5:AA:9C:16:26
+  - mac_address: XX:XX:XX:XX:XX:XX
     id: sonicare_BigE
     name: BigE Toothbrush
     auto_connect: true
@@ -56,7 +56,7 @@ ble_client:
 
 
 #LittleE's toothbrush
-  - mac_address: 24:E5:AA:36:FB:C7
+  - mac_address: XX:XX:XX:XX:XX:XX
     id: sonicare_LittleE
     name: LittleE Toothbrush
     auto_connect: true
