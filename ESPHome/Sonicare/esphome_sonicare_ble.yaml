@@ -338,28 +338,6 @@ sensor:
     update_interval: 5s
     accuracy_decimals: 0
 
-# text sensors seem to crash ESP32 after a couple of minutes
-#text_sensor:
-# LittleE
-#  - platform: ble_client
-#    ble_client_id: sonicare_LittleE
-#    id: LittleE_last_session_datetime
-#    name: LittleE Last Active
-#    service_uuid: 477ea600-a260-11e4-ae37-0002a5d50001
-#    characteristic_uuid: 477ea600-a260-11e4-ae37-0002a5d54050
-#    notify: True
-#    dBigEice_class: timestamp
-
-# BigE
-#  - platform: ble_client
-#    ble_client_id: sonicare_BigE
-#    id: BigE_last_session_datetime
-#    name: BigE Last Active
-#    service_uuid: 477ea600-a260-11e4-ae37-0002a5d50001
-#    characteristic_uuid: 477ea600-a260-11e4-ae37-0002a5d54050
-#    notify: True
-#    dBigEice_class: timestamp
-
 switch:
   - platform: shutdown
     name: "BLEClient1 Shutdown"
