@@ -40,3 +40,5 @@ characteristic_uuid: 2A24
 ```
 
 
+
+Different toothbrushes appear to have different available `service_uuid`s. There is a lot of good information available here: https://blog.jmittendorfer.at/artikel/2020/10/my-toothbrush-streams-gyroscope-data/
