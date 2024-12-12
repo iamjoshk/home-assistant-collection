@@ -8,7 +8,7 @@ Example yaml: [esphome_sonicare_ble.yaml](https://github.com/iamjoshk/home-assis
 Battery:
 ```
 service_uuid: 180F
-characteristic_uuid: 2A19
+characteristic_uuid: 2A19https://blog.jmittendorfer.at/artikel/2020/10/my-toothbrush-streams-gyroscope-data/
 ```
 
 Active time in seconds:
@@ -41,4 +41,4 @@ characteristic_uuid: 2A24
 
 
 
-Different toothbrushes appear to have different available `service_uuid`s. There is a lot of good information available here: https://blog.jmittendorfer.at/artikel/2020/10/my-toothbrush-streams-gyroscope-data/
+Different toothbrushes appear to have different available `service_uuid`. There is a lot of good information available here: https://blog.jmittendorfer.at/artikel/2020/10/my-toothbrush-streams-gyroscope-data/
