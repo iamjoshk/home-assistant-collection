@@ -3,6 +3,8 @@ Sonicare toothbrush BLE info via ESPHome BLE Client
 Toothbrush must be active to read data. It will connect when powered on, when the brushing mode is changed, or for a short period of time when placed on the charger. 
 When disconnected, states in Home Assistant with show `Unavailable` unless ESPHome components are set up to represent last known value or reset to a default initial value.
 
+Example yaml: [esphome_sonicare_ble.yaml](https://github.com/iamjoshk/home-assistant-collection/blob/main/ESPHome/Sonicare/esphome_sonicare_ble.yaml)
+
 Battery:
 ```
 service_uuid: 180F
