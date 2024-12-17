@@ -136,7 +136,7 @@ sensor:
     service_uuid: 180F
     characteristic_uuid: 2A19
     notify: True
-    unit_of_measurement: percent
+    unit_of_measurement: '%'
     device_class: battery
     internal: True
     on_value:
@@ -160,6 +160,7 @@ sensor:
     lambda: |-
       return id(LittleE_battery_last_value); 
     device_class: battery
+    unit_of_measurement: '%'
     accuracy_decimals: 0
 
 # LittleE
@@ -196,6 +197,7 @@ sensor:
     lambda: |-
       return id(LittleE_active_seconds); 
     device_class: duration
+    unit_of_measurement: s
     accuracy_decimals: 0
     update_interval: 1s
 
@@ -241,7 +243,7 @@ sensor:
     service_uuid: 180F
     characteristic_uuid: 2A19
     notify: True
-    unit_of_measurement: percent
+    unit_of_measurement: '%'
     device_class: battery
     internal: True
     on_value:
@@ -265,6 +267,7 @@ sensor:
     lambda: |-
       return id(BigE_battery_last_value); 
     device_class: battery
+    unit_of_measurement: '%'
     accuracy_decimals: 0
 
 # BigE
@@ -301,6 +304,7 @@ sensor:
     lambda: |-
       return id(BigE_active_seconds); 
     device_class: duration
+    unit_of_measurement: s
     accuracy_decimals: 0
     update_interval: 1s
 
