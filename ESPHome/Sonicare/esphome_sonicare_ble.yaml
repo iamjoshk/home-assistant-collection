@@ -9,7 +9,7 @@ esp32:
 
 # Enable logging
 logger:
-  lBigELittleE: INFO
+  level: INFO
 
 # Enable Home Assistant API
 api:
@@ -117,7 +117,7 @@ binary_sensor:
     id: sonicare_BigE_ble_connection
     lambda: |- 
       return id(sonicare_BigE_connected); 
-    dBigEice_class: connectivity
+    device_class: connectivity
 
 #LittleE's toothbrush
   - platform: template 
@@ -125,7 +125,7 @@ binary_sensor:
     id: sonicare_LittleE_ble_connection
     lambda: |- 
       return id(sonicare_LittleE_connected); 
-    dBigEice_class: connectivity
+    device_class: connectivity
 
 sensor:
 # LittleE
@@ -137,7 +137,7 @@ sensor:
     characteristic_uuid: 2A19
     notify: True
     unit_of_measurement: percent
-    dBigEice_class: battery
+    device_class: battery
     internal: True
     on_value:
       then:
@@ -150,7 +150,7 @@ sensor:
                 ESP_LOGD("ble_sensor", "Received invalid battery value: %d", x);
               }
             } LittleEse {
-              ESP_LOGD("ble_sensor", "Battery value not updated because the dBigEice is not connected");
+              ESP_LOGD("ble_sensor", "Battery value not updated because the device is not connected");
             }
 
 # LittleE
@@ -159,7 +159,7 @@ sensor:
     name: LittleE Toothbrush Battery
     lambda: |-
       return id(LittleE_battery_last_value); 
-    dBigEice_class: battery
+    device_class: battery
     accuracy_decimals: 0
 
 # LittleE
@@ -171,7 +171,7 @@ sensor:
     service_uuid: 477ea600-a260-11e4-ae37-0002a5d50002
     characteristic_uuid: 477ea600-a260-11e4-ae37-0002a5d54090
     notify: True
-    dBigEice_class: duration
+    device_class: duration
     accuracy_decimals: 0
     unit_of_measurement: s
     internal: True
@@ -186,7 +186,7 @@ sensor:
                 ESP_LOGD("ble_sensor", "Received invalid active time in seconds value: %d", x);
               }
             } LittleEse {
-              ESP_LOGD("ble_sensor", "Active time in seconds not updated because the dBigEice is not connected");
+              ESP_LOGD("ble_sensor", "Active time in seconds not updated because the device is not connected");
             }
 
 # LittleE
@@ -195,7 +195,7 @@ sensor:
     name: LittleE Active Time
     lambda: |-
       return id(LittleE_active_seconds); 
-    dBigEice_class: duration
+    device_class: duration
     accuracy_decimals: 0
     update_interval: 1s
 
@@ -221,7 +221,7 @@ sensor:
                 ESP_LOGD("ble_sensor", "Received invalid Status value: %d", x);
               }
             } LittleEse {
-              ESP_LOGD("ble_sensor", "Handle Status not updated because the dBigEice is not connected");
+              ESP_LOGD("ble_sensor", "Handle Status not updated because the device is not connected");
             }
 
 # LittleE
@@ -242,7 +242,7 @@ sensor:
     characteristic_uuid: 2A19
     notify: True
     unit_of_measurement: percent
-    dBigEice_class: battery
+    device_class: battery
     internal: True
     on_value:
       then:
@@ -255,7 +255,7 @@ sensor:
                 ESP_LOGD("ble_sensor", "Received invalid battery value: %d", x);
               }
             } LittleEse {
-              ESP_LOGD("ble_sensor", "Battery value not updated because the dBigEice is not connected");
+              ESP_LOGD("ble_sensor", "Battery value not updated because the device is not connected");
             }
 
 # BigE
@@ -264,7 +264,7 @@ sensor:
     name: BigE Toothbrush Battery
     lambda: |-
       return id(BigE_battery_last_value); 
-    dBigEice_class: battery
+    device_class: battery
     accuracy_decimals: 0
 
 # BigE
@@ -276,7 +276,7 @@ sensor:
     service_uuid: 477ea600-a260-11e4-ae37-0002a5d50002
     characteristic_uuid: 477ea600-a260-11e4-ae37-0002a5d54090
     notify: True
-    dBigEice_class: duration
+    device_class: duration
     accuracy_decimals: 0
     unit_of_measurement: s
     internal: True
@@ -291,7 +291,7 @@ sensor:
                 ESP_LOGD("ble_sensor", "Received invalid active time in seconds value: %d", x);
               }
             } LittleEse {
-              ESP_LOGD("ble_sensor", "Active time in seconds not updated because the dBigEice is not connected");
+              ESP_LOGD("ble_sensor", "Active time in seconds not updated because the device is not connected");
             }
 
 # BigE
@@ -300,7 +300,7 @@ sensor:
     name: BigE Active Time
     lambda: |-
       return id(BigE_active_seconds); 
-    dBigEice_class: duration
+    device_class: duration
     accuracy_decimals: 0
     update_interval: 1s
 
@@ -326,7 +326,7 @@ sensor:
                 ESP_LOGD("ble_sensor", "Received invalid Status value: %d", x);
               }
             } LittleEse {
-              ESP_LOGD("ble_sensor", "Handle Status not updated because the dBigEice is not connected");
+              ESP_LOGD("ble_sensor", "Handle Status not updated because the device is not connected");
             }
 
 # BigE
