@@ -146,10 +146,10 @@ sensor:
               if (x >= 0 && x <= 100) {
                 id(LittleE_battery_last_value) = x;
                 ESP_LOGD("ble_sensor", "Battery value updated: %d", id(LittleE_battery_last_value));
-              } LittleEse {
+              } else {
                 ESP_LOGD("ble_sensor", "Received invalid battery value: %d", x);
               }
-            } LittleEse {
+            } else {
               ESP_LOGD("ble_sensor", "Battery value not updated because the device is not connected");
             }
 
@@ -183,10 +183,10 @@ sensor:
               if (x >= 0 && x <= 121) {
                 id(LittleE_active_seconds) = x;
                 ESP_LOGD("ble_sensor", "Active time in seconds updated: %d", id(LittleE_active_seconds));
-              } LittleEse {
+              } else {
                 ESP_LOGD("ble_sensor", "Received invalid active time in seconds value: %d", x);
               }
-            } LittleEse {
+            } else {
               ESP_LOGD("ble_sensor", "Active time in seconds not updated because the device is not connected");
             }
 
@@ -219,10 +219,10 @@ sensor:
               if (x >= 0 && x <= 7) {
                 id(LittleE_toothbrush_status) = x;
                 ESP_LOGD("ble_sensor", "Handle Status Updated: %d", id(LittleE_toothbrush_status));
-              } LittleEse {
+              } else {
                 ESP_LOGD("ble_sensor", "Received invalid Status value: %d", x);
               }
-            } LittleEse {
+            } else {
               ESP_LOGD("ble_sensor", "Handle Status not updated because the device is not connected");
             }
 
@@ -253,10 +253,10 @@ sensor:
               if (x >= 0 && x <= 100) {
                 id(BigE_battery_last_value) = x;
                 ESP_LOGD("ble_sensor", "Battery value updated: %d", id(BigE_battery_last_value));
-              } LittleEse {
+              } else {
                 ESP_LOGD("ble_sensor", "Received invalid battery value: %d", x);
               }
-            } LittleEse {
+            } else {
               ESP_LOGD("ble_sensor", "Battery value not updated because the device is not connected");
             }
 
@@ -290,10 +290,10 @@ sensor:
               if (x >= 0 && x <= 121) {
                 id(BigE_active_seconds) = x;
                 ESP_LOGD("ble_sensor", "Active time in seconds updated: %d", id(BigE_active_seconds));
-              } LittleEse {
+              } else {
                 ESP_LOGD("ble_sensor", "Received invalid active time in seconds value: %d", x);
               }
-            } LittleEse {
+            } else {
               ESP_LOGD("ble_sensor", "Active time in seconds not updated because the device is not connected");
             }
 
@@ -326,10 +326,10 @@ sensor:
               if (x >= 0 && x <= 7) {
                 id(BigE_toothbrush_status) = x;
                 ESP_LOGD("ble_sensor", "Handle Status Updated: %d", id(BigE_toothbrush_status));
-              } LittleEse {
+              } else {
                 ESP_LOGD("ble_sensor", "Received invalid Status value: %d", x);
               }
-            } LittleEse {
+            } else {
               ESP_LOGD("ble_sensor", "Handle Status not updated because the device is not connected");
             }
 
