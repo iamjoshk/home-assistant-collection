@@ -6,7 +6,8 @@
   
 + Temperature and Humidty Sensors
   + `Vauno-EN8851` (seen as Vauno-EN8822C)
-    + Protocol 230 
+    + Protocol 230
+    + ID CODE CHANGES WITH BATTERY CHANGE (changes state topic)
   + `Meade` (seen as Hideki-TS04)
     + Protocol 42
 
