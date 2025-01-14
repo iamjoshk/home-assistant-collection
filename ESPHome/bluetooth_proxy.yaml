@@ -13,14 +13,19 @@ logger:
 # Enable Home Assistant API
 api:
   encryption:
-    key: "removed"
+    key: ""
 
 ota:
-  password: "removed"
+  platform: esphome
+  password: ""
 
 wifi:
   ssid: !secret wifi_ssid
   password: !secret wifi_password
+  manual_ip:
+    static_ip: 192.168.xxx.xxx
+    gateway: 192.168.xxx.xxx
+    subnet: 255.255.255.0
 
   # Enable fallback hotspot (captive portal) in case wifi connection fails
   ap:
@@ -28,18 +33,30 @@ wifi:
     password: "2nx6ZXrOQnfz"
 
 esp32_ble_tracker:
+  id: btproxy1_tracker
   scan_parameters:
-    interval: 1100ms
-    window: 1100ms
+    interval: 320ms
+    window: 30ms
     active: true
 
 bluetooth_proxy:
   active: true
-
+  id: ble_proxy
 
 captive_portal:
   
 switch:
   - platform: shutdown
-    name: "BTProxy1 Power"
+    name: "BTProxy1 Shutdown"
     restore_mode: ALWAYS_OFF
+
+  - platform: restart
+    name: "BTProxy1 Restart"
+    restore_mode: ALWAYS_OFF
+
+text_sensor:
+  - platform: wifi_info
+    mac_address: 
+      name: "BTProxy1 MAC Address"
+
+
