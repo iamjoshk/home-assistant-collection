@@ -9,7 +9,7 @@ from zigpy.zcl.clusters.general import Basic
 (
     QuirkBuilder("Third Reality, Inc", "3RSM0147Z")
     .replaces(RelativeHumidity)
-    .number(
+    .sensor(
         RelativeHumidity.AttributeDefs.measured_value.name,
         RelativeHumidity.cluster_id,
         multiplier=0.01,
