@@ -5,10 +5,9 @@ from zigpy.zcl.clusters.general import Basic
 
 (
     QuirkBuilder("Third Reality, Inc","3RSM0147Z")
-    .adds(RelativeHumidity)
     .sensor(
         RelativeHumidity.cluster_id,
-        RelativeHumidity.AttributeDefs.measured_value.name,
+        RelativeHumidity.AttributeDefs.measured_value.id,
         device_class="SensorDeviceClass.MOISTURE",
         state_class="SensorDeviceClass.MOISTURE",
         unit="%",
