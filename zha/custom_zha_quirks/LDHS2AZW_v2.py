@@ -34,7 +34,7 @@ class CustomPowerConfigurationCluster(PowerConfigurationCluster):
 
 (
     QuirkBuilder("Leedarson", "LDHD2AZW")
-    .cluster(
+    .adds(
         CustomPowerConfigurationCluster
     )
     .skip_configuration()
