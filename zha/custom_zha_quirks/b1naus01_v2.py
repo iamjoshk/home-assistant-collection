@@ -1,96 +1,166 @@
 """Xiaomi aqara single rocker switch devices."""
-from zigpy.quirks.v2 import QuirkBuilder, EntityType, NumberDeviceClass
-from zigpy.types import enum
+
+import copy
+from enum import Enum
+
+from zigpy.types import t
+
+from zigpy.quirks.v2 import QuirkBuilder, CustomDeviceV2
+from zigpy.quirks.v2.homeassistant import PERCENTAGE, EntityType, EntityPlatform
+from zigpy.quirks.v2.homeassistant.sensor import SensorDeviceClass, SensorStateClass
 from zigpy.zcl.clusters.general import (
+    Alarms,
+    AnalogInput,
     Basic,
+    DeviceTemperature,
     GreenPowerProxy,
     Groups,
     Identify,
+    MultistateInput,
     OnOff,
     Ota,
     Scenes,
     Time,
 )
 
-class OppleOperationMode(enum.Enum8):
+from zigpy.quirks import CustomCluster
+
+from zhaquirks import Bus, EventableCluster
+from zhaquirks.const import (
+    ARGS,
+    ATTRIBUTE_ID,
+    ATTRIBUTE_NAME,
+    BUTTON,
+    BUTTON_1,
+    BUTTON_2,
+    CLUSTER_ID,
+    COMMAND,
+    COMMAND_ATTRIBUTE_UPDATED,
+    DEVICE_TYPE,
+    DOUBLE_PRESS,
+    ENDPOINT_ID,
+    ENDPOINTS,
+    INPUT_CLUSTERS,
+    MODELS_INFO,
+    OUTPUT_CLUSTERS,
+    PROFILE_ID,
+    SHORT_PRESS,
+    SKIP_CONFIGURATION,
+    VALUE,
+)
+from zhaquirks.xiaomi import (
+    LUMI,
+    AnalogInputCluster,
+    BasicCluster,
+    DeviceTemperatureCluster,
+    ElectricalMeasurementCluster,
+    MeteringCluster,
+    OnOffCluster,
+    XiaomiCustomDevice,
+)
+
+from zhaquirks.xiaomi.aqara.opple_remote import MultistateInputCluster, OppleCluster
+
+
+class OppleOperationMode(t.uint8_t, Enum):
     """Opple operation_mode enum."""
+
     Decoupled = 0x00
     Coupled = 0x01
+    
 
-# Using QuirkBuilder to create the quirk
+class OppleSwitchMode(t.uint8_t, Enum):
+    """Opple switch_mode enum."""
+
+    Fast = 0x01
+    Multi = 0x02
+
+
+class OppleSwitchType(t.uint8_t, Enum):
+    """Opple switch_type enum."""
+
+    Toggle = 0x01
+    Momentary = 0x02
+
+
+class OppleIndicatorLight(t.uint8_t, Enum):
+    """Opple indicator light enum."""
+
+    Normal = 0x00
+    Reverse = 0x01
+
+
+class OppleSwitchCluster(OppleCluster, EventableCluster):
+    """Xiaomi mfg cluster implementation."""
+
+    attributes = copy.deepcopy(OppleCluster.attributes)
+    attributes.update(
+        {
+            0x0002: ("power_outage_count", t.uint8_t, True),
+            0x000A: ("switch_type", OppleSwitchType, True),
+            0x00F0: ("reverse_indicator_light", OppleIndicatorLight, True),
+            0x0125: ("switch_mode", OppleSwitchMode, True),
+            0x0200: ("operation_mode", OppleOperationMode, True),
+            0x0201: ("power_outage_memory", t.Bool, True),
+            0x0202: ("auto_off", t.Bool, True),
+            0x0203: ("do_not_disturb", t.Bool, True),
+            0x0000: ('toggle_operation_mode', OppleOperationMode, True),
+            
+        }
+    )
+
+    def __init__(self, *args, **kwargs):
+        """Init."""
+        self.power_bus = Bus()
+        super().__init__(*args, **kwargs)
+
+
+   
+    async def toggle_operation_mode(self):
+        """Toggle the operation mode between coupled and decoupled."""
+        result = await self.read_attributes(['operation_mode'])
+        success, _failure = result
+        if success and 'operation_mode' in success:
+            current_mode = success['operation_mode']
+            new_mode = 0 if current_mode == 1 else 1
+            await self.write_attributes({'operation_mode': new_mode})
+            
+        
+class b1naus01(XiaomiCustomDevice):
+    """Aqara single gang switch device."""
+
+    class WallSwitchMultistateInputCluster(EventableCluster, MultistateInput):
+        """WallSwitchMultistateInputCluster: fire events corresponding to press type."""
+
+    def __init__(self, *args, **kwargs):
+        """Init."""
+        self.power_bus = Bus()
+        super().__init__(*args, **kwargs)
+        
+
+class EventableOnOffCluster(EventableCluster, OnOffCluster):
+    
+    def __init__(self, *args, **kwargs):
+        """Init."""
+        self.power_bus = Bus()
+        super().__init__(*args, **kwargs)
+    
 (
     QuirkBuilder("LUMI", "lumi.switch.b1naus01")
-    # Define the operation mode attribute
-    .enum(
-        attribute_name="operation_mode",
-        enum_class=OppleOperationMode,
-        cluster_id=0xFCC0,  # OppleSwitchCluster
-        endpoint_id=1,
-        entity_platform="select",
-        entity_type=EntityType.CONFIG,
-        translation_key="operation_mode",
-        fallback_name="Operation Mode"
-    )
-    # Add required clusters
-    .replacement(
-        {
-            "endpoints": {
-                1: {
-                    "device_type": 0x0100,  # zha.DeviceType.ON_OFF_LIGHT
-                    "input_clusters": [
-                        Basic.cluster_id,
-                        "DeviceTemperatureCluster",
-                        Identify.cluster_id,
-                        Groups.cluster_id,
-                        Scenes.cluster_id,
-                        "OnOffCluster",
-                        "MultistateInputCluster",
-                        "XiaomiMeteringCluster",
-                        0xFCC0,  # OppleSwitchCluster
-                        0x0B04,
-                    ],
-                    "output_clusters": [
-                        Time.cluster_id,
-                        Ota.cluster_id,
-                    ],
-                },
-                41: {
-                    "device_type": 0x0000,  # zha.DeviceType.ON_OFF_SWITCH
-                    "input_clusters": [
-                        "MultistateInputCluster",
-                    ],
-                    "output_clusters": [],
-                },
-                242: {
-                    "profile_id": 0xA1E0,  # zgp.PROFILE_ID
-                    "device_type": 0x0061,  # zgp.DeviceType.PROXY_BASIC
-                    "input_clusters": [],
-                    "output_clusters": [
-                        GreenPowerProxy.cluster_id,
-                    ],
-                },
-            }
-        }
-    )
-    # Add device automation triggers
-    .device_automation_triggers(
-        {
-            ("button_single", "button"): {
-                "endpoint_id": 41,
-                "cluster_id": 18,
-                "params": {"attr_id": 0x0055, "press_type": "single", "value": 1},
-            },
-            ("button_double", "button"): {
-                "endpoint_id": 41,
-                "cluster_id": 18,
-                "params": {"attr_id": 0x0055, "press_type": "double", "value": 2},
-            },
-            ("button_hold", "button"): {
-                "endpoint_id": 1,
-                "cluster_id": 0xFCC0,
-                "params": {"attr_id": 0x00FC, "press_type": "hold", "value": 0},
-            },
-        }
+    .adds(OppleSwitchCluster, endpoint_id=1)
+    .adds(b1naus01.WallSwitchMultistateInputCluster, endpoint_id=1)
+    .adds(EventableOnOffCluster, endpoint_id=1)
+    .binary_sensor(
+        OppleSwitchCluster.AttributeDefs.operation_mode.name,
+        OppleSwitchCluster.cluster_id,
+        translation_key="couple_mode",
+        fallback_name="Coupled Mode"
+     )
+    .command_button(
+        command_name="toggle_operation_mode",
+        cluster_id=OppleSwitchCluster.cluster_id,
+        translation_key="toggle_operation_mode",
+        fallback_name="Toggle Operation Mode"
     )
     .add_to_registry()
 )
