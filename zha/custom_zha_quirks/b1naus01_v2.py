@@ -4,7 +4,7 @@ import logging
 from zigpy.profiles import zha
 from zigpy.quirks import CustomEndpoint
 from zigpy.quirks.v2 import QuirkBuilder, CustomDeviceV2
-from zigpy.types import t
+from zigpy.types import t, LVBytes
 from zigpy.zcl.clusters.general import (
     MultistateInput, 
     OnOff,
@@ -13,17 +13,27 @@ from zigpy.zcl.clusters.general import (
     Identify, 
     Groups
 )
+
 from zhaquirks import EventableCluster, CustomCluster
 from zhaquirks.const import (
+    ATTRIBUTE_ID,
+    ATTRIBUTE_NAME,
+    ARGS,
+    CLUSTER_ID,
     COMMAND,
-    PRESS_TYPE,
-    VALUE,
-    ZHA_SEND_EVENT,
-    PROFILE_ID,
+    COMMAND_BUTTON_DOUBLE,
+    COMMAND_BUTTON_SINGLE,
     DEVICE_TYPE,
+    ENDPOINT_ID,
     INPUT_CLUSTERS,
     OUTPUT_CLUSTERS,
+    PRESS_TYPE,
+    PROFILE_ID,
+    VALUE,
+    ZHA_SEND_EVENT,
 )
+
+
 from zhaquirks.xiaomi import XiaomiAqaraE1Cluster
 from zhaquirks.xiaomi.aqara.opple_remote import MultistateInputCluster
 
@@ -65,8 +75,9 @@ class AqaraB1naus01Device(CustomDeviceV2):
             replacement_data,
             self,
         )
+        
 
-class AqaraB1naus01OnOffCluster(OnOff, EventableCluster):
+class AqaraB1naus01OnOffCluster(EventableCluster, OnOff):
     """Custom OnOff cluster."""
 
     def handle_cluster_request(self, tsn, command_id, args):
@@ -79,32 +90,45 @@ class AqaraB1naus01OnOffCluster(OnOff, EventableCluster):
         _LOGGER.debug("OnOff attribute update - ID: 0x%04x, Value: %s", attrid, value)
         super()._update_attribute(attrid, value)
         
-        # Always emit the event for attribute updates
+        # Get attribute name safely
+        attribute_name = f"Unknown_{attrid:04x}"
+        if attrid in self.attributes:
+            attribute_def = self.attributes[attrid]
+            attribute_name = attribute_def.name
+        
+        # Emit the event for attribute updates
         self.listener_event(
             ZHA_SEND_EVENT,
+            "attribute_updated",
             {
-                "command": "attribute_updated",
                 "attribute_id": attrid,
-                "attribute_name": self.attributes.get(attrid, (f"Unknown_{attrid:04x}", None))[0],
-                "value": value,
-                "cluster_id": self.cluster_id,
-                "endpoint_id": self.endpoint.endpoint_id,
+                "attribute_name": attribute_name,
+                "value": value
             }
         )
+        
 
-class AqaraB1naus01ManufCluster(XiaomiAqaraE1Cluster, EventableCluster):
+class AqaraB1naus01ManufCluster(EventableCluster, XiaomiAqaraE1Cluster):
     """Aqara manufacturer specific cluster."""
 
-    attributes = XiaomiAqaraE1Cluster.attributes.copy()
-    attributes.update({
-        0x0200: ("operation_mode", t.uint8_t),
-        0x00FC: ("action_state", t.uint8_t),  # Used in relay mode
-        0x0112: ("decoupled_button", t.uint8_t),  # Used in decoupled mode
-    })
+    # Define cluster ID if not already defined
+    cluster_id = LUMI_CLUSTER_ID
+
+    # Define the attributes more explicitly
+    attributes = {
+        # Keep existing XiaomiAqaraE1Cluster attributes
+        **XiaomiAqaraE1Cluster.attributes,
+        # Add our custom attributes with proper ZCL definitions
+        0x0200: ('operation_mode', t.uint8_t, True),  # Add True for read permission
+        0x00FC: ('action_state', t.uint8_t, True),
+        0x0112: ('decoupled_button', t.uint8_t, True),
+    }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._operation_mode = OPMODE_CONTROL_RELAY
+        # Initialize the attribute value
+        self._update_attribute(0x0200, self._operation_mode)
 
     def _handle_cluster_request(self, tsn, command_id, args):
         """Handle cluster specific commands."""
@@ -143,12 +167,10 @@ class AqaraB1naus01ManufCluster(XiaomiAqaraE1Cluster, EventableCluster):
                                 _LOGGER.debug("Detected button press: %s", press_type)
                                 self.listener_event(
                                     ZHA_SEND_EVENT,
+                                    "button_press",
                                     {
-                                        "command": "button_press",
                                         "press_type": press_type,
-                                        "cluster_id": self.cluster_id,
-                                        "endpoint_id": self.endpoint.endpoint_id,
-                                        "value": data[i+1],
+                                        "value": data[i+1]
                                     }
                                 )
                 return  # Skip normal attribute processing for raw data
@@ -161,19 +183,24 @@ class AqaraB1naus01ManufCluster(XiaomiAqaraE1Cluster, EventableCluster):
             
             # Emit event for all other attribute updates
             if attrid not in (0x00F7, 0x00FF):
+                # Get attribute name safely
+                attribute_name = f"Unknown_{attrid:04x}"
+                if attrid in self.attributes:
+                    attribute_def = self.attributes[attrid]
+                    attribute_name = attribute_def[0] if isinstance(attribute_def, tuple) else attribute_def.name
+                
                 self.listener_event(
                     ZHA_SEND_EVENT,
+                    "attribute_updated",
                     {
-                        "command": "attribute_updated",
                         "attribute_id": attrid,
-                        "attribute_name": self.attributes.get(attrid, (f"Unknown_{attrid:04x}", None))[0],
-                        "value": value,
-                        "cluster_id": self.cluster_id,
-                        "endpoint_id": self.endpoint.endpoint_id,
+                        "attribute_name": attribute_name,
+                        "value": value
                     }
                 )
         except Exception as e:
             _LOGGER.debug("Error in attribute update: %s", e)
+            
 
 class MultistateInputCluster(EventableCluster, CustomCluster, MultistateInput):
     """Multistate input cluster for button press detection."""
@@ -224,9 +251,9 @@ class MultistateInputCluster(EventableCluster, CustomCluster, MultistateInput):
                     )
             except Exception as e:
                 _LOGGER.debug("Error processing button press: %s", e)
-
-# Create the quirk using QuirkBuilder
-quirk = (
+                
+                
+(
     QuirkBuilder("LUMI", "lumi.switch.b1naus01")
     .device_class(AqaraB1naus01Device)
     .adds(AqaraB1naus01OnOffCluster, endpoint_id=1)
@@ -240,5 +267,19 @@ quirk = (
         fallback_name="Decoupled Mode"
     )
     .skip_configuration(skip_configuration=False)
+    .device_automation_triggers({
+        ("button", "single"): {
+            ENDPOINT_ID: 41,
+            CLUSTER_ID: 18,
+            COMMAND: "attribute_updated",
+            ARGS: {ATTRIBUTE_ID: 85, ATTRIBUTE_NAME: "present_value", VALUE: 1},
+        },
+        ("button", "double"): {
+            ENDPOINT_ID: 41,
+            CLUSTER_ID: 18,
+            COMMAND: "attribute_updated",
+            ARGS: {ATTRIBUTE_ID: 85, ATTRIBUTE_NAME: "present_value", VALUE: 2},
+        },
+    }) 
     .add_to_registry()
 )
