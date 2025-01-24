@@ -197,9 +197,16 @@ class MultistateInputCluster(EventableCluster, CustomCluster, MultistateInput):
                 press_type = self.PRESS_TYPES.get(value)
                 if press_type:
                     self.endpoint.device.button_press_cluster = self
+                    
+                    # Get attribute name safely
+                    attribute_name = "present_value"
+                    if attrid in self.attributes:
+                        attribute_def = self.attributes[attrid]
+                        attribute_name = attribute_def.name
+                    
                     event_args = {
                         "attribute_id": attrid,
-                        "attribute_name": "present_value",
+                        "attribute_name": attribute_name,
                         "value": value
                     }
                     
@@ -230,7 +237,7 @@ quirk = (
         LUMI_CLUSTER_ID,
         translation_key="operation_mode",
         force_inverted=True,
-        fallback_name="Operation Mode"
+        fallback_name="Decoupled Mode"
     )
     .skip_configuration(skip_configuration=False)
     .add_to_registry()
