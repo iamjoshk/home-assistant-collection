@@ -100,10 +100,6 @@ class AqaraB1naus01OnOffCluster(EventableCluster, OnOff):
             attribute_def = self.attributes[attrid]
             attribute_name = attribute_def.name
         
-        # Skip emitting events for attributes with name "Unknown"
-        if attribute_name.startswith("Unknown"):
-            return
-        
         # Emit the event for attribute updates
         self.listener_event(
             ZHA_SEND_EVENT,
@@ -141,6 +137,10 @@ class AqaraB1naus01ManufCluster(EventableCluster, XiaomiAqaraE1Cluster):
             attrid, value
         )
 
+        # Skip emitting events for attribute_id 223 and 229
+        if attrid in (223, 229, 247):
+            return
+
         # Handle operation mode updates
         if attrid == 0x0200 and isinstance(value, int):
             self._operation_mode = value
@@ -177,10 +177,6 @@ class AqaraB1naus01ManufCluster(EventableCluster, XiaomiAqaraE1Cluster):
                 if attrid in self.attributes:
                     attribute_def = self.attributes[attrid]
                     attribute_name = attribute_def[0] if isinstance(attribute_def, tuple) else attribute_def.name
-                
-                # Skip emitting events for attributes with name "Unknown"
-                if attribute_name.startswith("Unknown"):
-                    return
                 
                 # Convert LVBytes to a hex string for JSON serialization
                 if isinstance(value, t.LVBytes):
