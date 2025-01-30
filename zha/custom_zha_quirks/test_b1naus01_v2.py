@@ -1,14 +1,11 @@
 """Aqara WS-USC03 smart wall switch quirk for ZHA."""
 
-import logging
-import time
-import copy
-
 from zigpy.profiles import zha
 from zigpy.quirks import CustomEndpoint
 from zigpy.quirks.v2 import QuirkBuilder, CustomDeviceV2
 from zigpy.types import t, LVBytes
 from zigpy.zcl.clusters.homeautomation import ElectricalMeasurement
+from zigpy.zcl.clusters.smartenergy import Metering
 from zigpy.zcl.clusters.general import (
     AnalogInput,
     Basic, 
@@ -41,22 +38,17 @@ from zhaquirks.const import (
     VALUE,
     ZHA_SEND_EVENT,
 )
-from zhaquirks.xiaomi import XiaomiCluster, ElectricalMeasurementCluster
+from zhaquirks.xiaomi import XiaomiCluster, ElectricalMeasurementCluster, MeteringCluster
 from zhaquirks.xiaomi.aqara.opple_remote import MultistateInputCluster
 
-_LOGGER = logging.getLogger(__name__)
 
 # Lumi/Aqara uses 0xFCC0 as their manufacturer specific cluster ID
 LUMI_CLUSTER_ID = 0xFCC0
 
-# Operation mode constants
-#OPMODE_DECOUPLED = 0x00
-#OPMODE_CONTROL_RELAY = 0x01
 
-STATUS_TYPE_ATTR = 0x0055
 
 class AqaraB1naus01Device(CustomDeviceV2):
-    """Custom device class to add endpoint 41."""
+    """Custom device class to add endpoint 21, 31, and 41."""
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -73,7 +65,21 @@ class AqaraB1naus01Device(CustomDeviceV2):
         
         # Add endpoint 41
         self._add_endpoint(41, ep41_replacement)
+
+        # Define endpoint 21 replacement data
+        ep21_replacement = {
+            PROFILE_ID: zha.PROFILE_ID,
+            DEVICE_TYPE: zha.DeviceType.ON_OFF_SWITCH,
+            INPUT_CLUSTERS: [
+                AnalogInputCluster,
+            ],
+            OUTPUT_CLUSTERS: [],
+        }
+
+        # Add endpoint 21
+        self._add_endpoint(21, ep21_replacement)
     
+
     def _add_endpoint(self, endpoint_id, replacement_data):
         """Helper method to add a new endpoint."""
         self.endpoints[endpoint_id] = CustomEndpoint(
@@ -84,13 +90,53 @@ class AqaraB1naus01Device(CustomDeviceV2):
         )
 
 
-#class AnalogInputCluster(CustomCluster, AnalogInput):
-#    """Analog input cluster, only used to relay power consumption information to ElectricalMeasurementCluster."""
-#    
-#class ElectricalMeasurementCluster(LocalDataCluster, ElectricalMeasurement):
-#    """Electrical measurement cluster to receive reports that are sent to the basic cluster."""
+class AnalogInputCluster(CustomCluster, AnalogInput):
+    """Analog input cluster, only used to relay power consumption information to ElectricalMeasurementCluster.
 
-class AqaraB1naus01OnOffCluster(OnOff):
+    The AnalogInput cluster responsible for reporting power consumption seems to be on endpoint 21 for newer devices
+    and either on endpoint 1 or 2 for older devices.
+    """
+
+    def _update_attribute(self, attrid, value):
+        super()._update_attribute(attrid, value)
+        if (
+            attrid == self.AttributeDefs.present_value.id
+            and value is not None
+            and value >= 0
+        ):
+            # ElectricalMeasurementCluster is assumed to be on endpoint 1
+            self.endpoint.device.endpoints[1].electrical_measurement.update_attribute(
+                ElectricalMeasurement.AttributeDefs.active_power.id,
+                round(value * 10),
+            )
+
+
+class ElectricalMeasurementCluster(LocalDataCluster, ElectricalMeasurement):
+    """Electrical measurement cluster to receive reports that are sent to the basic cluster."""
+
+    POWER_ID = ElectricalMeasurement.AttributeDefs.active_power.id
+    VOLTAGE_ID = ElectricalMeasurement.AttributeDefs.rms_voltage.id
+    CONSUMPTION_ID = ElectricalMeasurement.AttributeDefs.total_active_power.id
+
+    _CONSTANT_ATTRIBUTES = {
+        ElectricalMeasurement.AttributeDefs.power_multiplier.id: 1,
+        ElectricalMeasurement.AttributeDefs.power_divisor.id: 1,
+        ElectricalMeasurement.AttributeDefs.ac_power_multiplier.id: 1,
+        ElectricalMeasurement.AttributeDefs.ac_power_divisor.id: 10,
+    }
+
+    def __init__(self, *args, **kwargs):
+        """Init."""
+        super().__init__(*args, **kwargs)
+        # put a default value so the sensors are created
+        if self.POWER_ID not in self._attr_cache:
+            self._update_attribute(self.POWER_ID, 0)
+        if self.VOLTAGE_ID not in self._attr_cache:
+            self._update_attribute(self.VOLTAGE_ID, 0)
+        if self.CONSUMPTION_ID not in self._attr_cache:
+            self._update_attribute(self.CONSUMPTION_ID, 0)
+
+class AqaraB1naus01OnOffCluster(OnOff, CustomCluster):
     """Custom OnOff cluster."""
 
 class AqaraB1naus01ManufCluster(EventableCluster, XiaomiCluster):
@@ -109,10 +155,6 @@ class AqaraB1naus01ManufCluster(EventableCluster, XiaomiCluster):
         self._update_attribute(0x0200, self._operation_mode)
 
     def _update_attribute(self, attrid, value):
-        _LOGGER.debug(
-            "Manufacturer cluster attribute update - ID: 0x%04x, Value: %s",
-            attrid, value
-        )
 
         # Skip sending events for attribute_id 223, 229, and 247 (LVBytes parsing error)
         if attrid in (223, 229, 247):
@@ -120,45 +162,36 @@ class AqaraB1naus01ManufCluster(EventableCluster, XiaomiCluster):
 
         super()._update_attribute(attrid, value)
 
+class MeteringCluster(LocalDataCluster, Metering):
+    """Metering cluster to receive reports that are sent to the basic cluster."""
+
+    CURRENT_SUMM_DELIVERED_ID = Metering.AttributeDefs.current_summ_delivered.id
+    _CONSTANT_ATTRIBUTES = {
+        Metering.AttributeDefs.unit_of_measure.id: 0, 
+        Metering.AttributeDefs.multiplier.id: 1,
+        Metering.AttributeDefs.divisor.id: 1000,
+        Metering.AttributeDefs.summation_formatting.id: 0b0_0100_011,  
+        Metering.AttributeDefs.metering_device_type.id: 0,  
+    }
+
+    def __init__(self, *args, **kwargs):
+        """Init."""
+        super().__init__(*args, **kwargs)
+        # put a default value so the sensor is created
+        if self.CURRENT_SUMM_DELIVERED_ID not in self._attr_cache:
+            self._update_attribute(self.CURRENT_SUMM_DELIVERED_ID, 0)
+
 
 class MultistateInputCluster(EventableCluster, CustomCluster, MultistateInput):
     """Multistate input cluster for button press detection."""
 
-    PRESS_TYPES = {
-        1: "single",
-        2: "double",
-    }
-    
-    def __init__(self, *args, **kwargs):
-        """Init."""
-        self._current_state = None
-        super().__init__(*args, **kwargs)
-
-    def _update_attribute(self, attrid, value):
-        super()._update_attribute(attrid, value)
-        if attrid == STATUS_TYPE_ATTR:
-            self._current_state = PRESS_TYPES.get(value)
-            button = ENDPOINT_MAP.get(self.endpoint.endpoint_id)
-            event_args = {
-                BUTTON: button,
-                PRESS_TYPE: self._current_state,
-                ATTR_ID: attrid,
-                VALUE: value,
-            }
-            action = f"{button}_{self._current_state}"
-            self.listener_event(ZHA_SEND_EVENT, action, event_args)
-            # show something in the sensor in HA
-            super()._update_attribute(0, action)
-
-
 (
     QuirkBuilder("LUMI", "lumi.switch.b1naus01")
     .device_class(AqaraB1naus01Device)
-#    .adds(AnalogInputCluster, endpoint_id=1)
     .adds(AqaraB1naus01OnOffCluster, endpoint_id=1)
     .adds(AqaraB1naus01ManufCluster, endpoint_id=1)
-#    .adds(MultistateInputCluster, endpoint_id=1)
-#    .adds(ElectricalMeasurementCluster, endpoint_id=1)
+    .adds(MeteringCluster, endpoint_id=1)
+    .adds(ElectricalMeasurementCluster, endpoint_id=1)
     .switch(
         "operation_mode",
         LUMI_CLUSTER_ID,
