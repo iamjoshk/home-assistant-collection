@@ -1,21 +1,26 @@
 """Aqara WS-USC03 smart wall switch quirk for ZHA."""
 
-import logging
-import time
 from zigpy.profiles import zha
 from zigpy.quirks import CustomEndpoint
 from zigpy.quirks.v2 import QuirkBuilder, CustomDeviceV2
 from zigpy.types import t, LVBytes
+from zigpy.zcl.clusters.homeautomation import ElectricalMeasurement
+from zigpy.zcl.clusters.smartenergy import Metering
 from zigpy.zcl.clusters.general import (
+    AnalogInput,
+    Basic, 
+    Groups,
+    Identify, 
     MultistateInput, 
     OnOff,
-    Basic, 
     PowerConfiguration, 
-    Identify, 
-    Groups
 )
 
-from zhaquirks import EventableCluster, CustomCluster
+from zhaquirks import (
+    CustomCluster,
+    EventableCluster,
+    LocalDataCluster,
+)
 from zhaquirks.const import (
     ATTRIBUTE_ID,
     ATTRIBUTE_NAME,
@@ -33,22 +38,17 @@ from zhaquirks.const import (
     VALUE,
     ZHA_SEND_EVENT,
 )
-
-from zhaquirks.xiaomi import XiaomiAqaraE1Cluster
+from zhaquirks.xiaomi import XiaomiCluster, ElectricalMeasurementCluster, MeteringCluster
 from zhaquirks.xiaomi.aqara.opple_remote import MultistateInputCluster
 
-_LOGGER = logging.getLogger(__name__)
 
 # Lumi/Aqara uses 0xFCC0 as their manufacturer specific cluster ID
 LUMI_CLUSTER_ID = 0xFCC0
 
-# Operation mode constants
-OPMODE_DECOUPLED = 0x00
-OPMODE_CONTROL_RELAY = 0x01
 
 
 class AqaraB1naus01Device(CustomDeviceV2):
-    """Custom device class to add endpoint 41."""
+    """Custom device class to add endpoint 21, 31, and 41."""
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -65,7 +65,21 @@ class AqaraB1naus01Device(CustomDeviceV2):
         
         # Add endpoint 41
         self._add_endpoint(41, ep41_replacement)
+
+        # Define endpoint 21 replacement data
+        ep21_replacement = {
+            PROFILE_ID: zha.PROFILE_ID,
+            DEVICE_TYPE: zha.DeviceType.ON_OFF_SWITCH,
+            INPUT_CLUSTERS: [
+                AnalogInputCluster,
+            ],
+            OUTPUT_CLUSTERS: [],
+        }
+
+        # Add endpoint 21
+        self._add_endpoint(21, ep21_replacement)
     
+
     def _add_endpoint(self, endpoint_id, replacement_data):
         """Helper method to add a new endpoint."""
         self.endpoints[endpoint_id] = CustomEndpoint(
@@ -76,188 +90,108 @@ class AqaraB1naus01Device(CustomDeviceV2):
         )
 
 
-class AqaraB1naus01OnOffCluster(EventableCluster, OnOff):
-    """Custom OnOff cluster."""
+class AnalogInputCluster(CustomCluster, AnalogInput):
+    """Analog input cluster, only used to relay power consumption information to ElectricalMeasurementCluster.
 
-    def handle_cluster_request(self, tsn, command_id, args):
-        """Handle incoming cluster requests."""
-        _LOGGER.debug("OnOff cluster request - TSN: %s, Command: %s, Args: %s", tsn, command_id, args)
-        super().handle_cluster_request(tsn, command_id, args)
+    The AnalogInput cluster responsible for reporting power consumption seems to be on endpoint 21 for newer devices
+    and either on endpoint 1 or 2 for older devices.
+    """
 
     def _update_attribute(self, attrid, value):
-        """Handle attribute updates."""
-        _LOGGER.debug("OnOff attribute update - ID: 0x%04x, Value: %s", attrid, value)
-        
-        # Skip emitting events for attribute_id 245
-        if attrid == 245:
-            return
-        
         super()._update_attribute(attrid, value)
-        
-        # Get attribute name safely
-        attribute_name = f"Unknown_{attrid:04x}"
-        if attrid in self.attributes:
-            attribute_def = self.attributes[attrid]
-            attribute_name = attribute_def.name
-        
-        # Emit the event for attribute updates
-        self.listener_event(
-            ZHA_SEND_EVENT,
-            "attribute_updated",
-            {
-                "attribute_id": attrid,
-                "attribute_name": attribute_name,
-                "value": value
-            }
-        )
+        if (
+            attrid == self.AttributeDefs.present_value.id
+            and value is not None
+            and value >= 0
+        ):
+            # ElectricalMeasurementCluster is assumed to be on endpoint 1
+            self.endpoint.device.endpoints[1].electrical_measurement.update_attribute(
+                ElectricalMeasurement.AttributeDefs.active_power.id,
+                round(value * 10),
+            )
 
 
-class AqaraB1naus01ManufCluster(EventableCluster, XiaomiAqaraE1Cluster):
+class ElectricalMeasurementCluster(LocalDataCluster, ElectricalMeasurement):
+    """Electrical measurement cluster to receive reports that are sent to the basic cluster."""
+
+    POWER_ID = ElectricalMeasurement.AttributeDefs.active_power.id
+    VOLTAGE_ID = ElectricalMeasurement.AttributeDefs.rms_voltage.id
+    CONSUMPTION_ID = ElectricalMeasurement.AttributeDefs.total_active_power.id
+
+    _CONSTANT_ATTRIBUTES = {
+        ElectricalMeasurement.AttributeDefs.power_multiplier.id: 1,
+        ElectricalMeasurement.AttributeDefs.power_divisor.id: 1,
+        ElectricalMeasurement.AttributeDefs.ac_power_multiplier.id: 1,
+        ElectricalMeasurement.AttributeDefs.ac_power_divisor.id: 10,
+    }
+
+    def __init__(self, *args, **kwargs):
+        """Init."""
+        super().__init__(*args, **kwargs)
+        # put a default value so the sensors are created
+        if self.POWER_ID not in self._attr_cache:
+            self._update_attribute(self.POWER_ID, 0)
+        if self.VOLTAGE_ID not in self._attr_cache:
+            self._update_attribute(self.VOLTAGE_ID, 0)
+        if self.CONSUMPTION_ID not in self._attr_cache:
+            self._update_attribute(self.CONSUMPTION_ID, 0)
+
+class AqaraB1naus01OnOffCluster(OnOff, CustomCluster):
+    """Custom OnOff cluster."""
+
+class AqaraB1naus01ManufCluster(EventableCluster, XiaomiCluster):
     """Aqara manufacturer specific cluster."""
 
     cluster_id = LUMI_CLUSTER_ID
 
     attributes = {
-        **XiaomiAqaraE1Cluster.attributes,
+        **XiaomiCluster.attributes,
         0x0200: ('operation_mode', t.uint8_t, True),
-        0x00FC: ('action_state', t.uint8_t, True),
-        0x0112: ('decoupled_button', t.uint8_t, True),
     }
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self._operation_mode = OPMODE_CONTROL_RELAY
-        self._last_event = None
-        self._last_event_time = 0
+        self._operation_mode = 0x01  # OPMODE_CONTROL_RELAY
         self._update_attribute(0x0200, self._operation_mode)
 
     def _update_attribute(self, attrid, value):
-        _LOGGER.debug(
-            "Manufacturer cluster attribute update - ID: 0x%04x, Value: %s",
-            attrid, value
-        )
 
-        # Skip emitting events for attribute_id 223 and 229
+        # Skip sending events for attribute_id 223, 229, and 247 (LVBytes parsing error)
         if attrid in (223, 229, 247):
             return
 
-        # Handle operation mode updates
-        if attrid == 0x0200 and isinstance(value, int):
-            self._operation_mode = value
-            _LOGGER.debug("Operation mode updated to: %s", value)
+        super()._update_attribute(attrid, value)
 
-        # Handle raw attribute data
-        if attrid in (0x00F7, 0x00FF):
-            try:
-                if isinstance(value, (bytes, t.LVBytes)):
-                    # Try to parse the data for button events
-                    data = bytes(value)
-                    _LOGGER.debug("Raw data received: %s", data.hex())
-                    
-                    # Look for button press patterns in the data
-                    if len(data) > 2:
-                        # Check for button press indicators
-                        for i in range(len(data)-1):
-                            if data[i] in (0x01, 0x02, 0x03) and data[i+1] in (0x01, 0x02):
-                                press_type = "single" if data[i+1] == 0x01 else "double"
-                                _LOGGER.debug("Detected button press: %s", press_type)
-                                self._emit_event("button_press", {"press_type": press_type, "value": data[i+1]})
-                return  # Skip normal attribute processing for raw data
-            except Exception as e:
-                _LOGGER.debug("Error processing raw data: %s", e)
-                return
+class MeteringCluster(LocalDataCluster, Metering):
+    """Metering cluster to receive reports that are sent to the basic cluster."""
 
-        try:
-            super()._update_attribute(attrid, value)
-            
-            # Emit event for all other attribute updates
-            if attrid not in (0x00F7, 0x00FF):
-                # Get attribute name safely
-                attribute_name = f"Unknown_{attrid:04x}"
-                if attrid in self.attributes:
-                    attribute_def = self.attributes[attrid]
-                    attribute_name = attribute_def[0] if isinstance(attribute_def, tuple) else attribute_def.name
-                
-                # Convert LVBytes to a hex string for JSON serialization
-                if isinstance(value, t.LVBytes):
-                    value = value.hex()
-                
-                self._emit_event("attribute_updated", {"attribute_id": attrid, "attribute_name": attribute_name, "value": value})
-        except Exception as e:
-            _LOGGER.debug("Error in attribute update: %s", e)
+    CURRENT_SUMM_DELIVERED_ID = Metering.AttributeDefs.current_summ_delivered.id
+    _CONSTANT_ATTRIBUTES = {
+        Metering.AttributeDefs.unit_of_measure.id: 0, 
+        Metering.AttributeDefs.multiplier.id: 1,
+        Metering.AttributeDefs.divisor.id: 1000,
+        Metering.AttributeDefs.summation_formatting.id: 0b0_0100_011,  
+        Metering.AttributeDefs.metering_device_type.id: 0,  
+    }
 
-    def _emit_event(self, event_type, event_data):
-        """Emit event if it's not a duplicate."""
-        current_time = time.time()
-        if self._last_event == (event_type, event_data) and (current_time - self._last_event_time) < 1:
-            return
-        self._last_event = (event_type, event_data)
-        self._last_event_time = current_time
-        self.listener_event(ZHA_SEND_EVENT, event_type, event_data)
+    def __init__(self, *args, **kwargs):
+        """Init."""
+        super().__init__(*args, **kwargs)
+        # put a default value so the sensor is created
+        if self.CURRENT_SUMM_DELIVERED_ID not in self._attr_cache:
+            self._update_attribute(self.CURRENT_SUMM_DELIVERED_ID, 0)
 
 
 class MultistateInputCluster(EventableCluster, CustomCluster, MultistateInput):
     """Multistate input cluster for button press detection."""
-    
-    PRESS_TYPES = {
-        1: "single",
-        2: "double",
-    }
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.endpoint.device.button_press_cluster = self
-        self._last_event = None
-        self._last_event_time = 0
-
-    def _update_attribute(self, attrid, value):
-        super()._update_attribute(attrid, value)
-
-        if attrid == 0x0055:  # present_value attribute
-            try:
-                press_type = self.PRESS_TYPES.get(value)
-                if press_type:
-                    self.endpoint.device.button_press_cluster = self
-                    
-                    # Get attribute name safely
-                    attribute_name = "present_value"
-                    if attrid in self.attributes:
-                        attribute_def = self.attributes[attrid]
-                        attribute_name = attribute_def.name
-                    
-                    event_args = {
-                        "attribute_id": attrid,
-                        "attribute_name": attribute_name,
-                        "value": value
-                    }
-                    
-                    _LOGGER.debug(
-                        "[%s:%s] Button press detected: %s",
-                        self.endpoint.device.nwk,
-                        self.endpoint.endpoint_id,
-                        press_type
-                    )
-                    
-                    self._emit_event("attribute_updated", event_args)
-            except Exception as e:
-                _LOGGER.debug("Error processing button press: %s", e)
-
-    def _emit_event(self, event_type, event_data):
-        """Emit event if it's not a duplicate."""
-        current_time = time.time()
-        if self._last_event == (event_type, event_data) and (current_time - self._last_event_time) < 1:
-            return
-        self._last_event = (event_type, event_data)
-        self._last_event_time = current_time
-        self.listener_event(ZHA_SEND_EVENT, event_type, event_data)
-
 
 (
     QuirkBuilder("LUMI", "lumi.switch.b1naus01")
     .device_class(AqaraB1naus01Device)
     .adds(AqaraB1naus01OnOffCluster, endpoint_id=1)
     .adds(AqaraB1naus01ManufCluster, endpoint_id=1)
-    .adds(MultistateInputCluster, endpoint_id=1)
+    .adds(MeteringCluster, endpoint_id=1)
+    .adds(ElectricalMeasurementCluster, endpoint_id=1)
     .switch(
         "operation_mode",
         LUMI_CLUSTER_ID,
