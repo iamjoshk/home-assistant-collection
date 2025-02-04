@@ -10,6 +10,7 @@
 + add custom zha_quirks to Home Assistant: basic instructions for adding your custom quirk to HA
 + `custom_zha_quirks`: contains custom quirks I am using in my HA instance
 
-
+## Custom Integration
++ [ZHA Device Info](https://github.com/iamjoshk/zha-device-info)
 
 
