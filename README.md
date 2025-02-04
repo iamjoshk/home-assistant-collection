@@ -11,6 +11,7 @@ Collection of various Home Assistant projects and guides in various states of co
 ## [`zha`](https://github.com/iamjoshk/home-assistant-collection/tree/main/zha)
 + creating custom zha quirks: how to add a custom zha_quirk to Home Assistant
 + custom_zha_quirks: custom zha_quirk files
++ custom integration: zha device info
 
 ## [`lovelace UI`](https://github.com/iamjoshk/home-assistant-collection/tree/main/lovelace%20UI)
 + various card-mod examples for cards and themes
