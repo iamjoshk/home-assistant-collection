@@ -59,5 +59,108 @@ Proof of concept Edge AI functionality using LLMVision Data Analyzer to read my 
    > ```{{ (states('sensor.llmvision_test_variable') | int(0) | string)[4:] }}``` = 1, the humidifier is on (running)
    > 
 
-9. Once you have gotten your tests where you want them, you can you can create an automation to update the sensor on a schedule using the same action data as your tests.
- 
+8. Once you have gotten your tests where you want them, you can you can create an automation to update the variable sensor on a schedule using the same
+   action data as your tests.
+
+
+9. I set up three triggers in my automation to update my variable sensor. The first trigger is the 30th second of every minute, the second is when HA starts to make sure it updates, and the third triggers on the 35th second every 5 minutes (which I added later to cut down on the number of requests per day).
+      >
+      >```
+      >triggers:
+      >  - trigger: time_pattern
+      >   seconds: "30"
+      >   minutes: /1
+      >   id: 30s
+      >  - trigger: homeassistant
+      >   event: start
+      >   id: Ha-start
+      >  - trigger: time_pattern
+      >   seconds: "35"
+      >   minutes: /5
+      >   id: 5m
+      >```
+   I use these with conditions that updates the sensor every minute between 8am and 9pm and every 5 minutes between 9pm and 8am. I am not going to be doing anything with the humidifier after 9pm, even if it requires maintenance. At most, I would turn it off until I can call for service the next day, so I felt it was reasonable to cut back on the updates overnight.
+  
+   This is the full automation.
+
+```
+alias: AprilAire Humidifier LLMVision
+description: ""
+triggers:
+  - trigger: time_pattern
+    seconds: "30"
+    minutes: /1
+    id: 30s
+  - trigger: homeassistant
+    event: start
+    id: Ha-start
+  - trigger: time_pattern
+    seconds: "35"
+    minutes: /5
+    id: 5m
+conditions: []
+actions:
+  - choose:
+      - conditions:
+          - condition: trigger
+            id:
+              - 5m
+          - condition: time
+            after: "21:00:00"
+            before: "08:00:00"
+        sequence:
+          - alias: Determine AprilAire Statuses
+            action: llmvision.data_analyzer
+            data:
+              include_filename: false
+              temperature: 0.1
+              provider: YOURIDWILLBEDIFFERENT
+              image_entity:
+                - camera.your_camera
+              message: >-
+                Analyze the provided image of a humidifier control panel.
+                Extract the current humidity setting in the blue box displayed
+                as a two digit numerical value without commas or spaces (h).
+                Additionally, determine the status (1/0) of the red Maintenance
+                LED (m) , orange Filter  LED(f) , and green Running LED (r)
+                indicators. Output the information in the following format:
+
+
+                hmfr
+              model: gemini-2.0-flash-lite
+              sensor_entity: sensor.llmvision_test_variable
+              max_tokens: 5
+              target_width: 1280
+      - conditions:
+          - condition: trigger
+            id:
+              - 30s
+              - Ha-start
+          - condition: time
+            after: "08:00:00"
+            before: "21:00:00"
+        sequence:
+          - alias: Determine AprilAire Statuses
+            action: llmvision.data_analyzer
+            data:
+              include_filename: false
+              temperature: 0.1
+              provider: YOURIDWILLBEDIFFERENT
+              image_entity:
+                - camera.your_camera
+              message: >-
+                Analyze the provided image of a humidifier control panel.
+                Extract the current humidity setting in the blue box displayed
+                as a two digit numerical value without commas or spaces (h).
+                Additionally, determine the status (1/0) of the red Maintenance
+                LED (m) , orange Filter  LED(f) , and green Running LED (r)
+                indicators. Output the information in the following format:
+
+
+                hmfr
+              model: gemini-2.0-flash-lite
+              sensor_entity: sensor.llmvision_test_variable
+              max_tokens: 5
+              target_width: 1280
+mode: single
+```
