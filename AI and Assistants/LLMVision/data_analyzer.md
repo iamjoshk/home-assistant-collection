@@ -61,6 +61,9 @@ The control panel for my whole house humidifier is poorly placed. Yes, I could e
    > ```{{ (states('sensor.llmvision_test_variable') | int(0) | string)[4:] }}``` = 1, the humidifier is on (running)
    > 
 
+   ![llmvision_sensors](https://github.com/user-attachments/assets/0273efec-6cc7-456f-ba27-69407fc8494b)
+
+
 8. Once you have gotten your tests where you want them, you can you can create an automation to update the variable sensor on a schedule using the same
    action data as your tests.
 
