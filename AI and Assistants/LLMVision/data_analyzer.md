@@ -12,7 +12,7 @@ The control panel for my whole house humidifier is poorly placed. Yes, I could e
   > Google Gemini 2.0 Flash Lite allows 1500 Records Per Day (RPD) in the free tier.
 - Something for the camera to look at: a humidifier control panel (in my case), HVAC control board with blinking lights, washer and dryer, or maybe even
   utility meters, providing an easier entry point than the AI on the Edge project.
-- Some helpers: To start, I created a template sensor helper
+- Some helpers: To start, I created a template sensor helper to test with.
 
 ### Steps
 1. Have a camera entity in Home Assistant using one of the various methods and integrations for cameras. Point it at your subject of interest.
