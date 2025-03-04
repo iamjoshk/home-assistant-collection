@@ -1,6 +1,8 @@
 ## Project
 Proof of concept Edge AI functionality using LLMVision Data Analyzer to read my AprilAire humidifier control panel and report status in Home Assistant.
 
+The control panel for my whole house humidifier is poorly placed. Yes, I could easily move it to a more convenient location but that wouldn't give me the opportunity to add humidifier sensors to Home Assistant.
+
 ### Requirements
 - [LLMVision](https://github.com/valentinfrlch/ha-llmvision)
 - Camera entity: in my case, I used an ESP32Cam I had laying around unused.
