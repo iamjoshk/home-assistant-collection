@@ -23,6 +23,7 @@ Collection of various Home Assistant projects and guides in various states of co
 
 ## [`hardware`](https://github.com/iamjoshk/home-assistant-collection/tree/main/hardware)
 + hardware in use
++ migrate to Mini PC instructions
 + upgrade RPi4 to SSD instructions
 
 ## [`ESPHome`](https://github.com/iamjoshk/home-assistant-collection/tree/main/ESPHome)
