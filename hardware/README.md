@@ -1,6 +1,6 @@
 ## Current Hardware
 
-+ Minisforum UN100P with 16GB RAM and 512GB NVMe SSD
++ Minisforum UN100P with 16GB RAM and 512GB NVMe SSD [(how to migrate to Mini PC)](https://github.com/iamjoshk/home-assistant-collection/blob/main/hardware/RPI4%20to%20N100%20Mini%20PC%20migration.md)
 + RTL-SDR Blog V3 R860 RTL2832U dongle
 + SONOFF Zigbee 3.0 USB Dongle-P (Dongle Plus, not Dongle Plus-E) Gateway
 + Tripp Lite INTERNET550U UPS
