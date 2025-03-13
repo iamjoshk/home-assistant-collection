@@ -40,3 +40,6 @@ Collection of various Home Assistant projects and guides in various states of co
 
 ## [`AI and Assistants`](https://github.com/iamjoshk/home-assistant-collection/tree/main/AI%20and%20Assistants)
 + projects using AI and voice assistants
+
+## [`Birdnet-Go`](https://github.com/iamjoshk/home-assistant-collection/tree/main/birdnet-go)
++ Birdnet-Go add-on configuration and dashboard
