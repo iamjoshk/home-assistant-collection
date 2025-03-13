@@ -59,7 +59,7 @@ card_mod:
     td {
       float: none !important;
       display: table-cell !important;
-      width: auto !important;
+      width: 50% !important;
       max-width: none !important;
     }
 
