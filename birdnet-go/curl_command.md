@@ -1,3 +1,6 @@
+This curl command queries my Birdweather station and creates an HA entity with a state of total detections and attributes with total detections, last detection datetime, last query response datetime, and the 100 most recent detections, grouped by species name (common name) with a count, scientific name, last species detection, and an image URL for a picture.
+
+```
 command_line:
   - sensor:
       name: "Your Sensor Name"
@@ -47,3 +50,4 @@ command_line:
         - lastDetection
         - lastResponse
         - species
+```
