@@ -1,0 +1,49 @@
+command_line:
+  - sensor:
+      name: "Your Sensor Name"
+      unique_id: birdweather_detections_station_nnnnn
+
+      command: >
+        curl -s \
+          -H "Content-Type: application/json" \
+          -H "Authorization: Bearer yourBirdweatherToken" \
+          --data '{
+              "query": "query StationDetections($stationId: ID!, $first: Int) { station(id: $stationId) { id detections(first: $first) { totalCount nodes { timestamp species { id commonName imageUrl scientificName } speciesId confidence } } } }",
+              "variables": { "stationId": "123123", "first": 100 }
+            }' \
+          "https://app.birdweather.com/graphql" | jq --arg now "$(date -Is)" '{
+            stationId: .data.station.id,
+            totalDetections: .data.station.detections.totalCount,
+            lastDetection: (
+              .data.station.detections.nodes |
+              map(.timestamp) |  # Extract all timestamps
+              max  # Find the maximum (latest) timestamp
+            ),
+            species: (
+              .data.station.detections.nodes |
+              group_by(.species.commonName) |
+              map(
+                {
+                  speciesName: .[0].species.commonName,
+                  totalCount: length,
+                  lastSpeciesDetection: (
+                    sort_by(.timestamp) |  # Sort by timestamp within the group
+                    .[length - 1].timestamp   # Get the last (latest) timestamp
+                  ),
+                  scientificName: .[0].species.scientificName,
+                  imageUrl: .[0].species.imageUrl
+                }
+              )
+            ),
+            lastResponse: $now
+          }'
+      scan_interval: 60
+      unit_of_measurement: ''
+      value_template: >
+        {{ value_json.totalDetections }}
+      json_attributes:
+        - totalDetections
+        - stationId
+        - lastDetection
+        - lastResponse
+        - species
