@@ -1,18 +1,18 @@
-This curl command queries my Birdweather station and creates an HA entity with a state of total detections and attributes with total detections, last detection datetime, last query response datetime, and the 100 most recent detections, grouped by species name (common name) with a count, scientific name, last species detection, and an image URL for a picture.
+This curl command queries my Birdweather station and creates an HA entity with a state of total detections and attributes with total detections, last detection datetime, last query response datetime, most recent species detected, most recent species detected image URL, and the 100 most recent detections, grouped by species name (common name) with a count, scientific name, last species detection, and an image URL for a picture.
 
 ```
 command_line:
   - sensor:
-      name: "Your Sensor Name"
-      unique_id: birdweather_detections_station_nnnnn
-
+      name: "Birdweather Detections Station 12159"
+      unique_id: birdweather_detections_station_12159
+      availability: "{{ value_json is defined }}"
       command: >
         curl -s \
           -H "Content-Type: application/json" \
-          -H "Authorization: Bearer yourBirdweatherToken" \
+          -H "Authorization: Bearer YOUR_API_KEY" \
           --data '{
               "query": "query StationDetections($stationId: ID!, $first: Int) { station(id: $stationId) { id detections(first: $first) { totalCount nodes { timestamp species { id commonName imageUrl scientificName } speciesId confidence } } } }",
-              "variables": { "stationId": "123123", "first": 100 }
+              "variables": { "stationId": "12159", "first": 100 }
             }' \
           "https://app.birdweather.com/graphql" | jq --arg now "$(date -Is)" '{
             stationId: .data.station.id,
@@ -21,6 +21,12 @@ command_line:
               .data.station.detections.nodes |
               map(.timestamp) |  # Extract all timestamps
               max  # Find the maximum (latest) timestamp
+            ),
+            mostRecentSpeciesName: (
+              .data.station.detections.nodes[0].species.commonName // "None" # Species name of the most recent bird
+            ),
+            mostRecentSpeciesImageUrl: (
+              .data.station.detections.nodes[0].species.imageUrl // "None" # Image URL of the most recent bird
             ),
             species: (
               .data.station.detections.nodes |
@@ -47,6 +53,8 @@ command_line:
       json_attributes:
         - totalDetections
         - stationId
+        - mostRecentSpeciesName
+        - mostRecentSpeciesImageUrl
         - lastDetection
         - lastResponse
         - species
