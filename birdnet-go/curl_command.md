@@ -9,7 +9,7 @@ command_line:
       command: >
         curl -s \
           -H "Content-Type: application/json" \
-          -H "Authorization: Bearer YOUR_API_KEY" \
+          -H "Authorization: Bearer YOUR_API_KEY" \  # NOTE: This query works without an API token
           --data '{
               "query": "query StationDetections($stationId: ID!, $first: Int) { station(id: $stationId) { id detections(first: $first) { totalCount nodes { timestamp species { id commonName imageUrl scientificName } speciesId confidence } } } }",
               "variables": { "stationId": "12159", "first": 100 }
