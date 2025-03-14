@@ -3,8 +3,8 @@ This curl command queries my Birdweather station and creates an HA entity with a
 ```
 command_line:
   - sensor:
-      name: "Birdweather Detections Station 12159"
-      unique_id: birdweather_detections_station_12159
+      name: "Birdweather Detections Station 123456"
+      unique_id: birdweather_detections_station_123456
       availability: "{{ value_json is defined }}"
       command: >
         curl -s \
