@@ -1,3 +1,6 @@
+# ARCHIVED
+gphotos-sync is no longer active due to changes to Google's photos API
+
 ## Overview
 Utilizes [gphotos-sync](https://gilesknap.github.io/gphotos-sync/main/index.html) to sync a Google Photos album to a Raspberry Pi 4 running Home Assistant OS.
 
