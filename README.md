@@ -5,7 +5,8 @@ Collection of various Home Assistant projects and guides in various states of co
 + rtl_433 MQTT set up: Instructions on how to create sensors using rtl_433 and MQTT in Home Assistant
 + rtl_433 frequency hop: Automating rtl_433 frequency hop using Home Assistant shell command
 
-## [`gphotos_sync`](https://github.com/iamjoshk/home-assistant-collection/tree/main/gphotos_sync)
+## ARCHIVED [`gphotos_sync`](https://github.com/iamjoshk/home-assistant-collection/tree/main/gphotos_sync)
++ No longer active due to changes to Google's photos API
 + gphotos-sync Home Assistant: adding gphotos-sync to a Raspberry Pi 4 running Home Assistant OS to create a digital photo frame dashboard
 
 ## [`zha`](https://github.com/iamjoshk/home-assistant-collection/tree/main/zha)
