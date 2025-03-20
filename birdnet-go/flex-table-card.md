@@ -1,10 +1,15 @@
 I use two different `flex-table-card` cards on my dashboards. One for mobile dashboard and one for a tablet or desktop dashboard.
 
+2025-03-20: Updated the image to hyperlink to the relevant eBird page for the species. You can append a specific region to the end of the URL like this:
+`'<a href=' + x.ebirdUrl + "/your-region" + ' target="_blank" ><img src=\"' +
+      x.imageUrl + '\"style: width=100%; \"></a>'`
+
 ---
 
 
 ### Tablet/Desktop Dashboard version:
 This version creates a horizontal view, by using `card_mod` to create multiple columns in the card. 
+
 
 ![desktop_dashboard_birdweather](https://github.com/user-attachments/assets/3aace39a-5259-4eab-86ca-a8759c75f3ad)
 
@@ -17,8 +22,10 @@ entities:
   - entity: sensor.birdweather_detections_station_nnnnn
 columns:
   - name: ""
-    data: species.imageUrl
-    modify: "'<img src=\"' + x + '\"style: width=75%; height=auto;\">'"
+    data: species
+    modify: >
+      '<a href=' + x.ebirdUrl + ' target="_blank" ><img src=\"' +
+      x.imageUrl + '\"style: width=100%; \"></a>'
   - name: ""
     data: species
     modify: >
@@ -87,7 +94,9 @@ entities:
 columns:
   - name: ""
     data: species.imageUrl
-    modify: "'<img src=\"' + x + '\"style: width=75%; height=auto;\">'"
+    modify: >
+      '<a href=' + x.ebirdUrl + ' target="_blank" ><img src=\"' +
+      x.imageUrl + '\"style: width=100%; \"></a>'
   - name: ""
     data: species
     modify: >
