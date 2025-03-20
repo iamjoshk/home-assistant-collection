@@ -1,18 +1,19 @@
 This curl command queries my Birdweather station and creates an HA entity with a state of total detections and attributes with total detections, last detection datetime, last query response datetime, most recent species detected, most recent species detected image URL, and the 100 most recent detections, grouped by species name (common name) with a count, scientific name, last species detection, and an image URL for a picture.
 
+2025-03-20: Updated to include ebirdUrl for most recent detection and 100 most recent detections.
+
 ```
 command_line:
   - sensor:
-      name: "Birdweather Detections Station 123456"
-      unique_id: birdweather_detections_station_123456
+      name: "Birdweather Detections Station xxxxxx"
+      unique_id: birdweather_detections_station_xxxxxx
       availability: "{{ value_json is defined }}"
       command: >
         curl -s \
           -H "Content-Type: application/json" \
-          -H "Authorization: Bearer YOUR_API_KEY" \  # NOTE: This query works without an API token
           --data '{
-              "query": "query StationDetections($stationId: ID!, $first: Int) { station(id: $stationId) { id detections(first: $first) { totalCount nodes { timestamp species { id commonName imageUrl scientificName } speciesId confidence } } } }",
-              "variables": { "stationId": "12159", "first": 100 }
+              "query": "query StationDetections($stationId: ID!, $first: Int) { station(id: $stationId) { id detections(first: $first) { totalCount nodes { timestamp species { id commonName imageUrl scientificName ebirdUrl } speciesId confidence } } } }",
+              "variables": { "stationId": "xxxxxx", "first": 100 }
             }' \
           "https://app.birdweather.com/graphql" | jq --arg now "$(date -Is)" '{
             stationId: .data.station.id,
@@ -28,6 +29,9 @@ command_line:
             mostRecentSpeciesImageUrl: (
               .data.station.detections.nodes[0].species.imageUrl // "None" # Image URL of the most recent bird
             ),
+            mostRecentSpeciesEbirdUrl: (
+              .data.station.detections.nodes[0].species.ebirdUrl // "None" # Image URL of the most recent bird
+            ),
             species: (
               .data.station.detections.nodes |
               group_by(.species.commonName) |
@@ -40,13 +44,14 @@ command_line:
                     .[length - 1].timestamp   # Get the last (latest) timestamp
                   ),
                   scientificName: .[0].species.scientificName,
-                  imageUrl: .[0].species.imageUrl
+                  imageUrl: .[0].species.imageUrl,
+                  ebirdUrl: .[0].species.ebirdUrl
                 }
               )
             ),
             lastResponse: $now
           }'
-      scan_interval: 60
+      scan_interval: 59
       unit_of_measurement: ''
       value_template: >
         {{ value_json.totalDetections }}
@@ -55,6 +60,7 @@ command_line:
         - stationId
         - mostRecentSpeciesName
         - mostRecentSpeciesImageUrl
+        - mostRecentSpeciesEbirdUrl
         - lastDetection
         - lastResponse
         - species
