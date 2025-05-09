@@ -1,0 +1,70 @@
+["WebUI","RF","RF2","Pilight"]
+omg_ceiling_fan
+uptime	446
+version	"v1.8.1"
+mqtt	true
+serial	false
+disc	true
+ohdisc	false
+env	"esp32dev-multi_receiver-pilight"
+freemem	185920
+mqttp	"1883"
+mqtts	false
+mqttv	false
+msgprc	31
+msgblck	0
+msgrcv	31
+maxq	18
+cnt_index	0
+minmem	169272
+tempc	53.89
+freestck	4044
+powermode	-1
+eth	false
+rssi	-82
+SSID	""
+BSSID	""
+ip	""
+mac	""
+modules	"'WebUI', 'RF', 'RF2', 'Pilight'"
+origin	"/SYStoMQTT"
+
+RF	
+active	2
+frequency	303.9
+origin	"/RFtoMQTT"
+
+WebUI	
+displayMetric	true
+webUISecure	true
+displayQueue	0
+
+
+
+["WebUI","RF","RF2","Pilight"]
+omg_ceiling_fan
+MQTT Parameters
+MQTT Server
+
+
+MQTT Port
+1883
+
+MQTT Username
+btmqtt
+
+MQTT Password
+Password
+
+MQTT Secure Connection
+
+
+Gateway Name
+omg_ceiling_fan
+
+MQTT Base Topic
+home/
+
+MQTT Discovery Prefix
+omg_ceiling_fan
+
