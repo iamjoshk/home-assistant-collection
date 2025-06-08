@@ -81,10 +81,6 @@ ZCL_TO_AQARA: dict[int, int] = {
 
 LOGGER = logging.getLogger(__name__)
 
-SCHEDULING_COMMAND = b"\x08\x00\x08\xC8"
-DISABLED_SCHEDULE_ENTRY = b"\x18\x00\x55\x01"
-SCHEDULES_COUNT = 10
-
 
 class OppleCluster(XiaomiAqaraE1Cluster):
     """Opple cluster."""
@@ -218,36 +214,10 @@ class OppleCluster(XiaomiAqaraE1Cluster):
         )
         return FEEDER_ATTR_NAME, val
 
-    def _serialize_schedule(self, schedule_list):
-        """Serialize a list of schedule dicts to Aqara feeder payload."""
-        payload = b""
-        schedules_to_write = len(schedule_list)
-        for i in range(SCHEDULES_COUNT):
-            if i < schedules_to_write:
-                entry = schedule_list[i]
-                # days, hour, minute, size
-                payload += bytes([
-                    entry.get("days", 0),
-                    entry.get("hour", 0),
-                    entry.get("minute", 0),
-                    entry.get("size", 0),
-                ])
-            else:
-                payload += DISABLED_SCHEDULE_ENTRY
-        return payload
-
     async def write_attributes(
         self, attributes: dict[str | int, Any], manufacturer: int | None = None
     ) -> list:
         """Write attributes to device with internal 'attributes' validation."""
-        # Handle schedule write
-        if "schedule" in attributes or 0xFF01 in attributes:
-            schedule_list = attributes.pop("schedule", attributes.pop(0xFF01, []))
-            payload = self._serialize_schedule(schedule_list)
-            full_command = SCHEDULING_COMMAND + payload
-            attrs_to_write = {FEEDER_ATTR_NAME: full_command}
-            return await super().write_attributes(attrs_to_write, manufacturer)
-        # Handle other attributes
         attrs = {}
         for attr, value in attributes.items():
             attr_def = self.find_attribute(attr)
