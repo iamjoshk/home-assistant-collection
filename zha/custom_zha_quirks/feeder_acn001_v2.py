@@ -1,8 +1,8 @@
 """Quirk for Aqara aqara.feeder.acn001."""
 
-import logging
-
 from __future__ import annotations
+
+import logging
 
 from typing import Any
 
