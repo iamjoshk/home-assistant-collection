@@ -46,6 +46,9 @@ PORTION_WEIGHT = 0x0E5F0055
 FEEDER_ATTR = 0xFFF1
 FEEDER_ATTR_NAME = "feeder_attr"
 
+SCHEDULING_COMMAND = b"\x08\x00\x08\xC8"
+DISABLED_SCHEDULE_ENTRY = b"\x18\x00\x55\x01"
+
 # Fake ZCL attribute ids we can use for entities for the opple cluster
 ZCL_FEEDING = 0x1388
 ZCL_LAST_FEEDING_SOURCE = 0x1389
@@ -82,62 +85,81 @@ ZCL_TO_AQARA: dict[int, int] = {
 LOGGER = logging.getLogger(__name__)
 
 
-class OppleCluster(XiaomiAqaraE1Cluster):
-    """Opple cluster."""
-
-    class FeedingSource(types.enum8):
-        """Feeding source."""
-
-        Feeder = 0x01
-        Remote = 0x02
-
-    class FeedingMode(types.enum8):
-        """Feeding mode."""
-
-        Manual = 0x00
-        Schedule = 0x01
+class AqaraFeederCluster(XiaomiAqaraE1Cluster):
+    """Aqara Feeder cluster."""
 
     attributes = {
-        ZCL_FEEDING: ("feeding", types.Bool, True),
-        ZCL_LAST_FEEDING_SOURCE: ("last_feeding_source", FeedingSource, True),
-        ZCL_LAST_FEEDING_SIZE: ("last_feeding_size", types.uint8_t, True),
-        ZCL_PORTIONS_DISPENSED: ("portions_dispensed", types.uint16_t, True),
-        ZCL_WEIGHT_DISPENSED: ("weight_dispensed", types.uint32_t, True),
-        ZCL_ERROR_DETECTED: ("error_detected", types.Bool, True),
-        ZCL_DISABLE_LED_INDICATOR: ("disable_led_indicator", types.Bool, True),
-        ZCL_CHILD_LOCK: ("child_lock", types.Bool, True),
-        ZCL_FEEDING_MODE: ("feeding_mode", FeedingMode, True),
-        ZCL_SERVING_SIZE: ("serving_size", types.uint8_t, True),
-        ZCL_PORTION_WEIGHT: ("portion_weight", types.uint8_t, True),
-        FEEDER_ATTR: (FEEDER_ATTR_NAME, types.LVBytes, True),
+        # This is the "virtual" schedule attribute we will target from Home Assistant
+        0xFF01: ("schedule", t.List[FeedingSchedule]),
+        # The other attributes remain as they are
+        0xFFF1: ("feeder_attr", OctetString),
     }
 
-    def __init__(self, *args, **kwargs):
-        """Init."""
-        super().__init__(*args, **kwargs)
-        self._send_sequence: int = None
-        self._attr_cache: dict[int, Any] = {
-            ZCL_DISABLE_LED_INDICATOR: False,
-            ZCL_CHILD_LOCK: False,
-            ZCL_FEEDING_MODE: self.FeedingMode.Manual,
-            ZCL_SERVING_SIZE: 1,
-            ZCL_PORTION_WEIGHT: 8,
-            ZCL_ERROR_DETECTED: False,
-            ZCL_PORTIONS_DISPENSED: 0,
-            ZCL_WEIGHT_DISPENSED: 0,
-        }
+    server_commands = {
+        0x00FE: Command(
+            "set_schedule",
+            {"schedule": Schedule},
+            False,
+        ),
+    }
+    client_commands = {}
 
-    def _update_attribute(self, attrid: int, value: Any) -> None:
-        super()._update_attribute(attrid, value)
-        LOGGER.debug(
-            "OppleCluster._update_attribute: %s, %s",
-            self.attributes.get(attrid).name
-            if self.attributes.get(attrid) is not None
-            else attrid,
-            value.name if isinstance(value, types.enum8) else value,
-        )
+    # --------------------------------------------------------------------------
+    # NEW METHOD TO HANDLE WRITING THE SCHEDULE
+    # --------------------------------------------------------------------------
+    async def write_attributes(self, attributes, manufacturer=None):
+        """
+        Override the default write_attributes method to intercept schedule writes.
+
+        This checks if the user is trying to write to our "virtual" schedule
+        attribute (0xFF01). If so, it constructs the correct, complex 44-byte
+        payload and redirects it to the real "mailbox" attribute (0xFFF1).
+        """
+
+        # Check if "schedule" is one of the attributes the user wants to write.
+        # The key is the name "schedule", not the ID 0xFF01.
+        if "schedule" in attributes:
+            # Get the list of schedule objects the user provided and remove it
+            # from the list of attributes to be processed further.
+            schedule_list = attributes.pop("schedule")
+
+            # Start building the 40-byte schedule data payload.
+            payload = b""
+            schedules_to_write = len(schedule_list)
+
+            # Loop 10 times to fill all schedule slots.
+            for i in range(SCHEDULES_COUNT):  # SCHEDULES_COUNT is 10
+                if i < schedules_to_write:
+                    # If we have a schedule for this slot, serialize it.
+                    # The `schedule_list` contains FeedingSchedule struct objects,
+                    # which have a .serialize() method.
+                    payload += schedule_list[i].serialize()
+                else:
+                    # If there are no more user schedules, pad with the
+                    # "disabled" entry marker.
+                    payload += DISABLED_SCHEDULE_ENTRY
+
+            # Prepend the 4-byte "set schedule" command ID to the 40-byte data.
+            full_command = SCHEDULING_COMMAND + payload
+
+            # Hijack the command: Add the real "feeder_attr" (0xFFF1) to the
+            # attributes dictionary with our fully constructed 44-byte payload.
+            attributes[FEEDER_ATTR_NAME] = full_command
+
+        # Call the original write_attributes method. It will now process our
+        # modified attributes dictionary, sending the correct payload to the
+        # correct attribute.
+        return await super().write_attributes(attributes, manufacturer)
+
+    # --------------------------------------------------------------------------
+    # The existing _update_attribute method remains unchanged.
+    # --------------------------------------------------------------------------
+    def _update_attribute(self, attrid, value):
         if attrid == FEEDER_ATTR:
             self._parse_feeder_attribute(value)
+        super()._update_attribute(attrid, value)
+
+    def _parse_feeder_attribute(self, value):
 
     def _update_feeder_attribute(self, attrid: int, value: Any) -> None:
         zcl_attr_def = self.attributes.get(AQARA_TO_ZCL[attrid])
