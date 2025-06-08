@@ -79,6 +79,7 @@ ZCL_CHILD_LOCK = 0x138F
 ZCL_FEEDING_MODE = 0x1390
 ZCL_SERVING_SIZE = 0x1391
 ZCL_PORTION_WEIGHT = 0x1392
+ZCL_SCHEDULING_STRING = 0x1393
 
 AQARA_TO_ZCL: dict[int, int] = {
     FEEDING: ZCL_FEEDING,
@@ -88,6 +89,7 @@ AQARA_TO_ZCL: dict[int, int] = {
     FEEDING_MODE: ZCL_FEEDING_MODE,
     SERVING_SIZE: ZCL_SERVING_SIZE,
     PORTION_WEIGHT: ZCL_PORTION_WEIGHT,
+    SCHEDULING_STRING: ZCL_SCHEDULING_STRING,
 }
 
 ZCL_TO_AQARA: dict[int, int] = {
@@ -98,10 +100,13 @@ ZCL_TO_AQARA: dict[int, int] = {
     ZCL_SERVING_SIZE: SERVING_SIZE,
     ZCL_PORTION_WEIGHT: PORTION_WEIGHT,
     ZCL_ERROR_DETECTED: ERROR_DETECTED,
+    ZCL_SCHEDULING_STRING: SCHEDULING_STRING,
 }
 
 LOGGER = logging.getLogger(__name__)
 
+class AqaraFeederAcn001(CustomDeviceV2):
+    """Aqara aqara.feeder.acn001 custom device implementation."""
 
 class OppleCluster(XiaomiAqaraE1Cluster):
     """Opple cluster."""
@@ -130,6 +135,7 @@ class OppleCluster(XiaomiAqaraE1Cluster):
         ZCL_FEEDING_MODE: ("feeding_mode", FeedingMode, True),
         ZCL_SERVING_SIZE: ("serving_size", types.uint8_t, True),
         ZCL_PORTION_WEIGHT: ("portion_weight", types.uint8_t, True),
+        ZCL_SCHEDULING_STRING: ("scheduling_string", types.uint8_t, True),
         FEEDER_ATTR: (FEEDER_ATTR_NAME, types.LVBytes, True),
     }
 
@@ -146,6 +152,7 @@ class OppleCluster(XiaomiAqaraE1Cluster):
             ZCL_ERROR_DETECTED: False,
             ZCL_PORTIONS_DISPENSED: 0,
             ZCL_WEIGHT_DISPENSED: 0,
+            ZCL_SECHEDULING_STRING: 0,
         }
 
     def _update_attribute(self, attrid: int, value: Any) -> None:
@@ -190,6 +197,7 @@ class OppleCluster(XiaomiAqaraE1Cluster):
             weight_per_day, _ = types.uint32_t_be.deserialize(attribute_value)
             self._update_attribute(ZCL_WEIGHT_DISPENSED, weight_per_day)
         elif attribute == SCHEDULING_STRING:
+            scheduling_string, _ = types.uint8_t_be.deserialiaze(attribute_value)
             LOGGER.debug(
                 "OppleCluster._parse_feeder_attribute: schedule not currently handled: attribute: %s value: %s",
                 attribute,
@@ -264,8 +272,7 @@ class OppleCluster(XiaomiAqaraE1Cluster):
         return await self._write_attributes(attrs, manufacturer=manufacturer)
 
 
-class AqaraFeederAcn001(XiaomiCustomDevice):
-    """Aqara aqara.feeder.acn001 custom device implementation."""
+
 
 
 (
