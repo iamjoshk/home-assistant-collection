@@ -1,13 +1,17 @@
 """Quirk for Aqara aqara.feeder.acn001."""
 
+import logging
+
 from __future__ import annotations
 
-import logging
 from typing import Any
 
 from zigpy import types
-from zigpy.profiles import zgp, zha
 from zigpy.zcl import foundation
+from zigpy.profiles import zgp, zha
+from zigpy.quirks import CustomEndpoint
+from zigpy.quirks.v2 import QuirkBuilder, CustomDeviceV2
+from zigpy.types import t, LVBytes
 from zigpy.zcl.clusters.general import (
     Basic,
     GreenPowerProxy,
@@ -19,16 +23,33 @@ from zigpy.zcl.clusters.general import (
     Time,
 )
 
+from zhaquirks import (
+    CustomCluster,
+    EventableCluster,
+    LocalDataCluster,
+)
 from zhaquirks.const import (
+    ATTRIBUTE_ID,
+    ATTRIBUTE_NAME,
+    ARGS,
+    CLUSTER_ID,
+    COMMAND,
+    COMMAND_BUTTON_DOUBLE,
+    COMMAND_BUTTON_SINGLE,
     DEVICE_TYPE,
     ENDPOINTS,
+    ENDPOINT_ID,
     INPUT_CLUSTERS,
     MANUFACTURER,
-    MODEL,
     OUTPUT_CLUSTERS,
+    PRESS_TYPE,
     PROFILE_ID,
+    VALUE,
+    ZHA_SEND_EVENT,
 )
-from zhaquirks.xiaomi import XiaomiAqaraE1Cluster, XiaomiCustomDevice
+from zhaquirks.xiaomi import XiaomiCluster, XiaomiAqaraE1Cluster, XiaomiCustomDevice
+
+
 
 # 32 bit signed integer values that are encoded in FEEDER_ATTR = 0xFFF1
 FEEDING = 0x04150055
@@ -246,62 +267,11 @@ class OppleCluster(XiaomiAqaraE1Cluster):
 class AqaraFeederAcn001(XiaomiCustomDevice):
     """Aqara aqara.feeder.acn001 custom device implementation."""
 
-    signature = {
-        MODEL: "aqara.feeder.acn001",
-        ENDPOINTS: {
-            1: {
-                PROFILE_ID: zha.PROFILE_ID,
-                DEVICE_TYPE: zha.DeviceType.ON_OFF_OUTPUT,
-                INPUT_CLUSTERS: [
-                    Basic.cluster_id,
-                    Identify.cluster_id,
-                    Groups.cluster_id,
-                    Scenes.cluster_id,
-                    OnOff.cluster_id,
-                    OppleCluster.cluster_id,
-                ],
-                OUTPUT_CLUSTERS: [
-                    Identify.cluster_id,
-                    Ota.cluster_id,
-                ],
-            },
-            242: {
-                PROFILE_ID: zgp.PROFILE_ID,
-                DEVICE_TYPE: zgp.DeviceType.PROXY_BASIC,
-                INPUT_CLUSTERS: [],
-                OUTPUT_CLUSTERS: [
-                    GreenPowerProxy.cluster_id,
-                ],
-            },
-        },
-    }
 
-    replacement = {
-        MANUFACTURER: "Aqara",
-        ENDPOINTS: {
-            1: {
-                PROFILE_ID: zha.PROFILE_ID,
-                DEVICE_TYPE: zha.DeviceType.ON_OFF_OUTPUT,
-                INPUT_CLUSTERS: [
-                    Basic.cluster_id,
-                    Identify.cluster_id,
-                    Groups.cluster_id,
-                    Scenes.cluster_id,
-                    OppleCluster,
-                    Time.cluster_id,
-                ],
-                OUTPUT_CLUSTERS: [
-                    Identify.cluster_id,
-                    Ota.cluster_id,
-                ],
-            },
-            242: {
-                PROFILE_ID: zgp.PROFILE_ID,
-                DEVICE_TYPE: zgp.DeviceType.PROXY_BASIC,
-                INPUT_CLUSTERS: [],
-                OUTPUT_CLUSTERS: [
-                    GreenPowerProxy.cluster_id,
-                ],
-            },
-        },
-    }
+(
+    QuirkBuilder("Aqara", "aqara.feeder.acn001")
+    .device_class(AqaraFeederAcn001)
+    .skip_configuration(skip_configuration=False)
+    .add_to_registry()
+)
+
