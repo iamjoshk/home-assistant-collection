@@ -295,11 +295,14 @@ class OppleCluster(XiaomiAqaraE1Cluster):
         """Build schedule packet for up to 5 schedules."""
         try:
             # Clean and validate input
+            # Timezone is UTC
+            # Schedule string in DDHHMMPP format - day, hour, minute, portions
             schedule_str = str(value).strip()
             if not schedule_str.isdigit():
                 LOGGER.error("Schedule must be digits only: %r", schedule_str)
                 return None
             
+            # multiple schedules combined like DDHHMMPPDDHHMMPP up to 5 schedules
             if len(schedule_str) % 8 != 0:
                 LOGGER.error("Schedule length must be multiple of 8: %d", len(schedule_str))
                 return None
@@ -372,13 +375,11 @@ class OppleCluster(XiaomiAqaraE1Cluster):
                     LOGGER.error("Schedule processing error: %s", e)
                 continue
 
-            # Handle normal attributes like original quirk
             attr_def = self.find_attribute(attr)
             if not attr_def:
                 continue
             attr_id = attr_def.id
             if attr_id in ZCL_TO_AQARA:
-                # Use original quirk's build method
                 attribute, cooked_value = self._build_feeder_attribute(
                     ZCL_TO_AQARA[attr_id],
                     value,
