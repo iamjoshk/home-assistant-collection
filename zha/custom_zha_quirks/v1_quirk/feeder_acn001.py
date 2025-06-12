@@ -102,9 +102,6 @@ DAY_CODES = {
 class OppleCluster(XiaomiAqaraE1Cluster):
     """Opple cluster."""
 
-    cluster_id = 0xFCC0
-    ep_attribute = "opple_cluster"
-
     class FeedingSource(types.enum8):
         """Feeding source."""
 
@@ -170,9 +167,8 @@ class OppleCluster(XiaomiAqaraE1Cluster):
     def _parse_feeder_attribute(self, value: Any) -> None:
         """Parse the feeder attribute."""
         try:
-            # Convert string to bytes if needed
             if isinstance(value, str) and value.startswith("b'"):
-                value = eval(value)  # Safe since we verify it's a bytes literal
+                value = eval(value)
             
             if not isinstance(value, bytes):
                 LOGGER.error("Invalid value type: %s", type(value))
@@ -194,7 +190,6 @@ class OppleCluster(XiaomiAqaraE1Cluster):
             LOGGER.debug("Processing attr %s: %s (%s bytes)", 
                         attribute, attribute_value.hex(), len(attribute_value))
 
-            # Process attribute value
             if attribute in AQARA_TO_ZCL:
                 self._update_feeder_attribute(attribute, attribute_value)
             elif attribute == FEEDING_REPORT:
@@ -202,12 +197,10 @@ class OppleCluster(XiaomiAqaraE1Cluster):
                     attr_str = attribute_value.decode("utf-8")
                     LOGGER.debug("Raw feeding report: %r", attr_str)
                     
-                    # Extract first two digits as hex string
                     raw_source = attr_str[0:2]
                     feeding_source = int(raw_source, 16)
                     LOGGER.debug("Parsed source value: %r", feeding_source)
                     
-                    # Create enum value directly
                     enum_value = self.FeedingSource(feeding_source)
                     LOGGER.debug("Created enum: %r (%s)", enum_value, str(enum_value))
                     
@@ -362,7 +355,7 @@ class OppleCluster(XiaomiAqaraE1Cluster):
         """Write attributes to device with internal 'attributes' validation."""
         attrs = {}
         for attr, value in attributes.items():
-            # Special case for schedule string
+            # Special handling for schedule string
             if attr == ZCL_SCHEDULING_STRING or (
                 isinstance(attr, str) and attr == "scheduling_string"
             ):
@@ -376,7 +369,7 @@ class OppleCluster(XiaomiAqaraE1Cluster):
                             tv.value = types.LongOctetString(packet)
                             return await self._write_attributes(
                                 [foundation.Attribute(FEEDER_ATTR, tv)],
-                                manufacturer=0x115f
+                                manufacturer=0x115F
                             )
                 except Exception as e:
                     LOGGER.error("Schedule processing error: %s", e)
@@ -396,7 +389,7 @@ class OppleCluster(XiaomiAqaraE1Cluster):
             else:
                 attrs[attr] = value
 
-        return await super().write_attributes(attrs, manufacturer=0x115f)
+        return await super().write_attributes(attrs, manufacturer=0x115F)
 
     async def write_attributes_raw(
         self, attrs: list[foundation.Attribute], manufacturer: int | None = None
