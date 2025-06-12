@@ -86,17 +86,17 @@ LOGGER = logging.getLogger(__name__)
 
 DAY_CODES = {
     77: 127,  # everyday
-    55: 31,   # workdays 
-    22: 96,   # weekend
-    11: 1,    # mon
-    12: 2,    # tue
-    13: 4,    # wed
-    14: 8,    # thu
-    15: 16,   # fri
-    16: 32,   # sat
-    17: 64,   # sun
-    44: 85,   # mon-wed-fri-sun
-    33: 42,   # tue-thu-sat
+    55: 31,  # workdays
+    22: 96,  # weekend
+    11: 1,  # mon
+    12: 2,  # tue
+    13: 4,  # wed
+    14: 8,  # thu
+    15: 16,  # fri
+    16: 32,  # sat
+    17: 64,  # sun
+    44: 85,  # mon-wed-fri-sun
+    33: 42,  # tue-thu-sat
 }
 
 class OppleCluster(XiaomiAqaraE1Cluster):
@@ -114,7 +114,7 @@ class OppleCluster(XiaomiAqaraE1Cluster):
 
     class FeedingMode(types.enum8):
         """Feeding mode."""
-        
+
         Manual = 0x00
         Schedule = 0x01
 
@@ -264,7 +264,7 @@ class OppleCluster(XiaomiAqaraE1Cluster):
         """Build Xiaomi attribute data format."""
         self._send_sequence = ((self._send_sequence or 0) + 1) % 256
         header = bytearray([0x00, 0x02, self._send_sequence])
-        header.extend(attr_id.to_bytes(4, 'big'))
+        header.extend(attr_id.to_bytes(4, "big"))
         header.append(length)
         header.extend(value)
         return bytes(header)
@@ -273,19 +273,22 @@ class OppleCluster(XiaomiAqaraE1Cluster):
         """Log schedule integer segments."""
         try:
             schedule_str = str(value)
-            schedules = [schedule_str[i:i+8] for i in range(0, len(schedule_str), 8)]
-            
+            schedules = [schedule_str[i:i + 8] for i in range(0, len(schedule_str), 8)]
+
             for schedule in schedules:
                 day = int(schedule[0:2])
-                hour = int(schedule[2:4]) 
+                hour = int(schedule[2:4])
                 minute = int(schedule[4:6])
                 portions = int(schedule[6:8])
-                
+
                 LOGGER.info(
                     "Schedule: Day=%02d (%s), Time=%02d:%02d, Portions=%d [Raw=%s]",
-                    day, DAY_CODES.get(day, "unknown"),
-                    hour, minute, portions, 
-                    schedule
+                    day,
+                    DAY_CODES.get(day, "unknown"),
+                    hour,
+                    minute,
+                    portions,
+                    schedule,
                 )
 
         except Exception as e:
@@ -294,21 +297,18 @@ class OppleCluster(XiaomiAqaraE1Cluster):
     def _encode_schedule(self, value: Any) -> bytes:
         """Build schedule packet for up to 5 schedules."""
         try:
-            # Clean and validate input
             # Timezone is UTC
-            # Schedule string in DDHHMMPP format - day, hour, minute, portions
+            # Schedule string in DDHHMMPP format - day, 24hour, minute, portions
             schedule_str = str(value).strip()
             if not schedule_str.isdigit():
                 LOGGER.error("Schedule must be digits only: %r", schedule_str)
                 return None
-            
             # multiple schedules combined like DDHHMMPPDDHHMMPP up to 5 schedules
             if len(schedule_str) % 8 != 0:
                 LOGGER.error("Schedule length must be multiple of 8: %d", len(schedule_str))
                 return None
 
-            # Process schedules
-            schedules = [schedule_str[i:i+8] for i in range(0, len(schedule_str), 8)]
+            schedules = [schedule_str[i:i + 8] for i in range(0, len(schedule_str), 8)]
             if len(schedules) > 5:
                 LOGGER.error("Max 5 schedules allowed, got: %d", len(schedules))
                 return None
@@ -323,11 +323,13 @@ class OppleCluster(XiaomiAqaraE1Cluster):
                 if hour > 23 or minute > 59 or portions == 0:
                     LOGGER.error(
                         "Invalid schedule %d: time=%02d:%02d, portions=%d",
-                        i, hour, minute, portions
+                        i,
+                        hour,
+                        minute,
+                        portions,
                     )
                     return None
 
-                # Get the device day code, use original day if not found
                 day_code = DAY_CODES.get(day, day)
                 schedule_hex = (
                     f"{day_code:02X}"
@@ -337,9 +339,14 @@ class OppleCluster(XiaomiAqaraE1Cluster):
                     "00"
                 )
                 schedule_parts.append(schedule_hex)
-                LOGGER.debug("Added schedule %d: %s (day=%d->%d)", i, schedule_hex, day, day_code)
+                LOGGER.debug(
+                    "Added schedule %d: %s (day=%d->%d)", 
+                    i,
+                    schedule_hex,
+                    day,
+                    day_code,
+                )
 
-            # Build packet
             header = bytes([0x05, 0x15, 0x08, 0x00, 0x08, 0xc8])
             packet = header + b" " + ",".join(schedule_parts).encode()
             LOGGER.debug("Schedule packet: %s", packet.hex())
