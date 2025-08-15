@@ -1,0 +1,48 @@
+alias: Hue Pair
+sequence:
+  - target:
+      entity_id: switch.your_switch
+    action: switch.turn_on
+    data: {}
+  - delay: "00:00:05"
+  - target:
+      entity_id: switch.your_switch
+    action: switch.turn_off
+    data: {}
+  - delay: "00:00:02"
+  - target:
+      entity_id: switch.your_switch
+    action: switch.turn_on
+    data: {}
+  - delay: "00:00:05"
+  - target:
+      entity_id: switch.your_switch
+    action: switch.turn_off
+    data: {}
+  - delay: "00:00:02"
+  - target:
+      entity_id: switch.your_switch
+    action: switch.turn_on
+    data: {}
+  - delay: "00:00:05"
+  - target:
+      entity_id: switch.your_switch
+    action: switch.turn_off
+    data: {}
+  - delay: "00:00:02"
+  - target:
+      entity_id: switch.your_switch
+    action: switch.turn_on
+    data: {}
+  - delay: "00:00:05"
+  - target:
+      entity_id: switch.your_switch
+    action: switch.turn_off
+    data: {}
+  - delay: "00:00:02"
+  - target:
+      entity_id: switch.your_switch
+    action: switch.turn_on
+    data: {}
+mode: single
+description: ""
