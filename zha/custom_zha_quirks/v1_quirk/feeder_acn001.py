@@ -22,6 +22,7 @@ from zigpy.zcl.clusters.general import (
     Time,
 )
 
+from zhaquirks import EventableCluster
 from zhaquirks.const import (
     DEVICE_TYPE,
     ENDPOINTS,
@@ -101,25 +102,9 @@ DAYS_MAP = {
     'sun': 0x40,         # 64
 }
 
-# Legacy day codes for backward compatibility
-DAY_CODES = {
-    77: 127,  # everyday
-    55: 31,   # workdays
-    22: 96,   # weekend
-    11: 1,    # mon
-    12: 2,    # tue
-    13: 4,    # wed
-    14: 8,    # thu
-    15: 16,   # fri
-    16: 32,   # sat
-    17: 64,   # sun
-    44: 85,   # mon-wed-fri-sun
-    33: 42,   # tue-thu-sat
-}
 
-
-class OppleCluster(XiaomiAqaraE1Cluster):
-    """Opple cluster."""
+class OppleCluster(XiaomiAqaraE1Cluster, EventableCluster):
+    """Opple cluster with event support."""
 
     class FeedingSource(types.enum8):
         """Feeding source."""
@@ -136,19 +121,49 @@ class OppleCluster(XiaomiAqaraE1Cluster):
 
     # Mark all custom attributes as reportable to ensure entities are created
     attributes = {
-        ZCL_FEEDING: ("feeding", types.Bool, True),
-        ZCL_LAST_FEEDING_SOURCE: ("last_feeding_source", FeedingSource, True),
-        ZCL_LAST_FEEDING_SIZE: ("last_feeding_size", types.uint8_t, True),
-        ZCL_PORTIONS_DISPENSED: ("portions_dispensed", types.uint16_t, True),
-        ZCL_WEIGHT_DISPENSED: ("weight_dispensed", types.uint32_t, True),
-        ZCL_ERROR_DETECTED: ("error_detected", types.Bool, True),
-        ZCL_DISABLE_LED_INDICATOR: ("disable_led_indicator", types.Bool, True),
-        ZCL_CHILD_LOCK: ("child_lock", types.Bool, True),
-        ZCL_FEEDING_MODE: ("feeding_mode", FeedingMode, True),
-        ZCL_SERVING_SIZE: ("serving_size", types.uint8_t, True),
-        ZCL_PORTION_WEIGHT: ("portion_weight", types.uint8_t, True),
-        ZCL_SCHEDULE: ("schedule", types.CharacterString, True),  # JSON schedule
-        FEEDER_ATTR: (FEEDER_ATTR_NAME, types.LVBytes, True),
+        ZCL_FEEDING: foundation.ZCLAttributeDef(
+            id=ZCL_FEEDING, name="feeding", type=types.Bool, access="rps"
+        ),
+        ZCL_LAST_FEEDING_SOURCE: foundation.ZCLAttributeDef(
+            id=ZCL_LAST_FEEDING_SOURCE, name="last_feeding_source", type=FeedingSource, access="rps"
+        ),
+        ZCL_LAST_FEEDING_SIZE: foundation.ZCLAttributeDef(
+            id=ZCL_LAST_FEEDING_SIZE, name="last_feeding_size", type=types.uint8_t, access="rps"
+        ),
+        ZCL_PORTIONS_DISPENSED: foundation.ZCLAttributeDef(
+            id=ZCL_PORTIONS_DISPENSED, name="portions_dispensed", type=types.uint16_t, access="rps"
+        ),
+        ZCL_WEIGHT_DISPENSED: foundation.ZCLAttributeDef(
+            id=ZCL_WEIGHT_DISPENSED, name="weight_dispensed", type=types.uint32_t, access="rps"
+        ),
+        ZCL_ERROR_DETECTED: foundation.ZCLAttributeDef(
+            id=ZCL_ERROR_DETECTED, name="error_detected", type=types.Bool, access="rps"
+        ),
+        ZCL_DISABLE_LED_INDICATOR: foundation.ZCLAttributeDef(
+            id=ZCL_DISABLE_LED_INDICATOR, name="disable_led_indicator", type=types.Bool, access="rps"
+        ),
+        ZCL_CHILD_LOCK: foundation.ZCLAttributeDef(
+            id=ZCL_CHILD_LOCK, name="child_lock", type=types.Bool, access="rps"
+        ),
+        ZCL_FEEDING_MODE: foundation.ZCLAttributeDef(
+            id=ZCL_FEEDING_MODE, name="feeding_mode", type=FeedingMode, access="rps"
+        ),
+        ZCL_SERVING_SIZE: foundation.ZCLAttributeDef(
+            id=ZCL_SERVING_SIZE, name="serving_size", type=types.uint8_t, access="rps"
+        ),
+        ZCL_PORTION_WEIGHT: foundation.ZCLAttributeDef(
+            id=ZCL_PORTION_WEIGHT, name="portion_weight", type=types.uint8_t, access="rps"
+        ),
+        ZCL_SCHEDULE: foundation.ZCLAttributeDef(
+            id=ZCL_SCHEDULE, name="schedule", type=types.CharacterString, access="rps"
+        ),
+        FEEDER_ATTR: foundation.ZCLAttributeDef(
+            id=FEEDER_ATTR, name=FEEDER_ATTR_NAME, type=types.LVBytes, access="rps"
+        ),
+        # Add the unknown attribute to prevent crashes
+        0x00F7: foundation.ZCLAttributeDef(
+            id=0x00F7, name="status_report", type=types.LVBytes, access="rps"
+        ),
     }
 
     def __init__(self, *args, **kwargs):
@@ -239,29 +254,195 @@ class OppleCluster(XiaomiAqaraE1Cluster):
         except Exception:
             return f"attr_{attrid:04X}"
 
+    def _fire_attribute_event(self, attrid: int, attr_name: str, old_value: Any, new_value: Any) -> None:
+        """Fire ZHA event for attribute changes using EventableCluster."""
+        nwk = self._get_device_nwk()
+        LOGGER.info("[0x%04X] _fire_attribute_event called: attr=0x%04X, old=%s, new=%s", 
+                   nwk, attrid, old_value, new_value)
+        
+        try:
+            # Handle the raw feeder attribute specially - it's used for confirmations
+            if attrid == FEEDER_ATTR:
+                LOGGER.debug("[0x%04X] Processing feeder attribute response for confirmation", nwk)
+                
+                # Convert LVBytes to hex string for JSON serialization
+                def make_json_safe(value):
+                    """Convert value to JSON-safe format."""
+                    if hasattr(value, 'name'):
+                        return value.name
+                    elif isinstance(value, bytes):
+                        return value.hex()
+                    elif hasattr(value, '__bytes__'):
+                        return bytes(value).hex()
+                    else:
+                        return str(value)
+                
+                old_hex = make_json_safe(old_value) if old_value else ""
+                new_hex = make_json_safe(new_value)
+                
+                # Fire a device response confirmation event
+                try:
+                    confirmation_args = {
+                        "attribute_id": attrid,
+                        "attribute_name": attr_name,
+                        "old_value": old_hex,
+                        "new_value": new_hex,
+                        "response_length": len(new_value) if isinstance(new_value, (bytes, types.LVBytes)) else 0,
+                    }
+                    
+                    # Try to parse the response to add more context
+                    if isinstance(new_value, (bytes, types.LVBytes)) and len(new_value) >= 8:
+                        try:
+                            # Extract the attribute ID from the response
+                            response_attr_id, _ = types.int32s_be.deserialize(bytes(new_value)[3:7])
+                            confirmation_args["response_attribute_id"] = f"0x{response_attr_id:08X}"
+                            
+                            # Map to human-readable attribute name
+                            attr_names = {
+                                FEEDING: "feeding",
+                                ERROR_DETECTED: "error_detected",
+                                DISABLE_LED_INDICATOR: "disable_led_indicator", 
+                                CHILD_LOCK: "child_lock",
+                                FEEDING_MODE: "feeding_mode",
+                                SERVING_SIZE: "serving_size",
+                                PORTION_WEIGHT: "portion_weight",
+                                SCHEDULING: "scheduling",
+                                FEEDING_REPORT: "feeding_report",
+                                PORTIONS_DISPENSED: "portions_dispensed",
+                                WEIGHT_DISPENSED: "weight_dispensed"
+                            }
+                            confirmation_args["response_attribute_name"] = attr_names.get(response_attr_id, "unknown")
+                            
+                        except Exception as parse_error:
+                            LOGGER.debug("[0x%04X] Could not parse response details: %s", nwk, parse_error)
+                    
+                    self.listener_event("zha_event", "device_response_received", confirmation_args)
+                    LOGGER.info("[0x%04X] Fired device response confirmation event", nwk)
+                    
+                except Exception as e:
+                    LOGGER.error("[0x%04X] Error firing confirmation event: %s", nwk, e, exc_info=True)
+                
+                return  # Don't process further for raw feeder attribute
+            
+            # Only fire events for user-relevant attributes
+            important_attrs = {
+                ZCL_SCHEDULE: "schedule_updated",
+                ZCL_FEEDING_MODE: "feeding_mode_changed", 
+                ZCL_CHILD_LOCK: "child_lock_changed",
+                ZCL_DISABLE_LED_INDICATOR: "led_indicator_changed",
+                ZCL_SERVING_SIZE: "serving_size_changed",
+                ZCL_PORTION_WEIGHT: "portion_weight_changed",
+                ZCL_LAST_FEEDING_SOURCE: "feeding_occurred",
+                ZCL_ERROR_DETECTED: "error_detected"
+            }
+            
+            if attrid in important_attrs:
+                event_type = important_attrs[attrid]
+                LOGGER.info("[0x%04X] Preparing to fire event: %s", nwk, event_type)
+                
+                # Format values for the event - make them JSON serializable
+                def make_json_safe(value):
+                    """Convert value to JSON-safe format."""
+                    if hasattr(value, 'name'):
+                        return value.name
+                    elif isinstance(value, bytes):
+                        return value.hex()
+                    elif hasattr(value, '__bytes__'):
+                        return bytes(value).hex()
+                    else:
+                        return str(value)
+                
+                old_str = make_json_safe(old_value)
+                new_str = make_json_safe(new_value)
+                
+                # Prepare event args - all JSON serializable
+                event_args = {
+                    "attribute_id": attrid,
+                    "attribute_name": attr_name,
+                    "old_value": old_str,
+                    "new_value": new_str,
+                }
+                
+                # Check if this change was recently written (i.e., it's a confirmation)
+                if self._is_recently_written(attrid):
+                    event_args["is_confirmation"] = True
+                    event_args["write_timestamp"] = self._write_timestamps.get(attrid, 0)
+                else:
+                    event_args["is_confirmation"] = False
+                
+                # Special handling for schedule events
+                if attrid == ZCL_SCHEDULE and isinstance(new_value, str):
+                    try:
+                        schedule_data = json.loads(new_value) if new_value.strip() else []
+                        event_args["schedule_entries"] = len(schedule_data)
+                        event_args["schedule_data"] = schedule_data
+                    except:
+                        pass
+                
+                LOGGER.info("[0x%04X] Event args prepared: %s", nwk, event_args)
+                
+                # Use EventableCluster's listener_event method (the correct method)
+                try:
+                    self.listener_event("zha_event", event_type, event_args)
+                    LOGGER.info("[0x%04X] Successfully fired ZHA event via EventableCluster: %s", nwk, event_type)
+                        
+                except Exception as event_error:
+                    LOGGER.error("[0x%04X] Failed to fire event via EventableCluster: %s", nwk, event_error, exc_info=True)
+                    
+            else:
+                LOGGER.debug("[0x%04X] Attribute 0x%04X not in important_attrs", nwk, attrid)
+                
+        except Exception as e:
+            LOGGER.error("[0x%04X] Error in _fire_attribute_event: %s", nwk, e, exc_info=True)
+
     def _update_attribute(self, attrid: int, value: Any) -> None:
         """Update attribute with proper listener notification."""
-        # Update our cache first
-        old_value = None
+        nwk = self._get_device_nwk()
+        LOGGER.debug("[0x%04X] _update_attribute called: attr=0x%04X, value=%s", nwk, attrid, value)
+        
+        # Special handling for the status report - just log and store for future investigation
+        if attrid == 0x00F7 and isinstance(value, (bytes, types.LVBytes)):
+            raw_value = bytes(value)
+            LOGGER.debug("[0x%04X] Status report 0x00F7: %s", nwk, raw_value.hex())
+            # Store it but don't analyze further for now
+            if hasattr(self, '_attr_cache'):
+                self._attr_cache[attrid] = raw_value
+            if hasattr(self, '_attributes'):
+                self._attributes[attrid] = raw_value.hex()
+            return
+        
+        # Special handling for main feeder attribute
+        if attrid == FEEDER_ATTR and isinstance(value, (bytes, types.LVBytes)):
+            raw_value = bytes(value)
+            old_value = self._attr_cache.get(attrid) if hasattr(self, '_attr_cache') else None
+            
+            if hasattr(self, '_attr_cache'):
+                self._attr_cache[attrid] = raw_value
+                
+            # Parse the feeder attribute normally
+            self._parse_feeder_attribute(raw_value)
+            
+            # Call parent to update the attribute (THIS WAS MISSING!)
+            super()._update_attribute(attrid, raw_value.hex())  # Convert to hex string
+            
+            # Fire events for feeder attribute - each response is a confirmation
+            attr_name = self._get_attribute_name(attrid)
+            self._fire_attribute_event(attrid, attr_name, old_value, raw_value)
+            return
+        
+        # Normal processing for other attributes
+        old_value = self._attr_cache.get(attrid) if hasattr(self, '_attr_cache') else None
+        
         if hasattr(self, '_attr_cache'):
-            old_value = self._attr_cache.get(attrid)
             self._attr_cache[attrid] = value
         
-        # Call parent to update the attribute which triggers listeners
+        # Call parent to update the attribute
         super()._update_attribute(attrid, value)
         
-        # Log the update if value changed
+        # Fire events if value changed
         if old_value != value:
             attr_name = self._get_attribute_name(attrid)
-            value_str = value.name if hasattr(value, 'name') else str(value)
-            LOGGER.info(
-                "[0x%04X] Updated %s (0x%04X): %s -> %s",
-                self._get_device_nwk(), attr_name, attrid, old_value, value_str
-            )
-        
-        # Handle feeder attribute parsing
-        if attrid == FEEDER_ATTR:
-            self._parse_feeder_attribute(value)
+            self._fire_attribute_event(attrid, attr_name, old_value, value)
 
     def _update_feeder_attribute(self, attrid: int, value: Any) -> None:
         """Update feeder attribute with validation."""
@@ -296,7 +477,7 @@ class OppleCluster(XiaomiAqaraE1Cluster):
             
             if len(value) < length + 8:
                 LOGGER.debug("Incomplete attribute %s: %s < %s", 
-                           attribute, len(value), length + 8)
+                        attribute, len(value), length + 8)
                 return
                 
             attribute_value = value[8 : (length + 8)]
@@ -313,14 +494,17 @@ class OppleCluster(XiaomiAqaraE1Cluster):
                 try:
                     portions_per_day, _ = types.uint16_t_be.deserialize(attribute_value)
                     self._update_attribute(ZCL_PORTIONS_DISPENSED, portions_per_day)
+                    LOGGER.debug("[0x%04X] Updated portions dispensed: %s", nwk, portions_per_day)
                 except ValueError as e:
                     LOGGER.debug("Failed to parse portions: %s", e)
             elif attribute == WEIGHT_DISPENSED:
                 try:
                     weight_per_day, _ = types.uint32_t_be.deserialize(attribute_value)
                     self._update_attribute(ZCL_WEIGHT_DISPENSED, weight_per_day)
+                    LOGGER.info("[0x%04X] Updated weight dispensed: %s grams", nwk, weight_per_day)
                 except ValueError as e:
-                    LOGGER.debug("Failed to parse weight: %s", e)
+                    LOGGER.debug("[0x%04X] Failed to parse weight: %s - raw: %s", 
+                                nwk, e, attribute_value.hex())
             elif attribute == SCHEDULING:
                 self._parse_schedule(attribute_value)
             else:
@@ -347,6 +531,23 @@ class OppleCluster(XiaomiAqaraE1Cluster):
                 self._update_attribute(ZCL_LAST_FEEDING_SOURCE, enum_value)
                 feeding_size = attr_str[3:4]
                 self._update_attribute(ZCL_LAST_FEEDING_SIZE, int(feeding_size, base=16))
+                
+                # Fire a feeding event with additional context using EventableCluster
+                try:
+                    nwk = self._get_device_nwk()
+                    feeding_event_args = {
+                        "feeding_source": enum_value.name,
+                        "feeding_size": int(feeding_size, base=16),
+                        "raw_data": attr_str
+                    }
+                    
+                    # Use EventableCluster's listener_event method
+                    self.listener_event("zha_event", "feeding_completed", feeding_event_args)
+                    LOGGER.info("[0x%04X] Fired feeding completed event via EventableCluster", nwk)
+                    
+                except Exception as e:
+                    LOGGER.error("[0x%04X] Error firing feeding event: %s", nwk, e, exc_info=True)
+                    
         except Exception as e:
             LOGGER.debug("Failed to parse feeding report: %s", e)
 
@@ -470,10 +671,12 @@ class OppleCluster(XiaomiAqaraE1Cluster):
     ) -> list:
         """Write attributes to device with immediate UI feedback."""
         nwk = self._get_device_nwk()
-        LOGGER.info("[0x%04X] Writing attributes: %s", nwk, attributes)
+        LOGGER.info("[0x%04X] write_attributes called with: %s", nwk, attributes)
         
         attrs = {}
         for attr, value in attributes.items():
+            LOGGER.debug("[0x%04X] Processing attribute: %s = %s", nwk, attr, value)
+            
             # Special handling for schedule
             if attr == ZCL_SCHEDULE or (isinstance(attr, str) and attr == "schedule"):
                 try:
@@ -481,7 +684,8 @@ class OppleCluster(XiaomiAqaraE1Cluster):
                     if schedule_val.strip():
                         packet = self._encode_schedule(schedule_val)
                         if packet:
-                            # Update UI immediately
+                            # Update UI immediately AND fire event
+                            old_schedule = self._attr_cache.get(ZCL_SCHEDULE, "[]")
                             self._update_attribute(ZCL_SCHEDULE, schedule_val)
                             
                             tv = foundation.TypeValue()
@@ -491,20 +695,27 @@ class OppleCluster(XiaomiAqaraE1Cluster):
                                 [foundation.Attribute(FEEDER_ATTR, tv)],
                                 manufacturer=0x115F
                             )
+                            LOGGER.info("[0x%04X] Schedule write result: %s", nwk, result)
                             return result
                 except Exception as e:
-                    LOGGER.error("Schedule processing error: %s", e)
+                    LOGGER.error("Schedule processing error: %s", e, exc_info=True)
                 continue
 
             attr_def = self.find_attribute(attr)
             if not attr_def:
+                LOGGER.warning("[0x%04X] Could not find attribute definition for: %s", nwk, attr)
                 continue
+                
             attr_id = attr_def.id
+            LOGGER.debug("[0x%04X] Found attr_id 0x%04X for %s", nwk, attr_id, attr)
+            
             if attr_id in ZCL_TO_AQARA:
                 # Mark as recently written
                 self._mark_as_written(attr_id, value)
                 
-                # IMMEDIATELY update UI to prevent reverting
+                # IMMEDIATELY update UI to prevent reverting AND fire event
+                old_value = self._attr_cache.get(attr_id)
+                LOGGER.info("[0x%04X] Updating attribute 0x%04X: %s -> %s", nwk, attr_id, old_value, value)
                 self._update_attribute(attr_id, value)
                 
                 # Get attribute name safely for length determination
@@ -515,8 +726,8 @@ class OppleCluster(XiaomiAqaraE1Cluster):
                     if isinstance(our_attr, tuple):
                         attr_name = our_attr[0]
                 
-                # Fix: Use correct lengths (1 byte for all these attributes)
-                length = 1  # All feeder attributes are single bytes
+                attr_name = getattr(attr_def, 'name', '')
+                length = 4 if attr_name in ["serving_size", "portion_weight"] else 1
                 
                 attribute, cooked_value = self._build_feeder_attribute(
                     ZCL_TO_AQARA[attr_id],
@@ -525,12 +736,16 @@ class OppleCluster(XiaomiAqaraE1Cluster):
                 )
                 attrs[attribute] = cooked_value
             else:
+                LOGGER.debug("[0x%04X] Attribute 0x%04X not in ZCL_TO_AQARA", nwk, attr_id)
                 attrs[attr] = value
 
         if attrs:
+            LOGGER.info("[0x%04X] Sending %d attributes to device", nwk, len(attrs))
             result = await super().write_attributes(attrs, manufacturer=0x115F)
             LOGGER.info("[0x%04X] Write result: %s", nwk, result)
             return result
+        else:
+            LOGGER.warning("[0x%04X] No attributes to write!", nwk)
         return [foundation.Status.SUCCESS]
 
     async def write_attributes_raw(
@@ -623,7 +838,6 @@ class AqaraFeederAcn001(XiaomiCustomDevice):
                 # Initialize attributes
                 opple_cluster._initialize_attributes()
                 
-                # Try to read current device state
                 try:
                     import asyncio
                     await asyncio.sleep(1.0)  # Wait for initialization
