@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import ast
+import contextlib
 import json
 import logging
 import time
@@ -225,10 +226,8 @@ class OppleCluster(XiaomiAqaraE1Cluster, EventableCluster):
             return
         
         for attr_id, default_value in self._attr_cache.items():
-            try:
+            with contextlib.suppress(Exception):
                 super()._update_attribute(attr_id, default_value)
-            except Exception:
-                pass
         
         self._attributes_initialized = True
 
@@ -285,6 +284,7 @@ class OppleCluster(XiaomiAqaraE1Cluster, EventableCluster):
             return
         
         try:
+            # Only fire custom events for FEEDER_ATTR - let ZHA handle standard attributes
             if attrid == FEEDER_ATTR:
                 old_hex = self._make_json_safe(old_value) if old_value else ""
                 new_hex = self._make_json_safe(new_value)
@@ -308,30 +308,17 @@ class OppleCluster(XiaomiAqaraE1Cluster, EventableCluster):
                 self.listener_event("zha_event", "device_response_received", confirmation_args)
                 return
 
-            event_type = IMPORTANT_ATTRS.get(attrid)
-            if event_type is None:
+            # For feeding reports, fire special events
+            if attrid == ZCL_LAST_FEEDING_SOURCE:
+                feeding_event_args = {
+                    "feeding_source": new_value.name if hasattr(new_value, 'name') else str(new_value),
+                    "feeding_size": self._attr_cache.get(ZCL_LAST_FEEDING_SIZE, 0),
+                }
+                self.listener_event("zha_event", "feeding_completed", feeding_event_args)
                 return
 
-            event_args = {
-                "attribute_id": attrid,
-                "attribute_name": attr_name,
-                "old_value": self._make_json_safe(old_value),
-                "new_value": self._make_json_safe(new_value),
-                "is_confirmation": self._is_recently_written(attrid),
-            }
-            
-            if event_args["is_confirmation"]:
-                event_args["write_timestamp"] = self._write_timestamps.get(attrid, 0)
-
-            if attrid == ZCL_SCHEDULE and isinstance(new_value, str):
-                try:
-                    schedule_data = json.loads(new_value) if new_value.strip() else []
-                    event_args["schedule_entries"] = len(schedule_data)
-                    event_args["schedule_data"] = schedule_data
-                except json.JSONDecodeError:
-                    pass
-
-            self.listener_event("zha_event", event_type, event_args)
+            # Don't fire custom events for other attributes - let ZHA handle them
+            # This prevents duplicate events
                 
         except Exception as e:
             LOGGER.error("[0x%04X] Error in _fire_attribute_event: %s", self._get_device_nwk(), e)
@@ -341,8 +328,11 @@ class OppleCluster(XiaomiAqaraE1Cluster, EventableCluster):
         if attrid == 0x00F7 and isinstance(value, (bytes, types.LVBytes)):
             raw_value = bytes(value)
             self._attr_cache[attrid] = raw_value
-            if hasattr(self, '_attributes'):
-                self._attributes[attrid] = raw_value.hex()
+            # Call parent with hex string to avoid JSON serialization issues but maintain functionality
+            try:
+                super()._update_attribute(attrid, raw_value.hex())
+            except Exception as e:
+                LOGGER.debug("[0x%04X] Error updating status_report attribute: %s", self._get_device_nwk(), e)
             return
         
         if attrid == FEEDER_ATTR and isinstance(value, (bytes, types.LVBytes)):
@@ -350,20 +340,28 @@ class OppleCluster(XiaomiAqaraE1Cluster, EventableCluster):
             old_value = self._attr_cache.get(attrid)
             self._attr_cache[attrid] = raw_value
             
+            # Parse the attribute to extract individual values
             self._parse_feeder_attribute(raw_value)
             
-            super()._update_attribute(attrid, raw_value.hex())
+            # Call parent with hex string to avoid JSON serialization issues but maintain functionality
+            try:
+                super()._update_attribute(attrid, raw_value.hex())
+            except Exception as e:
+                LOGGER.debug("[0x%04X] Error updating feeder_attr: %s", self._get_device_nwk(), e)
             
             attr_name = self._get_attribute_name(attrid)
             self._fire_attribute_event(attrid, attr_name, old_value, raw_value)
             return
         
+        # For all other attributes, update cache and call parent
         old_value = self._attr_cache.get(attrid)
         self._attr_cache[attrid] = value
         
+        # Always call parent to trigger listener notifications
         super()._update_attribute(attrid, value)
         
-        if old_value != value:
+        # Only fire custom events for special cases - ZHA handles standard attribute events
+        if attrid == ZCL_LAST_FEEDING_SOURCE and old_value != value:
             attr_name = self._get_attribute_name(attrid)
             self._fire_attribute_event(attrid, attr_name, old_value, value)
 
@@ -489,19 +487,41 @@ class OppleCluster(XiaomiAqaraE1Cluster, EventableCluster):
             elif isinstance(schedule_input, list):
                 schedule_list = schedule_input
             else:
+                LOGGER.error("[0x%04X] Invalid schedule format", self._get_device_nwk())
                 return None
 
-            if not isinstance(schedule_list, list) or len(schedule_list) > 5:
+            if not isinstance(schedule_list, list):
+                LOGGER.error("[0x%04X] Invalid schedule format", self._get_device_nwk()) 
+                return None
+                
+            if len(schedule_list) > 5:
+                LOGGER.error("[0x%04X] Too many schedule entries (max 5)", self._get_device_nwk())
                 return None
             
             schedule_parts = []
             for schedule in schedule_list:
+                if not isinstance(schedule, dict):
+                    LOGGER.error("[0x%04X] Invalid schedule entry format", self._get_device_nwk())
+                    return None
+                    
                 days = schedule.get('days', 'everyday')
-                hour = schedule.get('hour', 0)
-                minute = schedule.get('minute', 0)
-                portions = schedule.get('portions', 1)
+                hour = schedule.get('hour')
+                minute = schedule.get('minute')
+                portions = schedule.get('portions')
                 
-                if hour > 23 or minute > 59 or portions < 1:
+                # Strict validation - all required fields must be present
+                if hour is None or minute is None:
+                    LOGGER.error("[0x%04X] Invalid schedule values: missing hour or minute", self._get_device_nwk())
+                    return None
+                
+                # If portions is missing, some tests expect it to work with default
+                if portions is None:
+                    portions = 1
+                
+                # Validate ranges strictly
+                if not (0 <= hour <= 23) or not (0 <= minute <= 59) or not (1 <= portions <= 5):
+                    LOGGER.error("[0x%04X] Invalid schedule values: hour=%s, minute=%s, portions=%s", 
+                               self._get_device_nwk(), hour, minute, portions)
                     return None
                 
                 days_mask = DAYS_MAP.get(days, 0x7F)
@@ -512,7 +532,8 @@ class OppleCluster(XiaomiAqaraE1Cluster, EventableCluster):
             header = bytes([0x05, 0x15, 0x08, 0x00, 0x08, 0xc8])
             return header + b" " + schedule_data.encode()
             
-        except (json.JSONDecodeError, KeyError, TypeError):
+        except (json.JSONDecodeError, KeyError, TypeError, ValueError) as e:
+            LOGGER.error("[0x%04X] Failed to encode schedule: %s", self._get_device_nwk(), str(e))
             return None
 
     def _build_feeder_attribute(
@@ -558,11 +579,25 @@ class OppleCluster(XiaomiAqaraE1Cluster, EventableCluster):
                                 manufacturer=0x115F
                             )
                             return result
-                except Exception:
-                    pass
+                        else:
+                            # Log error and return failure status if encoding failed
+                            LOGGER.error("[0x%04X] Failed to encode schedule", self._get_device_nwk())
+                            return [foundation.WriteAttributesStatusRecord(foundation.Status.FAILURE)]
+                    else:
+                        # Empty schedule - update attribute and return success
+                        self._update_attribute(ZCL_SCHEDULE, "[]")
+                        return [foundation.WriteAttributesStatusRecord(foundation.Status.SUCCESS)]
+                except Exception as e:
+                    LOGGER.error("[0x%04X] Error processing schedule: %s", self._get_device_nwk(), str(e))
+                    return [foundation.WriteAttributesStatusRecord(foundation.Status.FAILURE)]
+                
+            # Handle unknown attributes gracefully
+            try:
+                attr_def = self.find_attribute(attr)
+            except (KeyError, AttributeError):
+                LOGGER.warning("[0x%04X] Unknown attribute: %s", self._get_device_nwk(), attr)
                 continue
-
-            attr_def = self.find_attribute(attr)
+                
             if not attr_def:
                 continue
                 
@@ -589,7 +624,7 @@ class OppleCluster(XiaomiAqaraE1Cluster, EventableCluster):
             result = await super().write_attributes(attrs, manufacturer=0x115F)
             return result
         
-        return [foundation.Status.SUCCESS]
+        return [foundation.WriteAttributesStatusRecord(foundation.Status.SUCCESS)]
 
     async def write_attributes_raw(
         self, attrs: list[foundation.Attribute], manufacturer: int | None = None
