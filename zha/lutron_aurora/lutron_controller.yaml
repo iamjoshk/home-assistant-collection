@@ -1,0 +1,96 @@
+template:
+  - trigger:
+      - platform: event
+        event_type:
+          - zha_event
+        event_data:
+          device_ieee: ff:ff:00:0f:e7:fa:d1:b6
+          unique_id: ff:ff:00:0f:e7:fa:d1:b6:1:0x0008
+          device_id: 2ccd341cf88670faeae4fce73076513b
+
+    sensor:
+      - name: Lutron Z3-1BRL Controller
+        unique_id: lutron_z3_1brl_controller
+        state: >
+          {{ trigger.event.data.params.level }}
+
+        attributes:
+          time_fired: >
+            {{ trigger.event.time_fired | default(1) }}
+          debounce_time: >
+            {{ this.attributes.get('time_fired') | default(1) }}  
+          debounce_level: >
+            {{ this.attributes.get('level') | default(1) }}
+          debounce_diff: >
+            {% set ddiff = ((this.attributes.get('time_fired')|as_timestamp(1)) - ((this.attributes.get('debounce_time')|as_timestamp(1))))|round(3) %}
+              {{ ddiff }}
+          level: >
+            {{ trigger.event.data.params.level | default(0) }} 
+          previous_level: >
+            {% set ldiff = this.attributes.get('debounce_diff') %}
+            {% if (trigger.event.data.params.level == 255) or (trigger.event.data.params.level) == 0 %}
+              {{ trigger.event.data.params.level }}
+            {% elif ldiff > 0.199 %}
+              {{ this.attributes.get('level') }}
+            {% else %}
+              {{ this.attributes.get('debounce_level') }}
+            {% endif %}            
+          transition_time: >
+              {{ trigger.event.data.params.transition_time | default(7)}}
+          previous_transition_time: >
+            {{ this.attributes.get('transition_time') }}
+          context_id: >
+            {{ trigger.event.context.id }}
+          brightness: >
+            {% set off = trigger.event.data.params.level|int(0) == 0 %}
+            {% set min = trigger.event.data.params.level|int(0) == 2 %}
+            {% set max = trigger.event.data.params.level|int(0) == 255 %}
+            {% set up = (trigger.event.data.params.level|int(0)) - (this.attributes.get('previous_level', [])|int(0)) > 0 %}
+            {% set down = (trigger.event.data.params.level|int(0)) - (this.attributes.get('previous_level', [])|int(0)) < 0 %}
+            {% set maxdown = (this.attributes.get('previous_transition_time')|int(0)) == (this.attributes.get('transition_time')|int(0)) and (this.attributes.get('previous_level')|int(0)) == 255 %}
+            {% if off %}
+              off
+            {% elif min %}
+              min
+            {% elif max %}
+              max
+            {% elif maxdown or down %}
+              down
+            {% elif up %}
+              up
+            {% endif %}
+          action_type: >
+            {% set click = (trigger.event.data.params.transition_time|int(0)) == 7 %}
+            {% set rotate = (trigger.event.data.params.transition_time|int(0)) == 2 and (trigger.event.data.params.level|int(0)) > 0 %}
+            {% set minclick = (trigger.event.data.params.transition_time|int(0)) == 2 and (trigger.event.data.params.level|int(0)) == 0 %}
+            {% if click or minclick %}
+              click
+            {% elif rotate %}
+              rotate
+            {% endif %}
+          rotate_right: >
+            {% set rotate = (trigger.event.data.params.transition_time|int(0)) == 2 and (trigger.event.data.params.level|int(0)) > 0 %}
+            {% set maxright = rotate and trigger.event.data.params.level|int(0) == 255 %}
+            {% set right = rotate and (trigger.event.data.params.level|int(0)) - (this.attributes.get('previous_level', [])|int(0)) > 0 %}
+            {% if right or maxright %}
+              {{ this.attributes.get('time_fired')[20:-9] }}
+            {% else %}
+              0
+            {% endif %}            
+          rotate_left: >
+            {% set rotate = (trigger.event.data.params.transition_time|int(0)) == 2 and (trigger.event.data.params.level|int(0)) > 0 %}
+            {% set left = rotate and (trigger.event.data.params.level|int(0)) - (this.attributes.get('previous_level', [])|int(0)) < 0 %}            
+            {% set minleft = rotate and trigger.event.data.params.level|int(0) == 2 %}
+            {% if left or minleft %}
+              {{ this.attributes.get('time_fired')[20:-9] }}
+            {% else %}
+              0
+            {% endif %}     
+          click: >
+            {% set click = (trigger.event.data.params.transition_time|int(0)) == 7 %}
+            {% set minclick = (trigger.event.data.params.transition_time|int(0)) == 2 and (trigger.event.data.params.level|int(0)) == 0 %}
+            {% if click or minclick %}
+              {{ this.attributes.get('time_fired')[20:-9] }}
+            {% else %}
+              0
+            {% endif %}  
