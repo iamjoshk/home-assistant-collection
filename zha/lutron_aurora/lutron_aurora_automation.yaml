@@ -1,0 +1,160 @@
+description: ""
+mode: parallel
+triggers:
+  - entity_id:
+      - sensor.lutron_z3_1brl_controller
+    attribute: rotate_right
+    id: rotate-right
+    trigger: state
+  - entity_id:
+      - sensor.lutron_z3_1brl_controller
+    attribute: rotate_left
+    id: rotate-left
+    trigger: state
+  - entity_id:
+      - sensor.lutron_z3_1brl_controller
+    attribute: click
+    id: light-toggle
+    trigger: state
+conditions: []
+actions:
+  - if:
+      - condition: trigger
+        id: rotate-right
+      - condition: state
+        entity_id: sensor.lutron_z3_1brl_controller
+        attribute: brightness
+        state: max
+      - condition: template
+        value_template: >-
+          {{ state_attr('sensor.lutron_z3_1brl_controller','rotate_right') != 0
+          }}
+    then:
+      - repeat:
+          count: "2"
+          sequence:
+            - data: {}
+              target:
+                entity_id: light.signify_netherlands_b_v_lto004_huelight
+              action: light.turn_off
+            - delay:
+                hours: 0
+                minutes: 0
+                seconds: 0
+                milliseconds: 125
+            - data:
+                brightness: 255
+              target:
+                entity_id: light.signify_netherlands_b_v_lto004_huelight
+              action: light.turn_on
+            - delay:
+                hours: 0
+                minutes: 0
+                seconds: 0
+                milliseconds: 125
+    else:
+      - if:
+          - condition: trigger
+            id: rotate-right
+          - condition: template
+            value_template: >-
+              {{ state_attr('sensor.lutron_z3_1brl_controller','rotate_right')
+              != 0 }}
+        then:
+          - data:
+              brightness_step_pct: 5
+              color_temp_kelvin: 4000
+            target:
+              entity_id: light.signify_netherlands_b_v_lto004_huelight
+            action: light.turn_on
+    enabled: true
+    alias: get brighter
+  - if:
+      - condition: trigger
+        id: rotate-left
+      - condition: state
+        entity_id: sensor.lutron_z3_1brl_controller
+        attribute: brightness
+        state: min
+      - condition: template
+        value_template: >-
+          {{ state_attr('sensor.lutron_z3_1brl_controller','rotate_left') != 0
+          }}
+    then:
+      - repeat:
+          count: 2
+          sequence:
+            - data: {}
+              target:
+                entity_id: light.signify_netherlands_b_v_lto004_huelight
+              action: light.turn_off
+            - delay:
+                hours: 0
+                minutes: 0
+                seconds: 0
+                milliseconds: 125
+            - data:
+                brightness: 2
+              target:
+                entity_id: light.signify_netherlands_b_v_lto004_huelight
+              action: light.turn_on
+            - delay:
+                hours: 0
+                minutes: 0
+                seconds: 0
+                milliseconds: 125
+    else:
+      - if:
+          - condition: trigger
+            id: rotate-left
+          - condition: template
+            value_template: >-
+              {{ state_attr('sensor.lutron_z3_1brl_controller','rotate_left') !=
+              0 }}
+        then:
+          - data:
+              brightness_step_pct: -5
+              color_temp_kelvin: 4000
+            target:
+              entity_id: light.signify_netherlands_b_v_lto004_huelight
+            action: light.turn_on
+    enabled: true
+    alias: get dimmer
+  - alias: turn on and off from switch
+    choose:
+      - conditions:
+          - condition: trigger
+            id: light-toggle
+          - condition: state
+            entity_id: light.signify_netherlands_b_v_lto004_huelight
+            state: "on"
+          - condition: numeric_state
+            entity_id: sensor.lutron_z3_1brl_controller
+            attribute: click
+            above: 0
+        sequence:
+          - data: {}
+            target:
+              entity_id: light.signify_netherlands_b_v_lto004_huelight
+            action: light.turn_off
+        alias: turn off
+      - conditions:
+          - condition: trigger
+            id: light-toggle
+          - condition: state
+            entity_id: light.signify_netherlands_b_v_lto004_huelight
+            state: "off"
+          - condition: numeric_state
+            entity_id: sensor.lutron_z3_1brl_controller
+            attribute: click
+            above: 0
+        sequence:
+          - data:
+              brightness_pct: 100
+              color_temp_kelvin: 4000
+            target:
+              entity_id: light.signify_netherlands_b_v_lto004_huelight
+            action: light.turn_on
+        alias: turn on
+max: 2
+max_exceeded: silent
