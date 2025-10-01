@@ -1,3 +1,9 @@
+I used Copilot to make an integration for this, as an experiment: https://github.com/iamjoshk/ha_lionel_controller.
+It supersedes the need for this ESPHome solution.
+
+---
+---
+
 ## Quick and Dirty ESPHome BLE Client to control Lionel LionChief locomotives
 
 ### Requirements
