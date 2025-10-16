@@ -1,0 +1,9 @@
+data:
+  ieee: 54:ef:44:10:11:11:11:11
+  cluster_type: in
+  endpoint_id: 1
+  cluster_id: 64704
+  attribute: schedule
+  value: >-
+    [{"days":"everyday","hour":11,"minute":0,"portions":3},{"days":"everyday","hour":16,"minute":0,"portions":2},{"days":"everyday","hour":1,"minute":0,"portions":2}]
+action: zha.set_zigbee_cluster_attribute
