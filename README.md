@@ -41,6 +41,9 @@ Collection of various Home Assistant projects and guides in various states of co
 ## [`Birdnet-Go`](https://github.com/iamjoshk/home-assistant-collection/tree/main/birdnet-go)
 + Birdnet-Go add-on configuration and dashboard
 
+## [`Discogs`](https://github.com/iamjoshk/home-assistant-collection/tree/main/discogs)
++ Sample dashboard using ['Discogs Sync'](https://github.com/iamjoshk/discogs_sync) add on.
+
 ---
 ## ARCHIVED
 
