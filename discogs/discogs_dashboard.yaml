@@ -1,0 +1,305 @@
+views:
+  - title: Home
+    sections:
+      - type: grid
+        cards:
+          - type: vertical-stack
+            cards:
+              - type: heading
+                icon: mdi:record-player
+                heading_style: subtitle
+                heading: 'Random Play '
+                tap_action:
+                  action: perform-action
+                  perform_action: button.press
+                  target:
+                    entity_id: button.iamjoshk_refresh_random_record
+                badges:
+                  - type: entity
+                    show_state: true
+                    show_icon: false
+                    entity: sensor.iamjoshk_random_record
+                    state_content: last_changed
+              - type: markdown
+                content: >-
+                  {% set f =
+                  state_attr('sensor.iamjoshk_random_record','format') %}
+
+                  {% if 'Vinyl' in f %}
+
+                  ### Vinyl
+
+                  {% elif 'Cassette' in f %}
+
+                  ### Cassette
+
+                  {% elif 'CD' in f %}
+
+                  ### CD
+
+                  {% else %}
+
+                  ### Other
+
+                  {% endif %}
+
+                  ## {{ states('sensor.iamjoshk_random_record') }}
+
+                  ![image]({{
+                  state_attr('sensor.iamjoshk_random_record','cover_image') }})
+                text_only: true
+                grid_options:
+                  columns: full
+                  rows: auto
+          - type: vertical-stack
+            cards:
+              - type: heading
+                icon: mdi:album
+                heading: Vinyl Collection
+                heading_style: subtitle
+                tap_action:
+                  action: perform-action
+                  perform_action: button.press
+                  target:
+                    entity_id: button.iamjoshk_refresh_collection
+                badges:
+                  - type: entity
+                    show_state: true
+                    show_icon: false
+                    entity: sensor.iamjoshk_collection
+                    state_content: last_updated
+                    tap_action:
+                      action: more-info
+              - type: custom:flex-table-card
+                enable_search: true
+                clickable: true
+                action: script.discogs_download_collection
+                entities:
+                  - sensor.iamjoshk_collection
+                sort_by:
+                  - Artists
+                  - Year
+                columns:
+                  - name: Cover
+                    data: collection.thumb
+                    modify: 'x ? `<img src="${x}" style="height:50px;"/>` : ""'
+                    align: center
+                  - name: Artists
+                    data: collection.artists
+                    modify: x.map(a => a.name.replace(/^The /, "")).join(", ")
+                  - data: collection.title
+                    name: Title
+                  - data: collection.year
+                    name: Year
+                  - name: Format
+                    data: collection.formats
+                    modify: 'x && x.length > 0 ? x[0].name : ""'
+                  - name: Genre
+                    data: collection.genres
+                    modify: if(x.length == 0){""}else{x}
+                  - name: Styles
+                    data: collection.styles
+                    modify: if(x.length == 0){""}else{x}
+                grid_options:
+                  columns: 24
+                  rows: auto
+                card_mod:
+                  style: |
+                    ha-card {
+                      overflow: auto;
+                      max-height: 500px;
+                    }
+            grid_options:
+              columns: 24
+              rows: auto
+        column_span: 4
+      - type: grid
+        cards:
+          - type: heading
+            heading_style: subtitle
+            grid_options:
+              columns: 48
+              rows: 1
+        column_span: 4
+      - type: grid
+        cards:
+          - type: vertical-stack
+            cards:
+              - type: heading
+                icon: mdi:disc-player
+                heading_style: subtitle
+                heading: 'Random Play '
+                tap_action:
+                  action: perform-action
+                  perform_action: button.press
+                  target:
+                    entity_id: button.discogs_refresh_custom_random_record
+                badges:
+                  - type: entity
+                    show_state: true
+                    show_icon: false
+                    entity: button.discogs_refresh_custom_random_record
+                    state_content: last_changed
+              - type: markdown
+                content: >-
+                  {% set f = state_attr('sensor.discogs_random_cd','format') %}
+
+                  {% if 'Vinyl' in f %}
+
+                  ### Vinyl
+
+                  {% elif 'Cassette' in f %}
+
+                  ### Cassette
+
+                  {% elif 'CD' in f %}
+
+                  ### CD
+
+                  {% else %}
+
+                  ### Other
+
+                  {% endif %}## {{ states('sensor.discogs_random_cd') }}
+
+                  ![image]({{
+                  state_attr('sensor.discogs_random_cd','cover_image') }})
+                text_only: true
+                grid_options:
+                  rows: auto
+          - type: vertical-stack
+            cards:
+              - type: heading
+                icon: mdi:disc
+                heading: CD Collection
+                heading_style: subtitle
+                tap_action:
+                  action: perform-action
+                  perform_action: script.discogs_download_cd_collection
+                  target: {}
+                badges:
+                  - type: entity
+                    show_state: true
+                    show_icon: false
+                    entity: sensor.iamjoshk_user_folders
+                    state_content: last_updated
+                    tap_action:
+                      action: more-info
+              - type: custom:flex-table-card
+                enable_search: true
+                clickable: true
+                action: script.discogs_download_cd_collection
+                entities:
+                  - sensor.iamjoshk_collection
+                sort_by:
+                  - Artists
+                  - Year
+                columns:
+                  - name: Cover
+                    data: collection.thumb
+                    modify: 'x ? `<img src="${x}" style="height:50px;"/>` : ""'
+                    align: center
+                  - name: Artists
+                    data: collection.artists
+                    modify: x.map(a => a.name.replace(/^The /, "")).join(", ")
+                  - data: collection.title
+                    name: Title
+                  - data: collection.year
+                    name: Year
+                  - name: Format
+                    data: collection.formats
+                    modify: 'x && x.length > 0 ? x[0].name : ""'
+                  - name: Genre
+                    data: collection.genres
+                    modify: if(x.length == 0){""}else{x}
+                  - name: Styles
+                    data: collection.styles
+                    modify: if(x.length == 0){""}else{x}
+                grid_options:
+                  columns: 24
+                  rows: auto
+                card_mod:
+                  style: |
+                    ha-card {
+                      overflow: auto;
+                      max-height: 500px;
+                    }
+            grid_options:
+              columns: 24
+              rows: auto
+        column_span: 4
+      - type: grid
+        cards:
+          - type: heading
+            heading_style: subtitle
+            grid_options:
+              columns: 48
+              rows: 1
+        column_span: 4
+      - type: grid
+        cards:
+          - type: heading
+            icon: mdi:album
+            heading: Wantlist
+            heading_style: subtitle
+            tap_action:
+              action: perform-action
+              perform_action: button.press
+              target:
+                entity_id: button.iamjoshk_refresh_wantlist
+            badges:
+              - type: entity
+                show_state: true
+                show_icon: false
+                entity: sensor.iamjoshk_wantlist
+                state_content:
+                  - state
+                  - last_updated
+                tap_action:
+                  action: more-info
+          - type: custom:flex-table-card
+            enable_search: true
+            clickable: true
+            action: script.discogs_download_wantlist
+            entities:
+              - sensor.iamjoshk_wantlist
+            sort_by:
+              - Format
+              - Artists
+            columns:
+              - name: Cover
+                data: wantlist.thumb
+                modify: 'x ? `<img src="${x}" style="height:50px;"/>` : ""'
+                align: center
+              - name: Artists
+                data: wantlist.artists
+                modify: x.map(a => a.name.replace(/^The /, "")).join(", ")
+              - data: wantlist.title
+                name: Title
+              - data: wantlist.year
+                name: Year
+                modify: if(x.length == 0){""}else{x}
+              - name: Format
+                data: wantlist.formats
+                modify: 'x && x.length > 0 ? x[0].name : ""'
+              - name: Genre
+                data: wantlist.genres
+                modify: if(x.length == 0){""}else{x}
+              - name: Styles
+                data: wantlist.styles
+                modify: if(x.length == 0){""}else{x}
+            grid_options:
+              columns: full
+              rows: auto
+            card_mod:
+              style: |
+                ha-card {
+                  overflow: auto;
+                  max-height: 500px;
+                }
+        column_span: 4
+    badges: []
+    header:
+      layout: responsive
+      badges_position: bottom
+      badges_wrap: wrap
