@@ -57,3 +57,8 @@ Check the log again. If it loads successfully, move to the next step.
 8. All done!
 
 > Note: the entities created are dependent upon the supported sensors for your specific UPS.
+
+### Troubleshooting
+
+[Troubleshooting Notes](https://github.com/iamjoshk/home-assistant-collection/blob/main/NUT/TROUBLESHOOTING.md)
+
