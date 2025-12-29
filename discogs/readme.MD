@@ -1,4 +1,4 @@
-# Discogs Dashboard
+# Discogs Dashboard and Album Art LED Matrix Display
 
 I really wanted to integrate my Discogs collection into Home Assistant and was pretty underwhelmed by the core integration. I wanted to see individual releases from my collection as a way for guests to browse and pick analog albums to play.
 
