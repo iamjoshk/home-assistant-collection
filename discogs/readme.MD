@@ -12,5 +12,5 @@ I was gifted an Apollo Automation M-1 HUB75 LED matrix display for the holidays.
 
 Discogs Sync combined with HA DDP2WLED enabled my vision of displaying lofi pixel versions of album art on the M-1.
 
-Theoretically, you should be able to use album art provided by other integrations, like Music Assistant, to stream to the LED matrix. I use a Wiim Ultra for streaming and when it is active streaming, I use the album art from the [Wiim custom integration](https://github.com/mjcumming/wiim) for the display. A longer term goal for me is to implement song recognition via audio clips so I can look up album art on MusicBrainz or similar services when I am using analog music sources like a turntable or CD player or cassette player.
+You can use album art provided by other integrations, like Music Assistant or other media integrations, to stream to the LED matrix. I use a Wiim Ultra for streaming and when it is actively streaming, I use the album art from the [Wiim custom integration](https://github.com/mjcumming/wiim) for the display. A longer term goal for me is to implement song recognition via audio clips so I can look up album art on MusicBrainz or similar services when I am using analog music sources like a turntable or CD player or cassette player.
 
