@@ -1,9 +1,9 @@
 # Discogs and Pixel Album Art
 
 ## Discogs
-I really wanted to integrate my Discogs collection into Home Assistant and was pretty underwhelmed by the core integration. I wanted to see individual releases from my collection as a way for guests to browse and pick analog albums to play.
+I really wanted to integrate my Discogs collection into Home Assistant and was pretty underwhelmed by the core integration. I wanted to see individual releases from my collection as a way for guests to browse and pick physical media to play.
 
-That led to creating my custom integration [Discogs Sync](https://github.com/iamjoshk/discogs_sync). Discogs Sync leverages an authenticated API call to retrieve a user collection, folders, and wantlist. It also allows the user to download cover art and thumbnails. Discogs does not allow for unauthenicated downloads of images.
+That led to creating my custom integration [Discogs Sync](https://github.com/iamjoshk/discogs_sync). Discogs Sync leverages an authenticated API call to retrieve your user collection, folders, and wantlist. It also allows the user to download cover art and thumbnails. Discogs does not allow for unauthenicated downloads of images.
 
 Discogs collections can be huge, and even a small collection would exceed the limits for states and attributes. The actions to download collections and wantlists return responses only or provide an option to download the results to JSON. It does not save it in an entity because of the size. To workaround this, Flex Table Card can take the response from the action and populate a table for viewing. This works great to display a live view of your collection.
 
