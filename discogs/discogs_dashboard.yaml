@@ -1,3 +1,7 @@
+kiosk_mode:
+  non_admin_settings:
+    kiosk: true
+    hide_header: true
 views:
   - title: Home
     sections:
@@ -51,6 +55,9 @@ views:
                 grid_options:
                   columns: full
                   rows: auto
+            grid_options:
+              columns: 14
+              rows: auto
           - type: vertical-stack
             cards:
               - type: heading
@@ -110,7 +117,7 @@ views:
                       max-height: 500px;
                     }
             grid_options:
-              columns: 24
+              columns: 34
               rows: auto
         column_span: 4
       - type: grid
@@ -167,6 +174,9 @@ views:
                 text_only: true
                 grid_options:
                   rows: auto
+            grid_options:
+              columns: 14
+              rows: auto
           - type: vertical-stack
             cards:
               - type: heading
@@ -225,7 +235,7 @@ views:
                       max-height: 500px;
                     }
             grid_options:
-              columns: 24
+              columns: 34
               rows: auto
         column_span: 4
       - type: grid
