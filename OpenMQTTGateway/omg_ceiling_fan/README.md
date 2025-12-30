@@ -9,6 +9,10 @@
 
 - The [C1101 component](https://esphome.io/components/cc1101/) was just added to ESPHome in 2025.12.0, so I may revisit using ESPHome for fan control again in the future. This existing set up works 95% of the time, but OpenMQTTGateway is a bit of a black box for me and this is my only OMG device. I would prefer to consolidate this to ESPHome. But that would be another future to-do.
 
+- This was a while ago, but I added a physical light switch toggle: https://github.com/iamjoshk/home-assistant-collection/blob/main/rtl_433/contact_sensor_light_switch_toggle.md
+
+- Would still like to add physical buttons for fan control, but pretty low on the list and I have come up empty on previous attempts to find a remote I like.
+
 ---
 ## Notes
 OpenMQTTGateway (https://docs.openmqttgateway.com/) project to add a ceiling fan with lights using RF remote to Home Assistant.
