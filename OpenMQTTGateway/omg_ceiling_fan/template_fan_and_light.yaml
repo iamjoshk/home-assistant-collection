@@ -1,0 +1,85 @@
+#####################################
+##### LIVING ROOM FAN AND LIGHT #####
+#####################################
+template:
+  - light:
+    - unique_id: living_room_fan_light
+      turn_on:
+      - action: mqtt.publish
+        # this fan light is a toggle on/off and hold to dim or brighten
+        data:
+          qos: 0
+          payload: '{"value":1982,"protocol":8,"length":12,"delay":321,"tre_state":"-","binary":"011110110111","raw":"on","frequency":303.9}'
+          topic: home/omg_ceiling_fan/commands/MQTTto433
+      turn_off:
+      - action: mqtt.publish
+        data:
+          qos: 0
+          payload: '{"value":1982,"protocol":8,"length":12,"delay":321,"tre_state":"-","binary":"011110110111","raw":"off","frequency":303.9}'
+          topic: home/omg_ceiling_fan/commands/MQTTto433
+      default_entity_id: light.living_room_fan_light
+      name: Living Room Fan Light
+      
+  - fan:
+    - unique_id: living_room_fan
+      turn_on:
+      - action: mqtt.publish
+        data:
+          qos: 0
+          payload: '{"value":1975,"protocol":8,"length":12,"delay":321,"tre_state":"-","binary":"011110110111","frequency":303.9}'
+          topic: home/omg_ceiling_fan/commands/MQTTto433
+      - action: mqtt.publish
+        data:
+          qos: 0
+          payload: '{"value":1983,"protocol":8,"length":12,"delay":321,"tre_state":"-","binary":"011110111111","frequency":303.9}'
+          topic: home/omg_ceiling_fan/commands/MQTTto433
+      turn_off:
+      - action: mqtt.publish
+        data:
+          qos: 0
+          payload: '{"value":1981,"protocol":8,"length":12,"delay":321,"tre_state":"-","binary":"011110110111","frequency":303.9}'
+          topic: home/omg_ceiling_fan/commands/MQTTto433
+      - action: mqtt.publish
+        data:
+          qos: 0
+          payload: '{"value":1983,"protocol":8,"length":12,"delay":321,"tre_state":"-","binary":"011110111111","frequency":303.9}'
+          topic: home/omg_ceiling_fan/commands/MQTTto433
+      speed_count: 3
+      set_percentage:
+      - target:
+          entity_id:
+          - input_select.living_room_fan_speed
+        data:
+          option: '{{ percentage }}'
+        action: input_select.select_option
+      - action: script.living_room_fan_speed
+      default_entity_id: fan.living_room_fan
+      name: Living Room Fan
+      percentage: '{{ states(''input_select.living_room_fan_speed'') }}'
+      state: '{{ states(''sensor.living_room_fan_status'') }}'
+      direction: "{{ 'forward' if is_state('input_boolean.ceiling_fan_direction', 'on') else 'reverse' }}"
+      set_direction:
+      - action: mqtt.publish
+        # turns fan on before changing direction
+        data:
+          qos: 0
+          payload: '{"value":1975,"protocol":8,"length":12,"delay":321,"tre_state":"-","binary":"011110110111","frequency":303.9}'
+          topic: home/omg_ceiling_fan/commands/MQTTto433
+      - action: mqtt.publish
+        data:
+          qos: 0
+          payload: '{"value":1979,"protocol":8,"length":12,"delay":321,"tre_state":"-","binary":"011110111011","frequency":303.9}'
+          topic: home/omg_ceiling_fan/commands/MQTTto433
+      - action: mqtt.publish
+        data:
+          qos: 0
+          payload: '{"value":1983,"protocol":8,"length":12,"delay":321,"tre_state":"-","binary":"011110111111","frequency":303.9}'
+          topic: home/omg_ceiling_fan/commands/MQTTto433
+      - action: mqtt.publish
+        # repeats turning fan on so last state is accurate
+        data:
+          qos: 0
+          payload: '{"value":1975,"protocol":8,"length":12,"delay":321,"tre_state":"-","binary":"011110110111","frequency":303.9}'
+          topic: home/omg_ceiling_fan/commands/MQTTto433
+      - action: input_boolean.toggle
+        entity_id: input_boolean.ceiling_fan_direction
