@@ -1,6 +1,8 @@
 ### ZHA Quirk V2 for Bilresa 2 button remote
 https://github.com/iamjoshk/home-assistant-collection/blob/main/zha/custom_zha_quirks/bilresa_v2.py
 
+A pull request has been opened for the ZHA quirk V2: https://github.com/zigpy/zha-device-handlers/pull/4612
+
 To use a custom quirk:
 1. Add this to your `configuration.yaml` if you don't already have it:
 ```yaml
