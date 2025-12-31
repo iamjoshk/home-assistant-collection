@@ -1,5 +1,19 @@
-### ZHA Quirk V2
+### ZHA Quirk V2 for Bilresa 2 button remote
 https://github.com/iamjoshk/home-assistant-collection/blob/main/zha/custom_zha_quirks/bilresa_v2.py
+
+To use a custom quirk:
+1. Add this to your `configuration.yaml` if you don't already have it:
+```yaml
+zha:
+  custom_quirks_path: /config/custom_zha_quirks/ 
+```
+2. Create a folder in your config folder named `custom_zha_quirks` if you don't already have it
+3. Download the quirk and add it to the `custom_zha_quirks` folder.
+4. Restart HA
+
+If you previously paired the Bilresa 2 button remote you should NOT need to pair it again. The device should pick up the custom quirk automatically. 
+
+The quirk will add device automation triggers for `press on`, `hold on`, `hold on released`, `press off`, `hold off`, `hold off released`.
 
 ### to pair in ZHA
 1. In ZHA, add new device
@@ -7,7 +21,7 @@ https://github.com/iamjoshk/home-assistant-collection/blob/main/zha/custom_zha_q
 3. Wait for light to blink rapidly
 4. Press pairing button 8 times
 
-Here are the events:
+Here are the events the remote generates:
 
 ### press on:
 ```
