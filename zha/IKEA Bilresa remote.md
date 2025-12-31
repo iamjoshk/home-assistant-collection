@@ -159,3 +159,48 @@ event_data:
     rate: 83
 ```
 Basically, you just need to give it enough information to make the event unique and identifiable as a trigger.
+
+
+### device signature:
+```
+{
+  "node_descriptor": {
+    "logical_type": 2,
+    "complex_descriptor_available": 0,
+    "user_descriptor_available": 0,
+    "reserved": 0,
+    "aps_flags": 0,
+    "frequency_band": 8,
+    "mac_capability_flags": 128,
+    "manufacturer_code": 4476,
+    "maximum_buffer_size": 127,
+    "maximum_incoming_transfer_size": 242,
+    "server_mask": 11776,
+    "maximum_outgoing_transfer_size": 242,
+    "descriptor_capability_field": 0
+  },
+  "endpoints": {
+    "1": {
+      "profile_id": "0x0104",
+      "device_type": "0x0006",
+      "input_clusters": [
+        "0x0000",
+        "0x0001",
+        "0x0003",
+        "0x0020"
+      ],
+      "output_clusters": [
+        "0x0003",
+        "0x0004",
+        "0x0005",
+        "0x0006",
+        "0x0008",
+        "0x1000"
+      ]
+    }
+  },
+  "manufacturer": "IKEA of Sweden",
+  "model": "09B9",
+  "class": "zigpy.device.Device"
+}
+```
