@@ -1,3 +1,6 @@
+### ZHA Quirk V2
+https://github.com/iamjoshk/home-assistant-collection/blob/main/zha/custom_zha_quirks/bilresa_v2.py
+
 ### to pair in ZHA
 1. In ZHA, add new device
 2. On remote, press the center pairing button 4 times
