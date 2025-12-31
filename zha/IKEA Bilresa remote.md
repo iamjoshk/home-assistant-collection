@@ -1,6 +1,8 @@
 ### ZHA Quirk V2 for Bilresa 2 button remote
 
-https://github.com/iamjoshk/home-assistant-collection/blob/main/zha/custom_zha_quirks/bilresa_v2.py (updated with double presses and tracking long press release)
+https://github.com/iamjoshk/home-assistant-collection/blob/main/zha/custom_zha_quirks/bilresa_v2.py 
+> (updated with double presses and tracking long press release)
+> This is a standalone version of the quirk. If the PR is merged it will move the custom direction tracking class to init.
 
 
 A pull request has been opened for the ZHA quirk V2: https://github.com/zigpy/zha-device-handlers/pull/4612
