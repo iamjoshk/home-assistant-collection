@@ -29,9 +29,8 @@ from zhaquirks.const import (
     ZHA_SEND_EVENT,
 )
 
-
 class IkeaBilresaLevelControl(CustomCluster, LevelControl):
-    """Custom LevelControl cluster for Bilresa remote to track direction."""
+    """Custom LevelControl cluster for IKEA remotes to track direction."""
 
     def __init__(self, *args, **kwargs):
         """Initialize instance."""
@@ -48,19 +47,19 @@ class IkeaBilresaLevelControl(CustomCluster, LevelControl):
         ] = None,
     ) -> None:
         """Handle cluster specific commands.
-        
-        Track move commands to remember direction for stop commands"""
-        if hdr.command_id == 0x01:
+
+        Track move commands to remember direction for stop commands
+        """
+        if hdr.command_id in (0x01, 0x05):
             move_mode = args[0]
             self._last_move_direction = move_mode
-        elif hdr.command_id == 0x05:
-            move_mode = args[0]
-            self._last_move_direction = move_mode
-        elif hdr.command_id in (0x03, 0x07):
-            if self._last_move_direction == 0:
-                self.listener_event(ZHA_SEND_EVENT, "move_up_release", [])
-            elif self._last_move_direction == 1:
-                self.listener_event(ZHA_SEND_EVENT, "move_down_release", [])
+        elif hdr.command_id in (0x03, 0x07) and self._last_move_direction is not None:
+            event = (
+                "move_up_release"
+                if self._last_move_direction == 0
+                else "move_down_release"
+            )
+            self.listener_event(ZHA_SEND_EVENT, event, [])
 
 class IkeaBilresa2ButtonRemote(CustomDeviceV2):
     """Custom device for IKEA Bilresa 2 button remote."""
