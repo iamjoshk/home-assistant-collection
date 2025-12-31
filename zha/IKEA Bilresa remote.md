@@ -23,9 +23,10 @@ The quirk will add device automation triggers for `press on`, `hold on`, `hold o
 3. Wait for light to blink rapidly
 4. Press pairing button 8 times
 
+### events
 Here are the events the remote generates:
 
-### press on:
+#### press on:
 ```
 event_type: zha_event
 data:
@@ -45,7 +46,7 @@ context:
   user_id: null
 ```
 
-### hold on:
+#### hold on:
 ```
 event_type: zha_event
 data:
@@ -70,7 +71,7 @@ context:
   parent_id: null
   user_id: null
 ```
-  #### then
+  ##### then
 ```
 event_type: zha_event
 data:
@@ -90,7 +91,7 @@ context:
   user_id: null
 ```
 
-### press off:
+#### press off:
 ```
 event_type: zha_event
 data:
@@ -109,7 +110,7 @@ context:
   parent_id: null
   user_id: null
 ```
-### hold off:
+#### hold off:
 ```
 event_type: zha_event
 data:
@@ -134,7 +135,7 @@ context:
   parent_id: null
   user_id: null
 ```
-  #### then
+  ##### then
 ```
 event_type: zha_event
 data:
