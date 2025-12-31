@@ -1,3 +1,9 @@
+### to pair in ZHA
+1. In ZHA, add new device
+2. On remote, press the center pairing button 4 times
+3. Wait for light to blink rapidly
+4. Press pairing button 8 times
+
 Here are the events:
 
 ### press on:
