@@ -72,9 +72,9 @@ class IkeaBilresa2ButtonRemote(CustomDeviceV2):
     .device_automation_triggers(
         {
             (SHORT_PRESS, TURN_ON): {
-                COMMAND: COMMAND_ON,
-                CLUSTER_ID: 6,
-                ENDPOINT_ID: 1,
+                COMMAND: COMMAND_ON, 
+                CLUSTER_ID: 6, 
+                ENDPOINT_ID: 1
             },
             (LONG_PRESS, DIM_UP): {
                 COMMAND: COMMAND_MOVE,
@@ -88,9 +88,9 @@ class IkeaBilresa2ButtonRemote(CustomDeviceV2):
                 ENDPOINT_ID: 1,
             },
             (SHORT_PRESS, TURN_OFF): {
-                COMMAND: COMMAND_OFF,
-                CLUSTER_ID: 6,
-                ENDPOINT_ID: 1,
+                COMMAND: COMMAND_OFF, 
+                CLUSTER_ID: 6, 
+                ENDPOINT_ID: 1
             },
             (LONG_PRESS, DIM_DOWN): {
                 COMMAND: COMMAND_MOVE,
