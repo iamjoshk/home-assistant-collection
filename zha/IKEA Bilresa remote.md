@@ -25,7 +25,7 @@ The quirk will add device automation triggers for `press on`, `hold on`, `hold o
 1. In ZHA, add new device
 2. On remote, press the center pairing button 4 times
 3. Wait for light to blink rapidly
-4. Press pairing button 8 times
+4. Press pairing button 8 times. Some people are able to pair with 4 presses here.
 
 ### events
 Here are the events the remote generates:
