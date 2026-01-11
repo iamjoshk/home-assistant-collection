@@ -1,2 +1,3 @@
-"Name","code","protocol","discrete","description",
-"Power Toggle","0xE01F","NEC","no","toggles power",
+"Protocol","Name","Code","Address","Discrete","Description",
+"NEC","Power Toggle","0xE01F","0x857A","no","toggles power",
+
