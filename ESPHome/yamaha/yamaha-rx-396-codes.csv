@@ -1,3 +1,13 @@
 "Protocol","Name","Code","Address","Discrete","comment",
 "NEC","Power Toggle","0xE01F","0x857A","no","toggles power",
-NEC,Volume Up,0xE41B,0x857A,yes,"turns volume up, use `command_repeats=` the number of times you want the increase volume",
+NEC,Volume Up,0xE51A,0x857A,yes,"turns volume up, use `command_repeats=` the number of times you want the increase volume, example `command_repeats=10`",
+NEC,Volume Down,0xE41B,0x857A,yes,"turns volume down, use `command_repeats=` the number of times you want the decrease volume",
+NEC,AUX input,0xE817,,yes,"switches to AUX input",
+NEC,Phono input,0xEB14,,yes,"switches to Phono input",
+NEC,CD input,0xEA15,,yes,"switches to CD input",
+NEC,Tuner input,0xE916,,yes,"switches to Tuner input",
+NEC,Tape 1 input,0xE718,,yes,"switches to Tape 1 input",
+NEC,Tape 2 input,0xE619,,yes,"switches to Tape 2 input",
+NEC,Sleep,0xA857,,yes,"sets the sleep command",
+
+
