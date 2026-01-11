@@ -1,3 +1,3 @@
-"Protocol","Name","Code","Address","Discrete","Description",
+"Protocol","Name","Code","Address","Discrete","comment",
 "NEC","Power Toggle","0xE01F","0x857A","no","toggles power",
-
+NEC,Volume Up,0xE41B,0x857A,yes,turns volume up,use `command_repeats=` the number of times you want the increase volume,
