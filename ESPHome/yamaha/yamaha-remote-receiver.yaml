@@ -1,0 +1,104 @@
+esphome:
+  name: "yamaha-remote-control"
+  friendly_name: Yamaha Remote Control
+  name_add_mac_suffix: false
+
+esp32:
+  board: esp32dev
+  framework:
+    type: esp-idf
+
+# Enable logging
+logger: 
+  level: DEBUG
+
+# Allow Over-The-Air updates
+ota:
+- platform: esphome
+
+wifi:
+  ssid: !secret iot_ssid
+  password: !secret iot_password
+  fast_connect: True
+  ap:
+#    ssid: "Yamaha Remote Control Fallback Hotspot"
+#    password: !secret ap_pass
+    
+# Enable Home Assistant API
+api:
+            
+captive_portal:
+
+switch:
+  - platform: shutdown
+    name: "Shutdown"
+    restore_mode: ALWAYS_OFF
+
+  - platform: restart
+    name: "Restart"
+    restore_mode: ALWAYS_OFF
+
+text_sensor:
+  - platform: wifi_info
+    mac_address: 
+      name: "MAC Address"
+
+remote_receiver:
+  pin:
+    number: 26
+    inverted: True
+  dump: all
+
+remote_transmitter:
+  pin:
+    number: 14
+    inverted: False
+    mode: OUTPUT      
+  carrier_duty_percent: 50%
+  non_blocking: true
+
+button:
+  # --- DISCRETE POWER via Pioneer IR codes ---
+  - platform: template
+    name: "Power On"
+    icon: "mdi:power-on"
+    on_press:
+      - remote_transmitter.transmit_pioneer:
+          rc_code_1: 0x5E1D
+
+  - platform: template
+    name: "Power Off"
+    icon: "mdi:power-off"
+    on_press:
+      - remote_transmitter.transmit_pioneer:
+          rc_code_1: 0x5E1E
+
+  - platform: template
+    name: "Stereo Volume Up"
+    icon: "mdi:volume-plus"
+    on_press:
+      - remote_transmitter.transmit_nec:
+          address: 0x857A
+          command: 0xE51A
+          repeat:
+            times: 15
+            wait_time: 50ms
+
+  - platform: template
+    name: "Stereo Volume Down"
+    icon: "mdi:volume-minus"
+    on_press:
+      - remote_transmitter.transmit_nec:
+          address: 0x857A
+          command: 0xE41B
+          repeat:
+            times: 15
+            wait_time: 50ms
+
+  - platform: template
+    name: "AUX Input"
+    icon: "mdi:audio-input-rca"
+    on_press:
+      - remote_transmitter.transmit_nec:
+          address: 0x857A
+          command: 0xE817
