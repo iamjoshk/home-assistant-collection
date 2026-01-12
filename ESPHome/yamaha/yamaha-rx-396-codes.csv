@@ -1,4 +1,4 @@
-"Protocol","Name","Code","Address","Discrete","comment",
+"Protocol",,,,,,
 "Yamaha Codes",,,Address,,,
 NEC,Power Toggle,0xE01F,0x857A,no,"toggles power on and off",
 NEC,Volume Up,0xE51A,0x857A,yes,"turns volume up, use `command_repeats=` the number of times you want the increase volume, example `command_repeats=10`",
