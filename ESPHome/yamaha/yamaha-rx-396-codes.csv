@@ -1,5 +1,5 @@
 "Protocol","Name","Code","Address","Discrete","comment",
-"Yamaha Codes",,,Address,,
+"Yamaha Codes",,,Address,,,
 NEC,Power Toggle,0xE01F,0x857A,no,"toggles power on and off",
 NEC,Volume Up,0xE51A,0x857A,yes,"turns volume up, use `command_repeats=` the number of times you want the increase volume, example `command_repeats=10`",
 NEC,Volume Down,0xE41B,0x857A,yes,"turns volume down, use `command_repeats=` the number of times you want the decrease volume",
@@ -10,7 +10,7 @@ NEC,Tuner input,0xE916,0x857A,yes,"switches to Tuner input",
 NEC,Tape 1 input,0xE718,0x857A,yes,"switches to Tape 1 input",
 NEC,Tape 2 input,0xE619,0x857A,yes,"switches to Tape 2 input",
 NEC,Sleep,0xA857,0x857A,yes,"sets the sleep command",
-"Pioneer Codes",,,rc_code_X,,
+"Pioneer Codes",,,rc_code_X,,,
 Pioneer,Power On,0x5E1F,rc_code_1,no,"toggles power on and off",
 
 
