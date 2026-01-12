@@ -12,7 +12,8 @@ NEC,Tape 2 input,0xE619,0x857A,yes,"switches to Tape 2 input",
 NEC,Sleep,0xA857,0x857A,yes,"sets the sleep command",
 "Pioneer Codes",Name,Code,rc_code_X,Discrete,Description,
 Pioneer,Power Toggle,0x5E1F,rc_code_1,no,"toggles power on and off",
-
+Pioneer,Power On,0x5E1D,rc_code_1,yes,"turns power on",
+Pioneer,Power Off,0x5E1E,rc_code_1,yes,"turns power off",
 
 
 
