@@ -1,8 +1,9 @@
 ESPHome projects
 
 ### ESP32-WROOM-32D pinout
-ESP32dev pinout
-![image](https://github.com/iamjoshk/home-assistant-collection/assets/28068117/04e7b040-418e-4d15-8014-68cb7e850d9b)
+Pinout
+<img width="1281" height="721" alt="image" src="https://github.com/user-attachments/assets/54bf40af-a4a4-4c19-8157-d8f390b3ca0d" />
+
 
 ---
 
