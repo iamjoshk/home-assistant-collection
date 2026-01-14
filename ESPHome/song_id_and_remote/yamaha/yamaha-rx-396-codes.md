@@ -13,6 +13,8 @@ NEC|Tape 1 input|0xE718|0x857A|yes|switches to Tape 1 input|
 NEC|Tape 2 input|0xE619|0x857A|yes|switches to Tape 2 input|
 NEC|Sleep|0xA857|0x857A|yes|sets the sleep command|
 
+More codes to be documented...
+
 Example for ESPHome:
 ```yaml
 button:
