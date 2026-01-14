@@ -19,4 +19,5 @@ This project uses an I2S MEMS microphone module (ZTS6631) to record snippets of 
 ### ESPHome YAML
 
 [See file](https://github.com/iamjoshk/home-assistant-collection/blob/main/ESPHome/song_id_and_remote/esphome-song-id-and-remote.yaml)
+
 Requires external component audio_recorder
