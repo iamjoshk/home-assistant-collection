@@ -1,0 +1,145 @@
+esphome:
+  name: "yamaha-remote"
+  friendly_name: Yamaha Remote
+  name_add_mac_suffix: false
+  platformio_options:
+    board_build.partitions: /config/esphome/partitions.csv
+
+esp32:
+  board: seeed_xiao_esp32s3
+  framework:
+    type: esp-idf
+  flash_size: 8MB
+
+external_components:
+  - source:
+      type: local
+      path: components
+
+psram:
+  mode: octal
+
+# Enable logging
+logger: 
+  level: DEBUG
+
+# Allow Over-The-Air updates
+ota:
+- platform: esphome
+
+wifi:
+  ssid: !secret iot_ssid
+  password: !secret iot_password
+  fast_connect: True
+  ap:
+#    ssid: "Yamaha Remote Fallback Hotspot"
+#    password: !secret ap_pass
+    
+# Instantiate the audio recorder component
+audio_recorder:
+  id: my_recorder
+  i2s_bclk_pin: 4
+  i2s_lrclk_pin: 5
+  i2s_din_pin: 6
+  gain: 4
+  duration: 10 
+
+# Enable Home Assistant API
+api:
+  services:
+    - service: start_recording
+      then:
+        - lambda: 'id(my_recorder).record_audio();'
+            
+captive_portal:
+
+switch:
+  - platform: shutdown
+    name: "Shutdown"
+    restore_mode: ALWAYS_OFF
+
+  - platform: restart
+    name: "Restart"
+    restore_mode: ALWAYS_OFF
+
+sensor:
+  - platform: template
+    name: "Recording Duration"
+    id: current_duration
+    entity_category: "diagnostic" 
+    unit_of_measurement: "s"
+    accuracy_decimals: 0
+    # Read the internal variable from the C++ component
+    lambda: |-
+      return id(my_recorder).duration_sec;
+    update_interval: 1h
+
+text_sensor:
+  - platform: wifi_info
+    mac_address: 
+      name: "MAC Address"
+
+remote_transmitter:
+  id: yamaha_control
+  pin:
+    number: GPIO7
+    inverted: False
+    mode: OUTPUT      
+  carrier_duty_percent: 50%
+  non_blocking: true
+  rmt_symbols: 128
+
+button:
+  # --- DISCRETE POWER via Pioneer IR codes ---
+  - platform: template
+    name: "Power On"
+    icon: "mdi:power-on"
+    on_press:
+      - remote_transmitter.transmit_pioneer:
+          rc_code_1: 0x5E1D
+
+  - platform: template
+    name: "Power Off"
+    icon: "mdi:power-off"
+    on_press:
+      - remote_transmitter.transmit_pioneer:
+          rc_code_1: 0x5E1E
+
+  - platform: template
+    name: "Stereo Volume Up"
+    icon: "mdi:volume-plus"
+    on_press:
+      - remote_transmitter.transmit_nec:
+          address: 0x857A
+          command: 0xE51A
+          repeat:
+            times: 15
+            wait_time: 50ms
+
+  - platform: template
+    name: "Stereo Volume Down"
+    icon: "mdi:volume-minus"
+    on_press:
+      - remote_transmitter.transmit_nec:
+          address: 0x857A
+          command: 0xE41B
+          repeat:
+            times: 15
+            wait_time: 50ms
+
+  - platform: template
+    name: "AUX Input"
+    icon: "mdi:audio-input-rca"
+    on_press:
+      - remote_transmitter.transmit_nec:
+          address: 0x857A
+          command: 0xE817
+
+  - platform: template
+    name: "Mute"
+    icon: "mdi:mute"
+    on_press:
+      - remote_transmitter.transmit_nec:
+          address: 0x857A 
+          command: 0xE619 
+          # there is no mute on this receiver and volume down is too slow. This is a toggle for the Tape 2 monitor which mutes the sound since there is no output connected
