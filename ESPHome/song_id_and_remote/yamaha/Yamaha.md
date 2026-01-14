@@ -3,7 +3,7 @@
 My late 1990s Yamaha RX-396 stereo receiver does not have a 12v trigger. But it does have remote control in and remote control out jacks that allow daisy chaining multiple components for use with a single remote control. I decided to take advantage of the remote control in jack and send IR codes over wire to the receiver to bring control of the receiver into Home Assistant.
 
 #### List of parts used
-- ESP32-WROOM-32D with power supply
+- ESP32-WROOM-32D with power supply (Final version uses an ESP32-S3, but this documents the original prototype)
 - IR receiver component for discovering the IR codes to use - KY-022
 - IR transmitter component for testing codes - KY-005
 - BC547 transistor
