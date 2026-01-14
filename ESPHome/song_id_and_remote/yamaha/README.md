@@ -14,6 +14,9 @@ My late 1990s Yamaha RX-396 stereo receiver does not have a 12v trigger. But it 
 - breadboard for prototype
 
 ### Prototyping
+
+[yaml for prototype](https://github.com/iamjoshk/home-assistant-collection/blob/main/ESPHome/song_id_and_remote/yamaha/yamaha-remote-receiver.yaml)
+
 - Information for the remote control in and out connections on the back of the receiver was difficult to find. The receiver is a rather entry level component and it's almost 30 years old. I picked it up for $20 not long ago.
 - I was able to piece together that the jacks are unpowered and expect the external remote system to provide the power for the signal. 
 - I was pretty certain that it used mono jacks based on various forum posts around other Yamaha receivers.
