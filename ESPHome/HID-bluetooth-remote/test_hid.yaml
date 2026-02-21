@@ -1,0 +1,193 @@
+esphome:
+  name: test-ble
+  friendly_name: test-ble
+
+esp32:
+  board: esp32-s3-devkitc-1
+  framework:
+    type: esp-idf
+
+# Enable logging
+logger:
+  level: VERBOSE
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: ""
+
+ota:
+  - platform: esphome
+    password: ""
+
+wifi:
+  ssid: !secret
+  password: !secret
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Test-Ble Fallback Hotspot"
+    password: ""
+
+esp32_ble_tracker:
+
+captive_portal:
+
+ble_client:
+  - mac_address: 6C:B2:FD:7E:BF:C5
+    id: chromecast_remote
+    auto_connect: True
+    on_connect:
+      then:
+        - lambda: |-
+            id(chromecast_remote_connected) = true;
+            ESP_LOGD("ble_client_lambda", "Connected to Chromecast Remote (BF:C5)");
+    on_disconnect:
+      then:
+        - lambda: |-
+            id(chromecast_remote_connected) = false;
+            ESP_LOGD("ble_client_lambda", "Connected to Chromecast Remote (BF:C5)");
+
+
+
+  - mac_address: 4A:A4:1D:04:19:5C
+    id: wiim_remote
+    name: Wiim Remote
+    auto_connect: True
+    on_connect:
+      then:
+        - lambda: |-
+            id(wiim_remote_connected) = true;
+            ESP_LOGD("ble_client_lambda", "Connected to Wiim Remote (19:5C)");
+    on_disconnect:
+      then:
+        - lambda: |-
+            id(wiim_remote_connected) = false;
+            ESP_LOGD("ble_client_lambda", "Connected to Wiim Remote (19:5C)");
+
+globals:
+
+  - id: wiim_remote_connected
+    type: bool
+    restore_value: yes 
+    initial_value: 'true'
+
+  - id: chromecast_remote_connected
+    type: bool
+    restore_value: yes 
+    initial_value: 'true'
+
+binary_sensor:
+  - platform: template 
+    name: Wiim Remote Connection
+    id: wiim_remote_connection
+    lambda: |- 
+      return id(wiim_remote_connected); 
+    device_class: connectivity
+    
+  - platform: template 
+    name: Chromecast Remote Connection
+    id: chromecast_remote_connection
+    lambda: |- 
+      return id(chromecast_remote_connected); 
+    device_class: connectivity
+
+switch:
+  - platform: template
+    optimistic: True
+    restore_mode: ALWAYS_ON
+    id: connect_to_wiim
+    name: Connect to Wiim
+    turn_on_action: 
+      then:
+        - ble_client.connect: wiim_remote
+    turn_off_action: 
+      then:
+        - ble_client.disconnect: wiim_remote
+
+sensor:
+  # --- 1. Main Media Keys (Volume, Next/Prev) ---
+  - platform: ble_client
+    ble_client_id: wiim_remote
+    type: characteristic
+    name: "WiiM HID Numeric (2A4D)"
+    service_uuid: '1812'
+    characteristic_uuid: '2A4D'
+    notify: true
+    update_interval: never # <--- Stops the status=2 polling error!
+    lambda: |-
+      // Ignore long keep-alive or sleep messages to keep logs clean
+      if (x.size() > 10) return NAN; 
+
+      std::string hex_str = format_hex_pretty(x);
+      ESP_LOGI("WIIM_HID", "Report (2A4D) Button Press: %s", hex_str.c_str());
+      
+      id(wiim_button_raw_text).publish_state(hex_str);
+
+      if (x.size() >= 1) {
+        if (x[0] == 0xE9) id(wiim_action_text).publish_state("Volume Up");
+        else if (x[0] == 0xEA) id(wiim_action_text).publish_state("Volume Down");
+        else if (x[0] == 0xB5) id(wiim_action_text).publish_state("Next Track");
+        else if (x[0] == 0xB6) id(wiim_action_text).publish_state("Previous Track");
+        else if (x[0] == 0x00) id(wiim_action_text).publish_state("Released");
+        else id(wiim_action_text).publish_state("Unknown (" + hex_str + ")");
+      }
+
+      if (x.size() > 0) return (float)x[0];
+      return NAN;
+
+  # --- 2. Boot Keyboard Fallback ---
+  - platform: ble_client
+    ble_client_id: wiim_remote
+    type: characteristic
+    name: "WiiM Boot Keyboard Numeric (2A22)"
+    service_uuid: '1812'
+    characteristic_uuid: '2A22'
+    notify: true
+    update_interval: never # <--- Stops the status=2 polling error!
+    lambda: |-
+      if (x.size() > 10) return NAN; // Ignore keep-alives
+      if (x.size() > 0) return (float)x[0];
+      return NAN;
+
+  # --- 3. Custom FFC1 (Optional Custom Buttons) ---
+  - platform: ble_client
+    ble_client_id: wiim_remote
+    type: characteristic
+    name: "WiiM Custom 1 (FFC1)"
+    service_uuid: 'f000ffc0-0451-4000-b000-000000000000'
+    characteristic_uuid: 'f000ffc1-0451-4000-b000-000000000000'
+    notify: true
+    update_interval: never # <--- Stops the status=2 polling error!
+    lambda: |-
+      if (x.size() > 10) return NAN; // Ignore 128-byte keep-alives
+      std::string hex_str = format_hex_pretty(x);
+      ESP_LOGI("WIIM_CUSTOM", "Custom FFC1 Button Press: %s", hex_str.c_str());
+      return x.empty() ? 0.0f : 1.0f;
+
+  # --- 4. Custom FCC1 (Optional Custom Buttons) ---
+  - platform: ble_client
+    ble_client_id: wiim_remote
+    type: characteristic
+    name: "WiiM Custom 2 (FCC1)"
+    service_uuid: '0000fcc0-0000-1000-8000-00805f9b34fb'
+    characteristic_uuid: '0000fcc1-f7e3-55b4-6c4c-9fd140100a16'
+    notify: true
+    update_interval: never # <--- Stops the status=2 polling error!
+    lambda: |-
+      if (x.size() > 10) return NAN; // Ignore 128-byte keep-alives
+      std::string hex_str = format_hex_pretty(x);
+      ESP_LOGI("WIIM_CUSTOM", "Custom FCC1 Button Press: %s", hex_str.c_str());
+      return x.empty() ? 0.0f : 1.0f;
+
+# Text sensors to display the data nicely in Home Assistant
+text_sensor:
+  # Shows the raw Hex (e.g. "E9.00")
+  - platform: template
+    name: "WiiM Remote Button Raw Data"
+    id: wiim_button_raw_text
+
+  # Shows the actual English action (e.g. "Volume Up")
+  - platform: template
+    name: "WiiM Remote Action"
+    id: wiim_action_text
