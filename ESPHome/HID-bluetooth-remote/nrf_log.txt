@@ -1,0 +1,696 @@
+nRF Connect, 2026-02-20
+LP RC (4A:A4:1D:04:19:5C)
+V	16:08:10.120	Connecting to 4A:A4:1D:04:19:5C...
+D	16:08:10.120	gatt = device.connectGatt(autoConnect = false, TRANSPORT_LE, preferred PHY = LE 1M)
+D	16:08:10.310	[Callback] Connection state changed with status: 0 and new state: CONNECTED (2)
+I	16:08:10.311	Connected to 4A:A4:1D:04:19:5C
+V	16:08:10.312	Discovering services...
+D	16:08:10.312	gatt.discoverServices()
+D	16:08:10.328	[Broadcast] Action received: android.bluetooth.device.action.ACL_CONNECTED
+D	16:08:11.436	[Callback] Services discovered with status: 0
+I	16:08:11.436	Services discovered
+V	16:08:11.450	Generic Access (0x1800)
+- Device Name [R] (0x2A00)
+- Appearance [R] (0x2A01)
+- Peripheral Preferred Connection Parameters [R] (0x2A04)
+Generic Attribute (0x1801)
+Device Information (0x180A)
+- Manufacturer Name String [R] (0x2A29)
+- Model Number String [R] (0x2A24)
+- Serial Number String [R] (0x2A25)
+- Hardware Revision String [R] (0x2A27)
+- Firmware Revision String [R] (0x2A26)
+- Software Revision String [R] (0x2A28)
+- System ID [R] (0x2A23)
+- IEEE 11073-20601 Regulatory Certification Data List [R] (0x2A2A)
+- PnP ID [R] (0x2A50)
+Battery Service (0x180F)
+- Battery Level [N R] (0x2A19)
+   Client Characteristic Configuration (0x2902)
+Human Interface Device (0x1812)
+- HID Information [R] (0x2A4A)
+- HID Control Point [WNR] (0x2A4C)
+- Report Map [R] (0x2A4B)
+- Protocol Mode [R WNR] (0x2A4E)
+- Boot Keyboard Input Report [N R] (0x2A22)
+   Client Characteristic Configuration (0x2902)
+- Boot Keyboard Output Report [R W WNR] (0x2A32)
+- Report [N R] (0x2A4D)
+   Report Reference (0x2908)
+   Client Characteristic Configuration (0x2902)
+- Report [N R] (0x2A4D)
+   Report Reference (0x2908)
+   Client Characteristic Configuration (0x2902)
+- Report [R W WNR] (0x2A4D)
+   Report Reference (0x2908)
+- Report [N R] (0x2A4D)
+   Report Reference (0x2908)
+   Client Characteristic Configuration (0x2902)
+Unknown Service (0000fcc0-0000-1000-8000-00805f9b34fb)
+- Unknown Characteristic [WNR] (0000fcc2-f7e3-55b4-6c4c-9fd140100a16)
+- Unknown Characteristic [N R] (0000fcc1-f7e3-55b4-6c4c-9fd140100a16)
+   Client Characteristic Configuration (0x2902)
+Unknown Service (f000ffc0-0451-4000-b000-000000000000)
+- Unknown Characteristic [N W WNR] (f000ffc1-0451-4000-b000-000000000000)
+   Client Characteristic Configuration (0x2902)
+   Characteristic User Description (0x2901)
+- Unknown Characteristic [N W WNR] (f000ffc2-0451-4000-b000-000000000000)
+   Client Characteristic Configuration (0x2902)
+   Characteristic User Description (0x2901)
+D	16:08:11.451	gatt.setCharacteristicNotification(00002a19-0000-1000-8000-00805f9b34fb, true)
+D	16:08:11.452	gatt.setCharacteristicNotification(00002a22-0000-1000-8000-00805f9b34fb, true)
+D	16:08:11.452	gatt.setCharacteristicNotification(00002a4d-0000-1000-8000-00805f9b34fb, true)
+E	16:08:11.453	Exception occurred (Neither user 10334 nor current process has android.permission.BLUETOOTH_PRIVILEGED.)
+D	16:08:11.453	gatt.setCharacteristicNotification(00002a4d-0000-1000-8000-00805f9b34fb, true)
+E	16:08:11.454	Exception occurred (Neither user 10334 nor current process has android.permission.BLUETOOTH_PRIVILEGED.)
+D	16:08:11.454	gatt.setCharacteristicNotification(00002a4d-0000-1000-8000-00805f9b34fb, true)
+E	16:08:11.455	Exception occurred (Neither user 10334 nor current process has android.permission.BLUETOOTH_PRIVILEGED.)
+D	16:08:11.455	gatt.setCharacteristicNotification(0000fcc1-f7e3-55b4-6c4c-9fd140100a16, true)
+D	16:08:11.455	gatt.setCharacteristicNotification(f000ffc1-0451-4000-b000-000000000000, true)
+D	16:08:11.456	gatt.setCharacteristicNotification(f000ffc2-0451-4000-b000-000000000000, true)
+D	16:08:11.509	[Broadcast] Action received: android.bluetooth.device.action.BOND_STATE_CHANGED, bond state changed to: BONDING (11)
+D	16:08:11.510	[Broadcast] Action received: android.bluetooth.device.extra.PAIRING_VARIANT, pairing variant: CONSENT
+I	16:08:11.615	Connection parameters updated (interval: 48.75ms, latency: 0, timeout: 5000ms)
+D	16:08:16.592	[Broadcast] Action received: android.bluetooth.device.extra.PAIRING_VARIANT, pairing variant: CONSENT
+I	16:08:18.643	Connection parameters updated (interval: 11.25ms, latency: 99, timeout: 6000ms)
+D	16:08:21.018	[Broadcast] Action received: android.bluetooth.device.action.ENCRYPTION_CHANGE, encryption: ENABLED, algorithm: AES (16 bytes), transport: TRANSPORT_LE, status: 0
+D	16:08:21.592	[Broadcast] Action received: android.bluetooth.device.action.BOND_STATE_CHANGED, bond state changed to: BONDED (12)
+I	16:08:21.592	Device bonded
+I	16:08:23.763	Connection parameters updated (interval: 11.25ms, latency: 99, timeout: 6000ms)
+V	16:08:25.939	Enabling notifications for f000ffc1-0451-4000-b000-000000000000
+D	16:08:25.939	gatt.setCharacteristicNotification(f000ffc1-0451-4000-b000-000000000000, true)
+D	16:08:25.941	gatt.writeDescriptor(00002902-0000-1000-8000-00805f9b34fb, value=0x0100)
+I	16:08:26.041	Data written to descr. 00002902-0000-1000-8000-00805f9b34fb, value: (0x) 01-00
+A	16:08:26.041	"Notifications enabled" sent
+V	16:08:26.056	Notifications enabled for f000ffc1-0451-4000-b000-000000000000
+V	16:08:27.727	Enabling notifications for f000ffc2-0451-4000-b000-000000000000
+D	16:08:27.727	gatt.setCharacteristicNotification(f000ffc2-0451-4000-b000-000000000000, true)
+D	16:08:27.731	gatt.writeDescriptor(00002902-0000-1000-8000-00805f9b34fb, value=0x0100)
+I	16:08:28.318	Data written to descr. 00002902-0000-1000-8000-00805f9b34fb, value: (0x) 01-00
+A	16:08:28.318	"Notifications enabled" sent
+V	16:08:28.327	Notifications enabled for f000ffc2-0451-4000-b000-000000000000
+V	16:08:29.531	Reading descriptor 00002902-0000-1000-8000-00805f9b34fb
+D	16:08:29.531	gatt.readDescriptor(00002902-0000-1000-8000-00805f9b34fb)
+I	16:08:30.604	Read Response received from descr. 00002902-0000-1000-8000-00805f9b34fb, value: (0x) 01-00
+A	16:08:30.604	"Notifications enabled" received
+V	16:08:31.100	Reading descriptor 00002902-0000-1000-8000-00805f9b34fb
+D	16:08:31.100	gatt.readDescriptor(00002902-0000-1000-8000-00805f9b34fb)
+I	16:08:31.771	Read Response received from descr. 00002902-0000-1000-8000-00805f9b34fb, value: (0x) 01-01
+A	16:08:31.771	"(0x) 01-01" received
+W	16:08:31.771	Invalid value of CCCD for f000ffc1-0451-4000-b000-000000000000
+V	16:08:39.698	Reading descriptor 00002902-0000-1000-8000-00805f9b34fb
+D	16:08:39.698	gatt.readDescriptor(00002902-0000-1000-8000-00805f9b34fb)
+I	16:08:40.030	Read Response received from descr. 00002902-0000-1000-8000-00805f9b34fb, value: (0x) 01-00
+A	16:08:40.030	"Notifications enabled" received
+V	16:08:42.650	Reading descriptor 00002901-0000-1000-8000-00805f9b34fb
+D	16:08:42.650	gatt.readDescriptor(00002901-0000-1000-8000-00805f9b34fb)
+I	16:08:43.438	Read Response received from descr. 00002901-0000-1000-8000-00805f9b34fb, value: (0x) 49-6D-67-20-42-6C-6F-63-6B-00
+A	16:08:43.438	"Img Block " received
+V	16:08:52.787	Enabling notifications for 0000fcc1-f7e3-55b4-6c4c-9fd140100a16
+D	16:08:52.787	gatt.setCharacteristicNotification(0000fcc1-f7e3-55b4-6c4c-9fd140100a16, true)
+D	16:08:52.789	gatt.writeDescriptor(00002902-0000-1000-8000-00805f9b34fb, value=0x0100)
+I	16:08:53.273	Data written to descr. 00002902-0000-1000-8000-00805f9b34fb, value: (0x) 01-00
+A	16:08:53.273	"Notifications enabled" sent
+V	16:08:53.283	Notifications enabled for 0000fcc1-f7e3-55b4-6c4c-9fd140100a16
+V	16:08:55.693	Reading descriptor 00002902-0000-1000-8000-00805f9b34fb
+D	16:08:55.693	gatt.readDescriptor(00002902-0000-1000-8000-00805f9b34fb)
+I	16:08:56.678	Read Response received from descr. 00002902-0000-1000-8000-00805f9b34fb, value: (0x) 01-00
+A	16:08:56.678	"Notifications enabled" received
+V	16:08:57.596	Reading characteristic 0000fcc1-f7e3-55b4-6c4c-9fd140100a16
+D	16:08:57.596	gatt.readCharacteristic(0000fcc1-f7e3-55b4-6c4c-9fd140100a16)
+I	16:08:57.844	Read Response received from 0000fcc1-f7e3-55b4-6c4c-9fd140100a16, value: (0x) 00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00
+A	16:08:57.844	"(0x) 00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00" received
+V	16:09:03.857	Reading characteristic 0000fcc1-f7e3-55b4-6c4c-9fd140100a16
+D	16:09:03.857	gatt.readCharacteristic(0000fcc1-f7e3-55b4-6c4c-9fd140100a16)
+I	16:09:04.889	Read Response received from 0000fcc1-f7e3-55b4-6c4c-9fd140100a16, value: (0x) 00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00
+A	16:09:04.889	"(0x) 00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00" received
+V	16:09:12.955	Reading characteristic 00002a4d-0000-1000-8000-00805f9b34fb
+D	16:09:12.955	gatt.readCharacteristic(00002a4d-0000-1000-8000-00805f9b34fb)
+E	16:09:12.955	Exception occurred (BLUETOOTH_PRIVILEGED permission required)
+V	16:09:13.990	Enabling notifications for 00002a4d-0000-1000-8000-00805f9b34fb
+D	16:09:13.990	gatt.setCharacteristicNotification(00002a4d-0000-1000-8000-00805f9b34fb, true)
+E	16:09:13.992	Exception occurred (Neither user 10334 nor current process has android.permission.BLUETOOTH_PRIVILEGED.)
+V	16:09:22.604	Enabling notifications for 00002a4d-0000-1000-8000-00805f9b34fb
+D	16:09:22.604	gatt.setCharacteristicNotification(00002a4d-0000-1000-8000-00805f9b34fb, true)
+E	16:09:22.606	Exception occurred (Neither user 10334 nor current process has android.permission.BLUETOOTH_PRIVILEGED.)
+V	16:09:24.443	Enabling notifications for 00002a22-0000-1000-8000-00805f9b34fb
+D	16:09:24.443	gatt.setCharacteristicNotification(00002a22-0000-1000-8000-00805f9b34fb, true)
+D	16:09:24.446	gatt.writeDescriptor(00002902-0000-1000-8000-00805f9b34fb, value=0x0100)
+I	16:09:25.594	Data written to descr. 00002902-0000-1000-8000-00805f9b34fb, value: (0x) 01-00
+A	16:09:25.594	"Notifications enabled" sent
+V	16:09:25.603	Notifications enabled for 00002a22-0000-1000-8000-00805f9b34fb
+V	16:09:27.848	Reading descriptor 00002902-0000-1000-8000-00805f9b34fb
+D	16:09:27.848	gatt.readDescriptor(00002902-0000-1000-8000-00805f9b34fb)
+I	16:09:27.933	Read Response received from descr. 00002902-0000-1000-8000-00805f9b34fb, value: (0x) 01-00
+A	16:09:27.933	"Notifications enabled" received
+V	16:09:29.452	Reading characteristic 00002a22-0000-1000-8000-00805f9b34fb
+D	16:09:29.452	gatt.readCharacteristic(00002a22-0000-1000-8000-00805f9b34fb)
+I	16:09:30.263	Read Response received from 00002a22-0000-1000-8000-00805f9b34fb, value: (0x) 00-00-00-00-00-00-00-00
+A	16:09:30.263	"(0x) 00-00-00-00-00-00-00-00" received
+V	16:09:31.520	Reading characteristic 00002a4b-0000-1000-8000-00805f9b34fb
+D	16:09:31.520	gatt.readCharacteristic(00002a4b-0000-1000-8000-00805f9b34fb)
+E	16:09:31.520	Exception occurred (BLUETOOTH_PRIVILEGED permission required)
+V	16:09:33.609	Reading characteristic 00002a4a-0000-1000-8000-00805f9b34fb
+D	16:09:33.609	gatt.readCharacteristic(00002a4a-0000-1000-8000-00805f9b34fb)
+E	16:09:33.609	Exception occurred (BLUETOOTH_PRIVILEGED permission required)
+V	16:09:40.236	Reading characteristic 00002a4b-0000-1000-8000-00805f9b34fb
+D	16:09:40.236	gatt.readCharacteristic(00002a4b-0000-1000-8000-00805f9b34fb)
+E	16:09:40.237	Exception occurred (BLUETOOTH_PRIVILEGED permission required)
+V	16:09:42.823	Reading characteristic 00002a4e-0000-1000-8000-00805f9b34fb
+D	16:09:42.823	gatt.readCharacteristic(00002a4e-0000-1000-8000-00805f9b34fb)
+I	16:09:43.933	Read Response received from 00002a4e-0000-1000-8000-00805f9b34fb, value: (0x) 01
+A	16:09:43.933	"Report Protocol Mode" received
+V	16:09:48.284	Reading characteristic 00002a32-0000-1000-8000-00805f9b34fb
+D	16:09:48.284	gatt.readCharacteristic(00002a32-0000-1000-8000-00805f9b34fb)
+I	16:09:48.465	Read Response received from 00002a32-0000-1000-8000-00805f9b34fb, value: (0x) 00-00
+A	16:09:48.465	"(0x) 00-00" received
+V	16:09:50.001	Reading characteristic 00002a4d-0000-1000-8000-00805f9b34fb
+D	16:09:50.001	gatt.readCharacteristic(00002a4d-0000-1000-8000-00805f9b34fb)
+E	16:09:50.002	Exception occurred (BLUETOOTH_PRIVILEGED permission required)
+V	16:09:53.784	Reading descriptor 00002908-0000-1000-8000-00805f9b34fb
+D	16:09:53.784	gatt.readDescriptor(00002908-0000-1000-8000-00805f9b34fb)
+E	16:09:53.784	Exception occurred (BLUETOOTH_PRIVILEGED permission required)
+V	16:09:55.813	Reading descriptor 00002902-0000-1000-8000-00805f9b34fb
+D	16:09:55.813	gatt.readDescriptor(00002902-0000-1000-8000-00805f9b34fb)
+E	16:09:55.813	Exception occurred (BLUETOOTH_PRIVILEGED permission required)
+V	16:09:58.065	Reading characteristic 00002a4d-0000-1000-8000-00805f9b34fb
+D	16:09:58.065	gatt.readCharacteristic(00002a4d-0000-1000-8000-00805f9b34fb)
+E	16:09:58.065	Exception occurred (BLUETOOTH_PRIVILEGED permission required)
+V	16:09:59.902	Reading descriptor 00002908-0000-1000-8000-00805f9b34fb
+D	16:09:59.903	gatt.readDescriptor(00002908-0000-1000-8000-00805f9b34fb)
+E	16:09:59.903	Exception occurred (BLUETOOTH_PRIVILEGED permission required)
+V	16:10:00.821	Reading descriptor 00002902-0000-1000-8000-00805f9b34fb
+D	16:10:00.821	gatt.readDescriptor(00002902-0000-1000-8000-00805f9b34fb)
+E	16:10:00.822	Exception occurred (BLUETOOTH_PRIVILEGED permission required)
+V	16:10:01.639	Reading characteristic 00002a4d-0000-1000-8000-00805f9b34fb
+D	16:10:01.639	gatt.readCharacteristic(00002a4d-0000-1000-8000-00805f9b34fb)
+E	16:10:01.640	Exception occurred (BLUETOOTH_PRIVILEGED permission required)
+V	16:10:03.007	Reading characteristic 00002a4d-0000-1000-8000-00805f9b34fb
+D	16:10:03.007	gatt.readCharacteristic(00002a4d-0000-1000-8000-00805f9b34fb)
+E	16:10:03.008	Exception occurred (BLUETOOTH_PRIVILEGED permission required)
+V	16:10:03.892	Reading descriptor 00002908-0000-1000-8000-00805f9b34fb
+D	16:10:03.892	gatt.readDescriptor(00002908-0000-1000-8000-00805f9b34fb)
+E	16:10:03.892	Exception occurred (BLUETOOTH_PRIVILEGED permission required)
+V	16:10:27.100	Reading characteristic 0000fcc1-f7e3-55b4-6c4c-9fd140100a16
+D	16:10:27.100	gatt.readCharacteristic(0000fcc1-f7e3-55b4-6c4c-9fd140100a16)
+I	16:10:27.627	Read Response received from 0000fcc1-f7e3-55b4-6c4c-9fd140100a16, value: (0x) 00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00
+A	16:10:27.627	"(0x) 00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00" received
+V	16:10:29.995	Reading descriptor 00002902-0000-1000-8000-00805f9b34fb
+D	16:10:29.995	gatt.readDescriptor(00002902-0000-1000-8000-00805f9b34fb)
+I	16:10:31.025	Read Response received from descr. 00002902-0000-1000-8000-00805f9b34fb, value: (0x) 01-00
+A	16:10:31.025	"Notifications enabled" received
+V	16:10:39.602	Reading characteristic 00002a32-0000-1000-8000-00805f9b34fb
+D	16:10:39.602	gatt.readCharacteristic(00002a32-0000-1000-8000-00805f9b34fb)
+I	16:10:40.216	Read Response received from 00002a32-0000-1000-8000-00805f9b34fb, value: (0x) 00-00
+A	16:10:40.216	"(0x) 00-00" received
+V	16:10:42.675	Reading characteristic 00002a22-0000-1000-8000-00805f9b34fb
+D	16:10:42.675	gatt.readCharacteristic(00002a22-0000-1000-8000-00805f9b34fb)
+I	16:10:43.626	Read Response received from 00002a22-0000-1000-8000-00805f9b34fb, value: (0x) 00-00-00-00-00-00-00-00
+A	16:10:43.626	"(0x) 00-00-00-00-00-00-00-00" received
+V	16:10:45.521	Reading characteristic 00002a22-0000-1000-8000-00805f9b34fb
+D	16:10:45.521	gatt.readCharacteristic(00002a22-0000-1000-8000-00805f9b34fb)
+I	16:10:46.291	Read Response received from 00002a22-0000-1000-8000-00805f9b34fb, value: (0x) 00-00-00-00-00-00-00-00
+A	16:10:46.291	"(0x) 00-00-00-00-00-00-00-00" received
+V	16:10:52.783	Reading characteristic 00002a04-0000-1000-8000-00805f9b34fb
+D	16:10:52.783	gatt.readCharacteristic(00002a04-0000-1000-8000-00805f9b34fb)
+I	16:10:53.269	Read Response received from 00002a04-0000-1000-8000-00805f9b34fb, value: (0x) 06-00-06-00-63-00-58-02
+A	16:10:53.269	"Connection Interval: 7.50ms - 7.50ms,
+Max Latency: 99,
+Supervision Timeout Multiplier: 600" received
+V	16:10:56.300	Reading characteristic 00002a01-0000-1000-8000-00805f9b34fb
+D	16:10:56.300	gatt.readCharacteristic(00002a01-0000-1000-8000-00805f9b34fb)
+I	16:10:56.677	Read Response received from 00002a01-0000-1000-8000-00805f9b34fb, value: (0x) C1-03
+A	16:10:56.677	"[961] Keyboard (HID subtype)" received
+V	16:11:00.070	Reading characteristic 00002a00-0000-1000-8000-00805f9b34fb
+D	16:11:00.070	gatt.readCharacteristic(00002a00-0000-1000-8000-00805f9b34fb)
+I	16:11:01.219	Read Response received from 00002a00-0000-1000-8000-00805f9b34fb, value: (0x) 57-69-69-4D-20-56-6F-69-63-65-20-52-65-6D-6F-74-65-00
+A	16:11:01.219	"WiiM Voice Remote " received
+V	16:11:24.851	Reading characteristic 0000fcc1-f7e3-55b4-6c4c-9fd140100a16
+D	16:11:24.851	gatt.readCharacteristic(0000fcc1-f7e3-55b4-6c4c-9fd140100a16)
+I	16:11:25.365	Read Response received from 0000fcc1-f7e3-55b4-6c4c-9fd140100a16, value: (0x) 00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00
+A	16:11:25.365	"(0x) 00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00" received
+V	16:11:27.250	Disabling notifications for 0000fcc1-f7e3-55b4-6c4c-9fd140100a16
+D	16:11:27.250	gatt.setCharacteristicNotification(0000fcc1-f7e3-55b4-6c4c-9fd140100a16, false)
+D	16:11:27.255	gatt.writeDescriptor(00002902-0000-1000-8000-00805f9b34fb, value=0x0000)
+I	16:11:27.637	Data written to descr. 00002902-0000-1000-8000-00805f9b34fb, value: (0x) 00-00
+A	16:11:27.637	"Notifications and indications disabled" sent
+V	16:11:27.643	Notifications and indications disabled for 0000fcc1-f7e3-55b4-6c4c-9fd140100a16
+V	16:11:29.300	Enabling notifications for 0000fcc1-f7e3-55b4-6c4c-9fd140100a16
+D	16:11:29.300	gatt.setCharacteristicNotification(0000fcc1-f7e3-55b4-6c4c-9fd140100a16, true)
+D	16:11:29.301	gatt.writeDescriptor(00002902-0000-1000-8000-00805f9b34fb, value=0x0100)
+I	16:11:29.919	Data written to descr. 00002902-0000-1000-8000-00805f9b34fb, value: (0x) 01-00
+A	16:11:29.919	"Notifications enabled" sent
+V	16:11:29.926	Notifications enabled for 0000fcc1-f7e3-55b4-6c4c-9fd140100a16
+V	16:11:31.185	Reading descriptor 00002902-0000-1000-8000-00805f9b34fb
+D	16:11:31.185	gatt.readDescriptor(00002902-0000-1000-8000-00805f9b34fb)
+I	16:11:32.206	Read Response received from descr. 00002902-0000-1000-8000-00805f9b34fb, value: (0x) 01-00
+A	16:11:32.206	"Notifications enabled" received
+V	16:11:33.292	Reading characteristic 0000fcc1-f7e3-55b4-6c4c-9fd140100a16
+D	16:11:33.292	gatt.readCharacteristic(0000fcc1-f7e3-55b4-6c4c-9fd140100a16)
+I	16:11:33.363	Read Response received from 0000fcc1-f7e3-55b4-6c4c-9fd140100a16, value: (0x) 00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00
+A	16:11:33.363	"(0x) 00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00" received
+V	16:11:34.409	Reading characteristic 0000fcc1-f7e3-55b4-6c4c-9fd140100a16
+D	16:11:34.409	gatt.readCharacteristic(0000fcc1-f7e3-55b4-6c4c-9fd140100a16)
+I	16:11:34.528	Read Response received from 0000fcc1-f7e3-55b4-6c4c-9fd140100a16, value: (0x) 00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00
+A	16:11:34.528	"(0x) 00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00" received
+V	16:11:43.759	Reading descriptor 00002901-0000-1000-8000-00805f9b34fb
+D	16:11:43.759	gatt.readDescriptor(00002901-0000-1000-8000-00805f9b34fb)
+I	16:11:44.243	Read Response received from descr. 00002901-0000-1000-8000-00805f9b34fb, value: (0x) 49-6D-67-20-42-6C-6F-63-6B-00
+A	16:11:44.243	"Img Block " received
+V	16:11:45.859	Reading descriptor 00002902-0000-1000-8000-00805f9b34fb
+D	16:11:45.859	gatt.readDescriptor(00002902-0000-1000-8000-00805f9b34fb)
+I	16:11:46.524	Read Response received from descr. 00002902-0000-1000-8000-00805f9b34fb, value: (0x) 01-00
+A	16:11:46.524	"Notifications enabled" received
+V	16:11:47.769	Reading descriptor 00002901-0000-1000-8000-00805f9b34fb
+D	16:11:47.769	gatt.readDescriptor(00002901-0000-1000-8000-00805f9b34fb)
+I	16:11:48.810	Read Response received from descr. 00002901-0000-1000-8000-00805f9b34fb, value: (0x) 49-6D-67-20-49-64-65-6E-74-69-66-79-00
+A	16:11:48.810	"Img Identify " received
+V	16:11:50.223	Reading descriptor 00002902-0000-1000-8000-00805f9b34fb
+D	16:11:50.223	gatt.readDescriptor(00002902-0000-1000-8000-00805f9b34fb)
+I	16:11:51.137	Read Response received from descr. 00002902-0000-1000-8000-00805f9b34fb, value: (0x) 01-01
+A	16:11:51.137	"(0x) 01-01" received
+W	16:11:51.137	Invalid value of CCCD for f000ffc1-0451-4000-b000-000000000000
+V	16:11:57.268	Reading descriptor 00002902-0000-1000-8000-00805f9b34fb
+D	16:11:57.268	gatt.readDescriptor(00002902-0000-1000-8000-00805f9b34fb)
+I	16:11:57.945	Read Response received from descr. 00002902-0000-1000-8000-00805f9b34fb, value: (0x) 01-01
+A	16:11:57.945	"(0x) 01-01" received
+W	16:11:57.945	Invalid value of CCCD for f000ffc1-0451-4000-b000-000000000000
+V	16:12:47.907	Reading characteristic 00002a4a-0000-1000-8000-00805f9b34fb
+D	16:12:47.907	gatt.readCharacteristic(00002a4a-0000-1000-8000-00805f9b34fb)
+E	16:12:47.908	Exception occurred (BLUETOOTH_PRIVILEGED permission required)
+V	16:12:51.131	Reading characteristic 00002a4b-0000-1000-8000-00805f9b34fb
+D	16:12:51.131	gatt.readCharacteristic(00002a4b-0000-1000-8000-00805f9b34fb)
+E	16:12:51.131	Exception occurred (BLUETOOTH_PRIVILEGED permission required)
+V	16:12:55.006	Reading characteristic 00002a32-0000-1000-8000-00805f9b34fb
+D	16:12:55.006	gatt.readCharacteristic(00002a32-0000-1000-8000-00805f9b34fb)
+I	16:12:55.523	Read Response received from 00002a32-0000-1000-8000-00805f9b34fb, value: (0x) 00-00
+A	16:12:55.523	"(0x) 00-00" received
+V	16:13:15.866	Reading all characteristics...
+V	16:13:15.866	Reading characteristic 00002a00-0000-1000-8000-00805f9b34fb
+D	16:13:15.866	gatt.readCharacteristic(00002a00-0000-1000-8000-00805f9b34fb)
+I	16:13:16.258	Read Response received from 00002a00-0000-1000-8000-00805f9b34fb, value: (0x) 57-69-69-4D-20-56-6F-69-63-65-20-52-65-6D-6F-74-65-00
+A	16:13:16.258	"WiiM Voice Remote " received
+V	16:13:16.259	Reading characteristic 00002a01-0000-1000-8000-00805f9b34fb
+D	16:13:16.259	gatt.readCharacteristic(00002a01-0000-1000-8000-00805f9b34fb)
+I	16:13:16.303	Read Response received from 00002a01-0000-1000-8000-00805f9b34fb, value: (0x) C1-03
+A	16:13:16.303	"[961] Keyboard (HID subtype)" received
+V	16:13:16.303	Reading characteristic 00002a04-0000-1000-8000-00805f9b34fb
+D	16:13:16.303	gatt.readCharacteristic(00002a04-0000-1000-8000-00805f9b34fb)
+I	16:13:16.322	Read Response received from 00002a04-0000-1000-8000-00805f9b34fb, value: (0x) 06-00-06-00-63-00-58-02
+A	16:13:16.322	"Connection Interval: 7.50ms - 7.50ms,
+Max Latency: 99,
+Supervision Timeout Multiplier: 600" received
+V	16:13:16.322	Reading characteristic 00002a29-0000-1000-8000-00805f9b34fb
+D	16:13:16.322	gatt.readCharacteristic(00002a29-0000-1000-8000-00805f9b34fb)
+I	16:13:16.345	Read Response received from 00002a29-0000-1000-8000-00805f9b34fb, value: (0x) 42-45-4C-4F-4E-20-42-54, "BELON BT"
+A	16:13:16.345	"BELON BT" received
+V	16:13:16.345	Reading characteristic 00002a24-0000-1000-8000-00805f9b34fb
+D	16:13:16.345	gatt.readCharacteristic(00002a24-0000-1000-8000-00805f9b34fb)
+I	16:13:16.366	Read Response received from 00002a24-0000-1000-8000-00805f9b34fb, value: (0x) 4D-6F-64-65-6C-20-4E-62-72-20-30-2E-39, "Model Nbr 0.9"
+A	16:13:16.366	"Model Nbr 0.9" received
+V	16:13:16.367	Reading characteristic 00002a25-0000-1000-8000-00805f9b34fb
+D	16:13:16.367	gatt.readCharacteristic(00002a25-0000-1000-8000-00805f9b34fb)
+I	16:13:16.389	Read Response received from 00002a25-0000-1000-8000-00805f9b34fb, value: (0x) 42-4C-42-65-65-53-65-72-69-61-6C-4E-75-6D, "BLBeeSerialNum"
+A	16:13:16.389	"BLBeeSerialNum" received
+V	16:13:16.390	Reading characteristic 00002a27-0000-1000-8000-00805f9b34fb
+D	16:13:16.390	gatt.readCharacteristic(00002a27-0000-1000-8000-00805f9b34fb)
+I	16:13:16.419	Read Response received from 00002a27-0000-1000-8000-00805f9b34fb, value: (0x) 32-2E-30, "2.0"
+A	16:13:16.419	"2.0" received
+V	16:13:16.419	Reading characteristic 00002a26-0000-1000-8000-00805f9b34fb
+D	16:13:16.419	gatt.readCharacteristic(00002a26-0000-1000-8000-00805f9b34fb)
+I	16:13:16.447	Read Response received from 00002a26-0000-1000-8000-00805f9b34fb, value: (0x) 31-38-36-36-37, "18667"
+A	16:13:16.447	"18667" received
+V	16:13:16.447	Reading characteristic 00002a28-0000-1000-8000-00805f9b34fb
+D	16:13:16.447	gatt.readCharacteristic(00002a28-0000-1000-8000-00805f9b34fb)
+I	16:13:16.468	Read Response received from 00002a28-0000-1000-8000-00805f9b34fb, value: (0x) 32-2E-30-2E-30-2E-39, "2.0.0.9"
+A	16:13:16.468	"2.0.0.9" received
+V	16:13:16.468	Reading characteristic 00002a23-0000-1000-8000-00805f9b34fb
+D	16:13:16.468	gatt.readCharacteristic(00002a23-0000-1000-8000-00805f9b34fb)
+I	16:13:16.490	Read Response received from 00002a23-0000-1000-8000-00805f9b34fb, value: (0x) 00-01-02-00-00-03-04-05
+A	16:13:16.490	"(0x) 00-01-02-00-00-03-04-05" received
+V	16:13:16.491	Reading characteristic 00002a2a-0000-1000-8000-00805f9b34fb
+D	16:13:16.491	gatt.readCharacteristic(00002a2a-0000-1000-8000-00805f9b34fb)
+I	16:13:16.513	Read Response received from 00002a2a-0000-1000-8000-00805f9b34fb, value: (0x) 52-54-4B-42-65-65-49-45-45-45-44-61-74-61-6C-69-73-74-00
+A	16:13:16.514	"(0x) 52-54-4B-42-65-65-49-45-45-45-44-61-74-61-6C-69-73-74-00" received
+V	16:13:16.514	Reading characteristic 00002a50-0000-1000-8000-00805f9b34fb
+D	16:13:16.514	gatt.readCharacteristic(00002a50-0000-1000-8000-00805f9b34fb)
+I	16:13:16.538	Read Response received from 00002a50-0000-1000-8000-00805f9b34fb, value: (0x) 01-17-27-B9-32-4C-4A
+A	16:13:16.538	"Bluetooth SIG Company: Reserved ID <0x2717>
+Product Id: 12985
+Product Version: 19020" received
+V	16:13:16.538	Reading characteristic 00002a19-0000-1000-8000-00805f9b34fb
+D	16:13:16.538	gatt.readCharacteristic(00002a19-0000-1000-8000-00805f9b34fb)
+I	16:13:16.570	Read Response received from 00002a19-0000-1000-8000-00805f9b34fb, value: (0x) 64, "d"
+A	16:13:16.570	"100%" received
+V	16:13:16.570	Reading characteristic 00002a4a-0000-1000-8000-00805f9b34fb
+D	16:13:16.570	gatt.readCharacteristic(00002a4a-0000-1000-8000-00805f9b34fb)
+E	16:13:16.571	Exception occurred (BLUETOOTH_PRIVILEGED permission required)
+V	16:13:16.571	Reading characteristic 00002a4b-0000-1000-8000-00805f9b34fb
+D	16:13:16.571	gatt.readCharacteristic(00002a4b-0000-1000-8000-00805f9b34fb)
+E	16:13:16.571	Exception occurred (BLUETOOTH_PRIVILEGED permission required)
+V	16:13:16.571	Reading characteristic 00002a4e-0000-1000-8000-00805f9b34fb
+D	16:13:16.571	gatt.readCharacteristic(00002a4e-0000-1000-8000-00805f9b34fb)
+I	16:13:16.592	Read Response received from 00002a4e-0000-1000-8000-00805f9b34fb, value: (0x) 01
+A	16:13:16.592	"Report Protocol Mode" received
+V	16:13:16.592	Reading characteristic 00002a22-0000-1000-8000-00805f9b34fb
+D	16:13:16.592	gatt.readCharacteristic(00002a22-0000-1000-8000-00805f9b34fb)
+I	16:13:16.617	Read Response received from 00002a22-0000-1000-8000-00805f9b34fb, value: (0x) 00-00-00-00-00-00-00-00
+A	16:13:16.617	"(0x) 00-00-00-00-00-00-00-00" received
+V	16:13:16.618	Reading characteristic 00002a32-0000-1000-8000-00805f9b34fb
+D	16:13:16.618	gatt.readCharacteristic(00002a32-0000-1000-8000-00805f9b34fb)
+I	16:13:16.637	Read Response received from 00002a32-0000-1000-8000-00805f9b34fb, value: (0x) 00-00
+A	16:13:16.637	"(0x) 00-00" received
+V	16:13:16.637	Reading characteristic 00002a4d-0000-1000-8000-00805f9b34fb
+D	16:13:16.637	gatt.readCharacteristic(00002a4d-0000-1000-8000-00805f9b34fb)
+E	16:13:16.638	Exception occurred (BLUETOOTH_PRIVILEGED permission required)
+V	16:13:16.638	Reading characteristic 00002a4d-0000-1000-8000-00805f9b34fb
+D	16:13:16.638	gatt.readCharacteristic(00002a4d-0000-1000-8000-00805f9b34fb)
+E	16:13:16.638	Exception occurred (BLUETOOTH_PRIVILEGED permission required)
+V	16:13:16.638	Reading characteristic 00002a4d-0000-1000-8000-00805f9b34fb
+D	16:13:16.638	gatt.readCharacteristic(00002a4d-0000-1000-8000-00805f9b34fb)
+E	16:13:16.638	Exception occurred (BLUETOOTH_PRIVILEGED permission required)
+V	16:13:16.638	Reading characteristic 00002a4d-0000-1000-8000-00805f9b34fb
+D	16:13:16.638	gatt.readCharacteristic(00002a4d-0000-1000-8000-00805f9b34fb)
+E	16:13:16.639	Exception occurred (BLUETOOTH_PRIVILEGED permission required)
+V	16:13:16.639	Reading characteristic 0000fcc1-f7e3-55b4-6c4c-9fd140100a16
+D	16:13:16.639	gatt.readCharacteristic(0000fcc1-f7e3-55b4-6c4c-9fd140100a16)
+I	16:13:16.685	Read Response received from 0000fcc1-f7e3-55b4-6c4c-9fd140100a16, value: (0x) 00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00
+A	16:13:16.685	"(0x) 00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00" received
+V	16:13:16.685	23 characteristics read
+V	16:13:41.317	Reading all characteristics...
+V	16:13:41.318	Reading characteristic 00002a00-0000-1000-8000-00805f9b34fb
+D	16:13:41.318	gatt.readCharacteristic(00002a00-0000-1000-8000-00805f9b34fb)
+I	16:13:41.765	Read Response received from 00002a00-0000-1000-8000-00805f9b34fb, value: (0x) 57-69-69-4D-20-56-6F-69-63-65-20-52-65-6D-6F-74-65-00
+A	16:13:41.765	"WiiM Voice Remote " received
+V	16:13:41.766	Reading characteristic 00002a01-0000-1000-8000-00805f9b34fb
+D	16:13:41.766	gatt.readCharacteristic(00002a01-0000-1000-8000-00805f9b34fb)
+I	16:13:41.794	Read Response received from 00002a01-0000-1000-8000-00805f9b34fb, value: (0x) C1-03
+A	16:13:41.794	"[961] Keyboard (HID subtype)" received
+V	16:13:41.795	Reading characteristic 00002a04-0000-1000-8000-00805f9b34fb
+D	16:13:41.795	gatt.readCharacteristic(00002a04-0000-1000-8000-00805f9b34fb)
+I	16:13:41.815	Read Response received from 00002a04-0000-1000-8000-00805f9b34fb, value: (0x) 06-00-06-00-63-00-58-02
+A	16:13:41.815	"Connection Interval: 7.50ms - 7.50ms,
+Max Latency: 99,
+Supervision Timeout Multiplier: 600" received
+V	16:13:41.815	Reading characteristic 00002a29-0000-1000-8000-00805f9b34fb
+D	16:13:41.815	gatt.readCharacteristic(00002a29-0000-1000-8000-00805f9b34fb)
+I	16:13:41.839	Read Response received from 00002a29-0000-1000-8000-00805f9b34fb, value: (0x) 42-45-4C-4F-4E-20-42-54, "BELON BT"
+A	16:13:41.839	"BELON BT" received
+V	16:13:41.840	Reading characteristic 00002a24-0000-1000-8000-00805f9b34fb
+D	16:13:41.840	gatt.readCharacteristic(00002a24-0000-1000-8000-00805f9b34fb)
+I	16:13:41.872	Read Response received from 00002a24-0000-1000-8000-00805f9b34fb, value: (0x) 4D-6F-64-65-6C-20-4E-62-72-20-30-2E-39, "Model Nbr 0.9"
+A	16:13:41.872	"Model Nbr 0.9" received
+V	16:13:41.872	Reading characteristic 00002a25-0000-1000-8000-00805f9b34fb
+D	16:13:41.872	gatt.readCharacteristic(00002a25-0000-1000-8000-00805f9b34fb)
+I	16:13:41.894	Read Response received from 00002a25-0000-1000-8000-00805f9b34fb, value: (0x) 42-4C-42-65-65-53-65-72-69-61-6C-4E-75-6D, "BLBeeSerialNum"
+A	16:13:41.894	"BLBeeSerialNum" received
+V	16:13:41.895	Reading characteristic 00002a27-0000-1000-8000-00805f9b34fb
+D	16:13:41.895	gatt.readCharacteristic(00002a27-0000-1000-8000-00805f9b34fb)
+I	16:13:41.916	Read Response received from 00002a27-0000-1000-8000-00805f9b34fb, value: (0x) 32-2E-30, "2.0"
+A	16:13:41.916	"2.0" received
+V	16:13:41.917	Reading characteristic 00002a26-0000-1000-8000-00805f9b34fb
+D	16:13:41.917	gatt.readCharacteristic(00002a26-0000-1000-8000-00805f9b34fb)
+I	16:13:41.939	Read Response received from 00002a26-0000-1000-8000-00805f9b34fb, value: (0x) 31-38-36-36-37, "18667"
+A	16:13:41.939	"18667" received
+V	16:13:41.940	Reading characteristic 00002a28-0000-1000-8000-00805f9b34fb
+D	16:13:41.940	gatt.readCharacteristic(00002a28-0000-1000-8000-00805f9b34fb)
+I	16:13:41.964	Read Response received from 00002a28-0000-1000-8000-00805f9b34fb, value: (0x) 32-2E-30-2E-30-2E-39, "2.0.0.9"
+A	16:13:41.964	"2.0.0.9" received
+V	16:13:41.965	Reading characteristic 00002a23-0000-1000-8000-00805f9b34fb
+D	16:13:41.965	gatt.readCharacteristic(00002a23-0000-1000-8000-00805f9b34fb)
+I	16:13:41.998	Read Response received from 00002a23-0000-1000-8000-00805f9b34fb, value: (0x) 00-01-02-00-00-03-04-05
+A	16:13:41.998	"(0x) 00-01-02-00-00-03-04-05" received
+V	16:13:41.998	Reading characteristic 00002a2a-0000-1000-8000-00805f9b34fb
+D	16:13:41.998	gatt.readCharacteristic(00002a2a-0000-1000-8000-00805f9b34fb)
+I	16:13:42.017	Read Response received from 00002a2a-0000-1000-8000-00805f9b34fb, value: (0x) 52-54-4B-42-65-65-49-45-45-45-44-61-74-61-6C-69-73-74-00
+A	16:13:42.017	"(0x) 52-54-4B-42-65-65-49-45-45-45-44-61-74-61-6C-69-73-74-00" received
+V	16:13:42.018	Reading characteristic 00002a50-0000-1000-8000-00805f9b34fb
+D	16:13:42.018	gatt.readCharacteristic(00002a50-0000-1000-8000-00805f9b34fb)
+I	16:13:42.040	Read Response received from 00002a50-0000-1000-8000-00805f9b34fb, value: (0x) 01-17-27-B9-32-4C-4A
+A	16:13:42.040	"Bluetooth SIG Company: Reserved ID <0x2717>
+Product Id: 12985
+Product Version: 19020" received
+V	16:13:42.040	Reading characteristic 00002a19-0000-1000-8000-00805f9b34fb
+D	16:13:42.040	gatt.readCharacteristic(00002a19-0000-1000-8000-00805f9b34fb)
+I	16:13:42.063	Read Response received from 00002a19-0000-1000-8000-00805f9b34fb, value: (0x) 64, "d"
+A	16:13:42.063	"100%" received
+V	16:13:42.064	Reading characteristic 00002a4a-0000-1000-8000-00805f9b34fb
+D	16:13:42.064	gatt.readCharacteristic(00002a4a-0000-1000-8000-00805f9b34fb)
+E	16:13:42.065	Exception occurred (BLUETOOTH_PRIVILEGED permission required)
+V	16:13:42.065	Reading characteristic 00002a4b-0000-1000-8000-00805f9b34fb
+D	16:13:42.065	gatt.readCharacteristic(00002a4b-0000-1000-8000-00805f9b34fb)
+E	16:13:42.065	Exception occurred (BLUETOOTH_PRIVILEGED permission required)
+V	16:13:42.065	Reading characteristic 00002a4e-0000-1000-8000-00805f9b34fb
+D	16:13:42.065	gatt.readCharacteristic(00002a4e-0000-1000-8000-00805f9b34fb)
+I	16:13:42.084	Read Response received from 00002a4e-0000-1000-8000-00805f9b34fb, value: (0x) 01
+A	16:13:42.084	"Report Protocol Mode" received
+V	16:13:42.085	Reading characteristic 00002a22-0000-1000-8000-00805f9b34fb
+D	16:13:42.085	gatt.readCharacteristic(00002a22-0000-1000-8000-00805f9b34fb)
+I	16:13:42.107	Read Response received from 00002a22-0000-1000-8000-00805f9b34fb, value: (0x) 00-00-00-00-00-00-00-00
+A	16:13:42.107	"(0x) 00-00-00-00-00-00-00-00" received
+V	16:13:42.108	Reading characteristic 00002a32-0000-1000-8000-00805f9b34fb
+D	16:13:42.108	gatt.readCharacteristic(00002a32-0000-1000-8000-00805f9b34fb)
+I	16:13:42.130	Read Response received from 00002a32-0000-1000-8000-00805f9b34fb, value: (0x) 00-00
+A	16:13:42.130	"(0x) 00-00" received
+V	16:13:42.131	Reading characteristic 00002a4d-0000-1000-8000-00805f9b34fb
+D	16:13:42.131	gatt.readCharacteristic(00002a4d-0000-1000-8000-00805f9b34fb)
+E	16:13:42.131	Exception occurred (BLUETOOTH_PRIVILEGED permission required)
+V	16:13:42.131	Reading characteristic 00002a4d-0000-1000-8000-00805f9b34fb
+D	16:13:42.131	gatt.readCharacteristic(00002a4d-0000-1000-8000-00805f9b34fb)
+E	16:13:42.131	Exception occurred (BLUETOOTH_PRIVILEGED permission required)
+V	16:13:42.131	Reading characteristic 00002a4d-0000-1000-8000-00805f9b34fb
+D	16:13:42.131	gatt.readCharacteristic(00002a4d-0000-1000-8000-00805f9b34fb)
+E	16:13:42.131	Exception occurred (BLUETOOTH_PRIVILEGED permission required)
+V	16:13:42.131	Reading characteristic 00002a4d-0000-1000-8000-00805f9b34fb
+D	16:13:42.131	gatt.readCharacteristic(00002a4d-0000-1000-8000-00805f9b34fb)
+E	16:13:42.131	Exception occurred (BLUETOOTH_PRIVILEGED permission required)
+V	16:13:42.131	Reading characteristic 0000fcc1-f7e3-55b4-6c4c-9fd140100a16
+D	16:13:42.131	gatt.readCharacteristic(0000fcc1-f7e3-55b4-6c4c-9fd140100a16)
+I	16:13:42.166	Read Response received from 0000fcc1-f7e3-55b4-6c4c-9fd140100a16, value: (0x) 00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00
+A	16:13:42.166	"(0x) 00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00" received
+V	16:13:42.167	23 characteristics read
+V	16:14:04.514	Enabling services...
+V	16:14:04.514	Enabling notifications for 00002a19-0000-1000-8000-00805f9b34fb
+D	16:14:04.514	gatt.setCharacteristicNotification(00002a19-0000-1000-8000-00805f9b34fb, true)
+D	16:14:04.516	gatt.writeDescriptor(00002902-0000-1000-8000-00805f9b34fb, value=0x0100)
+I	16:14:04.942	Data written to descr. 00002902-0000-1000-8000-00805f9b34fb, value: (0x) 01-00
+A	16:14:04.942	"Notifications enabled" sent
+V	16:14:04.949	Notifications enabled for 00002a19-0000-1000-8000-00805f9b34fb
+V	16:14:04.950	Enabling notifications for 00002a22-0000-1000-8000-00805f9b34fb
+D	16:14:04.950	gatt.setCharacteristicNotification(00002a22-0000-1000-8000-00805f9b34fb, true)
+D	16:14:04.952	gatt.writeDescriptor(00002902-0000-1000-8000-00805f9b34fb, value=0x0100)
+I	16:14:06.097	Data written to descr. 00002902-0000-1000-8000-00805f9b34fb, value: (0x) 01-00
+A	16:14:06.097	"Notifications enabled" sent
+V	16:14:06.098	Notifications enabled for 00002a22-0000-1000-8000-00805f9b34fb
+V	16:14:06.102	Enabling notifications for 00002a4d-0000-1000-8000-00805f9b34fb
+D	16:14:06.102	gatt.setCharacteristicNotification(00002a4d-0000-1000-8000-00805f9b34fb, true)
+E	16:14:06.106	Exception occurred (Neither user 10334 nor current process has android.permission.BLUETOOTH_PRIVILEGED.)
+V	16:14:06.106	Enabling notifications for 00002a4d-0000-1000-8000-00805f9b34fb
+D	16:14:06.106	gatt.setCharacteristicNotification(00002a4d-0000-1000-8000-00805f9b34fb, true)
+E	16:14:06.109	Exception occurred (Neither user 10334 nor current process has android.permission.BLUETOOTH_PRIVILEGED.)
+V	16:14:06.109	Enabling notifications for 00002a4d-0000-1000-8000-00805f9b34fb
+D	16:14:06.109	gatt.setCharacteristicNotification(00002a4d-0000-1000-8000-00805f9b34fb, true)
+E	16:14:06.111	Exception occurred (Neither user 10334 nor current process has android.permission.BLUETOOTH_PRIVILEGED.)
+V	16:14:06.111	Enabling notifications for 0000fcc1-f7e3-55b4-6c4c-9fd140100a16
+D	16:14:06.111	gatt.setCharacteristicNotification(0000fcc1-f7e3-55b4-6c4c-9fd140100a16, true)
+D	16:14:06.112	gatt.writeDescriptor(00002902-0000-1000-8000-00805f9b34fb, value=0x0100)
+I	16:14:07.256	Data written to descr. 00002902-0000-1000-8000-00805f9b34fb, value: (0x) 01-00
+A	16:14:07.257	"Notifications enabled" sent
+V	16:14:07.257	Notifications enabled for 0000fcc1-f7e3-55b4-6c4c-9fd140100a16
+V	16:14:07.258	Enabling notifications for f000ffc1-0451-4000-b000-000000000000
+D	16:14:07.258	gatt.setCharacteristicNotification(f000ffc1-0451-4000-b000-000000000000, true)
+D	16:14:07.261	gatt.writeDescriptor(00002902-0000-1000-8000-00805f9b34fb, value=0x0100)
+I	16:14:08.416	Data written to descr. 00002902-0000-1000-8000-00805f9b34fb, value: (0x) 01-00
+A	16:14:08.416	"Notifications enabled" sent
+V	16:14:08.417	Notifications enabled for f000ffc1-0451-4000-b000-000000000000
+V	16:14:08.418	Enabling notifications for f000ffc2-0451-4000-b000-000000000000
+D	16:14:08.418	gatt.setCharacteristicNotification(f000ffc2-0451-4000-b000-000000000000, true)
+D	16:14:08.422	gatt.writeDescriptor(00002902-0000-1000-8000-00805f9b34fb, value=0x0100)
+I	16:14:09.587	Data written to descr. 00002902-0000-1000-8000-00805f9b34fb, value: (0x) 01-00
+A	16:14:09.587	"Notifications enabled" sent
+V	16:14:09.588	Notifications enabled for f000ffc2-0451-4000-b000-000000000000
+V	16:14:09.588	All services enabled
+V	16:14:12.601	Reading all characteristics...
+V	16:14:12.601	Reading characteristic 00002a00-0000-1000-8000-00805f9b34fb
+D	16:14:12.601	gatt.readCharacteristic(00002a00-0000-1000-8000-00805f9b34fb)
+I	16:14:13.015	Read Response received from 00002a00-0000-1000-8000-00805f9b34fb, value: (0x) 57-69-69-4D-20-56-6F-69-63-65-20-52-65-6D-6F-74-65-00
+A	16:14:13.015	"WiiM Voice Remote " received
+V	16:14:13.016	Reading characteristic 00002a01-0000-1000-8000-00805f9b34fb
+D	16:14:13.016	gatt.readCharacteristic(00002a01-0000-1000-8000-00805f9b34fb)
+I	16:14:13.048	Read Response received from 00002a01-0000-1000-8000-00805f9b34fb, value: (0x) C1-03
+A	16:14:13.048	"[961] Keyboard (HID subtype)" received
+V	16:14:13.048	Reading characteristic 00002a04-0000-1000-8000-00805f9b34fb
+D	16:14:13.048	gatt.readCharacteristic(00002a04-0000-1000-8000-00805f9b34fb)
+I	16:14:13.068	Read Response received from 00002a04-0000-1000-8000-00805f9b34fb, value: (0x) 06-00-06-00-63-00-58-02
+A	16:14:13.068	"Connection Interval: 7.50ms - 7.50ms,
+Max Latency: 99,
+Supervision Timeout Multiplier: 600" received
+V	16:14:13.069	Reading characteristic 00002a29-0000-1000-8000-00805f9b34fb
+D	16:14:13.069	gatt.readCharacteristic(00002a29-0000-1000-8000-00805f9b34fb)
+I	16:14:13.090	Read Response received from 00002a29-0000-1000-8000-00805f9b34fb, value: (0x) 42-45-4C-4F-4E-20-42-54, "BELON BT"
+A	16:14:13.090	"BELON BT" received
+V	16:14:13.091	Reading characteristic 00002a24-0000-1000-8000-00805f9b34fb
+D	16:14:13.091	gatt.readCharacteristic(00002a24-0000-1000-8000-00805f9b34fb)
+I	16:14:13.113	Read Response received from 00002a24-0000-1000-8000-00805f9b34fb, value: (0x) 4D-6F-64-65-6C-20-4E-62-72-20-30-2E-39, "Model Nbr 0.9"
+A	16:14:13.113	"Model Nbr 0.9" received
+V	16:14:13.115	Reading characteristic 00002a25-0000-1000-8000-00805f9b34fb
+D	16:14:13.115	gatt.readCharacteristic(00002a25-0000-1000-8000-00805f9b34fb)
+I	16:14:13.138	Read Response received from 00002a25-0000-1000-8000-00805f9b34fb, value: (0x) 42-4C-42-65-65-53-65-72-69-61-6C-4E-75-6D, "BLBeeSerialNum"
+A	16:14:13.138	"BLBeeSerialNum" received
+V	16:14:13.138	Reading characteristic 00002a27-0000-1000-8000-00805f9b34fb
+D	16:14:13.138	gatt.readCharacteristic(00002a27-0000-1000-8000-00805f9b34fb)
+I	16:14:13.158	Read Response received from 00002a27-0000-1000-8000-00805f9b34fb, value: (0x) 32-2E-30, "2.0"
+A	16:14:13.158	"2.0" received
+V	16:14:13.159	Reading characteristic 00002a26-0000-1000-8000-00805f9b34fb
+D	16:14:13.159	gatt.readCharacteristic(00002a26-0000-1000-8000-00805f9b34fb)
+I	16:14:13.182	Read Response received from 00002a26-0000-1000-8000-00805f9b34fb, value: (0x) 31-38-36-36-37, "18667"
+A	16:14:13.182	"18667" received
+V	16:14:13.182	Reading characteristic 00002a28-0000-1000-8000-00805f9b34fb
+D	16:14:13.182	gatt.readCharacteristic(00002a28-0000-1000-8000-00805f9b34fb)
+I	16:14:13.204	Read Response received from 00002a28-0000-1000-8000-00805f9b34fb, value: (0x) 32-2E-30-2E-30-2E-39, "2.0.0.9"
+A	16:14:13.204	"2.0.0.9" received
+V	16:14:13.205	Reading characteristic 00002a23-0000-1000-8000-00805f9b34fb
+D	16:14:13.205	gatt.readCharacteristic(00002a23-0000-1000-8000-00805f9b34fb)
+I	16:14:13.228	Read Response received from 00002a23-0000-1000-8000-00805f9b34fb, value: (0x) 00-01-02-00-00-03-04-05
+A	16:14:13.228	"(0x) 00-01-02-00-00-03-04-05" received
+V	16:14:13.230	Reading characteristic 00002a2a-0000-1000-8000-00805f9b34fb
+D	16:14:13.230	gatt.readCharacteristic(00002a2a-0000-1000-8000-00805f9b34fb)
+I	16:14:13.262	Read Response received from 00002a2a-0000-1000-8000-00805f9b34fb, value: (0x) 52-54-4B-42-65-65-49-45-45-45-44-61-74-61-6C-69-73-74-00
+A	16:14:13.262	"(0x) 52-54-4B-42-65-65-49-45-45-45-44-61-74-61-6C-69-73-74-00" received
+V	16:14:13.263	Reading characteristic 00002a50-0000-1000-8000-00805f9b34fb
+D	16:14:13.263	gatt.readCharacteristic(00002a50-0000-1000-8000-00805f9b34fb)
+I	16:14:13.282	Read Response received from 00002a50-0000-1000-8000-00805f9b34fb, value: (0x) 01-17-27-B9-32-4C-4A
+A	16:14:13.282	"Bluetooth SIG Company: Reserved ID <0x2717>
+Product Id: 12985
+Product Version: 19020" received
+V	16:14:13.282	Reading characteristic 00002a19-0000-1000-8000-00805f9b34fb
+D	16:14:13.282	gatt.readCharacteristic(00002a19-0000-1000-8000-00805f9b34fb)
+I	16:14:13.306	Read Response received from 00002a19-0000-1000-8000-00805f9b34fb, value: (0x) 64, "d"
+A	16:14:13.306	"100%" received
+V	16:14:13.306	Reading characteristic 00002a4a-0000-1000-8000-00805f9b34fb
+D	16:14:13.306	gatt.readCharacteristic(00002a4a-0000-1000-8000-00805f9b34fb)
+E	16:14:13.307	Exception occurred (BLUETOOTH_PRIVILEGED permission required)
+V	16:14:13.307	Reading characteristic 00002a4b-0000-1000-8000-00805f9b34fb
+D	16:14:13.307	gatt.readCharacteristic(00002a4b-0000-1000-8000-00805f9b34fb)
+E	16:14:13.307	Exception occurred (BLUETOOTH_PRIVILEGED permission required)
+V	16:14:13.307	Reading characteristic 00002a4e-0000-1000-8000-00805f9b34fb
+D	16:14:13.307	gatt.readCharacteristic(00002a4e-0000-1000-8000-00805f9b34fb)
+I	16:14:13.327	Read Response received from 00002a4e-0000-1000-8000-00805f9b34fb, value: (0x) 01
+A	16:14:13.327	"Report Protocol Mode" received
+V	16:14:13.327	Reading characteristic 00002a22-0000-1000-8000-00805f9b34fb
+D	16:14:13.327	gatt.readCharacteristic(00002a22-0000-1000-8000-00805f9b34fb)
+I	16:14:13.349	Read Response received from 00002a22-0000-1000-8000-00805f9b34fb, value: (0x) 00-00-00-00-00-00-00-00
+A	16:14:13.349	"(0x) 00-00-00-00-00-00-00-00" received
+V	16:14:13.349	Reading characteristic 00002a32-0000-1000-8000-00805f9b34fb
+D	16:14:13.349	gatt.readCharacteristic(00002a32-0000-1000-8000-00805f9b34fb)
+I	16:14:13.372	Read Response received from 00002a32-0000-1000-8000-00805f9b34fb, value: (0x) 00-00
+A	16:14:13.373	"(0x) 00-00" received
+V	16:14:13.373	Reading characteristic 00002a4d-0000-1000-8000-00805f9b34fb
+D	16:14:13.373	gatt.readCharacteristic(00002a4d-0000-1000-8000-00805f9b34fb)
+E	16:14:13.374	Exception occurred (BLUETOOTH_PRIVILEGED permission required)
+V	16:14:13.374	Reading characteristic 00002a4d-0000-1000-8000-00805f9b34fb
+D	16:14:13.374	gatt.readCharacteristic(00002a4d-0000-1000-8000-00805f9b34fb)
+E	16:14:13.374	Exception occurred (BLUETOOTH_PRIVILEGED permission required)
+V	16:14:13.374	Reading characteristic 00002a4d-0000-1000-8000-00805f9b34fb
+D	16:14:13.374	gatt.readCharacteristic(00002a4d-0000-1000-8000-00805f9b34fb)
+E	16:14:13.374	Exception occurred (BLUETOOTH_PRIVILEGED permission required)
+V	16:14:13.374	Reading characteristic 00002a4d-0000-1000-8000-00805f9b34fb
+D	16:14:13.374	gatt.readCharacteristic(00002a4d-0000-1000-8000-00805f9b34fb)
+E	16:14:13.375	Exception occurred (BLUETOOTH_PRIVILEGED permission required)
+V	16:14:13.375	Reading characteristic 0000fcc1-f7e3-55b4-6c4c-9fd140100a16
+D	16:14:13.375	gatt.readCharacteristic(0000fcc1-f7e3-55b4-6c4c-9fd140100a16)
+I	16:14:13.399	Read Response received from 0000fcc1-f7e3-55b4-6c4c-9fd140100a16, value: (0x) 00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00
+A	16:14:13.399	"(0x) 00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00" received
+V	16:14:13.400	23 characteristics read
+V	16:16:23.764	Reading all characteristics...
+V	16:16:23.764	Reading characteristic 00002a00-0000-1000-8000-00805f9b34fb
+D	16:16:23.764	gatt.readCharacteristic(00002a00-0000-1000-8000-00805f9b34fb)
+I	16:16:23.843	Read Response received from 00002a00-0000-1000-8000-00805f9b34fb, value: (0x) 57-69-69-4D-20-56-6F-69-63-65-20-52-65-6D-6F-74-65-00
+A	16:16:23.843	"WiiM Voice Remote " received
+V	16:16:23.844	Reading characteristic 00002a01-0000-1000-8000-00805f9b34fb
+D	16:16:23.844	gatt.readCharacteristic(00002a01-0000-1000-8000-00805f9b34fb)
+I	16:16:23.863	Read Response received from 00002a01-0000-1000-8000-00805f9b34fb, value: (0x) C1-03
+A	16:16:23.863	"[961] Keyboard (HID subtype)" received
+V	16:16:23.863	Reading characteristic 00002a04-0000-1000-8000-00805f9b34fb
+D	16:16:23.864	gatt.readCharacteristic(00002a04-0000-1000-8000-00805f9b34fb)
+I	16:16:23.888	Read Response received from 00002a04-0000-1000-8000-00805f9b34fb, value: (0x) 06-00-06-00-63-00-58-02
+A	16:16:23.888	"Connection Interval: 7.50ms - 7.50ms,
+Max Latency: 99,
+Supervision Timeout Multiplier: 600" received
+V	16:16:23.890	Reading characteristic 00002a29-0000-1000-8000-00805f9b34fb
+D	16:16:23.890	gatt.readCharacteristic(00002a29-0000-1000-8000-00805f9b34fb)
+I	16:16:23.908	Read Response received from 00002a29-0000-1000-8000-00805f9b34fb, value: (0x) 42-45-4C-4F-4E-20-42-54, "BELON BT"
+A	16:16:23.908	"BELON BT" received
+V	16:16:23.909	Reading characteristic 00002a24-0000-1000-8000-00805f9b34fb
+D	16:16:23.909	gatt.readCharacteristic(00002a24-0000-1000-8000-00805f9b34fb)
+I	16:16:23.932	Read Response received from 00002a24-0000-1000-8000-00805f9b34fb, value: (0x) 4D-6F-64-65-6C-20-4E-62-72-20-30-2E-39, "Model Nbr 0.9"
+A	16:16:23.932	"Model Nbr 0.9" received
+V	16:16:23.932	Reading characteristic 00002a25-0000-1000-8000-00805f9b34fb
+D	16:16:23.932	gatt.readCharacteristic(00002a25-0000-1000-8000-00805f9b34fb)
+I	16:16:23.956	Read Response received from 00002a25-0000-1000-8000-00805f9b34fb, value: (0x) 42-4C-42-65-65-53-65-72-69-61-6C-4E-75-6D, "BLBeeSerialNum"
+A	16:16:23.956	"BLBeeSerialNum" received
+V	16:16:23.956	Reading characteristic 00002a27-0000-1000-8000-00805f9b34fb
+D	16:16:23.956	gatt.readCharacteristic(00002a27-0000-1000-8000-00805f9b34fb)
+I	16:16:23.976	Read Response received from 00002a27-0000-1000-8000-00805f9b34fb, value: (0x) 32-2E-30, "2.0"
+A	16:16:23.976	"2.0" received
+V	16:16:23.976	Reading characteristic 00002a26-0000-1000-8000-00805f9b34fb
+D	16:16:23.976	gatt.readCharacteristic(00002a26-0000-1000-8000-00805f9b34fb)
+I	16:16:23.999	Read Response received from 00002a26-0000-1000-8000-00805f9b34fb, value: (0x) 31-38-36-36-37, "18667"
+A	16:16:23.999	"18667" received
+V	16:16:24.000	Reading characteristic 00002a28-0000-1000-8000-00805f9b34fb
+D	16:16:24.000	gatt.readCharacteristic(00002a28-0000-1000-8000-00805f9b34fb)
+I	16:16:24.027	Read Response received from 00002a28-0000-1000-8000-00805f9b34fb, value: (0x) 32-2E-30-2E-30-2E-39, "2.0.0.9"
+A	16:16:24.027	"2.0.0.9" received
+V	16:16:24.027	Reading characteristic 00002a23-0000-1000-8000-00805f9b34fb
+D	16:16:24.027	gatt.readCharacteristic(00002a23-0000-1000-8000-00805f9b34fb)
+I	16:16:24.055	Read Response received from 00002a23-0000-1000-8000-00805f9b34fb, value: (0x) 00-01-02-00-00-03-04-05
+A	16:16:24.056	"(0x) 00-01-02-00-00-03-04-05" received
+V	16:16:24.058	Reading characteristic 00002a2a-0000-1000-8000-00805f9b34fb
+D	16:16:24.058	gatt.readCharacteristic(00002a2a-0000-1000-8000-00805f9b34fb)
+I	16:16:24.079	Read Response received from 00002a2a-0000-1000-8000-00805f9b34fb, value: (0x) 52-54-4B-42-65-65-49-45-45-45-44-61-74-61-6C-69-73-74-00
+A	16:16:24.079	"(0x) 52-54-4B-42-65-65-49-45-45-45-44-61-74-61-6C-69-73-74-00" received
+V	16:16:24.079	Reading characteristic 00002a50-0000-1000-8000-00805f9b34fb
+D	16:16:24.079	gatt.readCharacteristic(00002a50-0000-1000-8000-00805f9b34fb)
+I	16:16:24.101	Read Response received from 00002a50-0000-1000-8000-00805f9b34fb, value: (0x) 01-17-27-B9-32-4C-4A
+A	16:16:24.101	"Bluetooth SIG Company: Reserved ID <0x2717>
+Product Id: 12985
+Product Version: 19020" received
+V	16:16:24.101	Reading characteristic 00002a19-0000-1000-8000-00805f9b34fb
+D	16:16:24.101	gatt.readCharacteristic(00002a19-0000-1000-8000-00805f9b34fb)
+I	16:16:24.122	Read Response received from 00002a19-0000-1000-8000-00805f9b34fb, value: (0x) 64, "d"
+A	16:16:24.122	"100%" received
+V	16:16:24.123	Reading characteristic 00002a4a-0000-1000-8000-00805f9b34fb
+D	16:16:24.123	gatt.readCharacteristic(00002a4a-0000-1000-8000-00805f9b34fb)
+E	16:16:24.125	Exception occurred (BLUETOOTH_PRIVILEGED permission required)
+V	16:16:24.125	Reading characteristic 00002a4b-0000-1000-8000-00805f9b34fb
+D	16:16:24.125	gatt.readCharacteristic(00002a4b-0000-1000-8000-00805f9b34fb)
+E	16:16:24.125	Exception occurred (BLUETOOTH_PRIVILEGED permission required)
+V	16:16:24.125	Reading characteristic 00002a4e-0000-1000-8000-00805f9b34fb
+D	16:16:24.125	gatt.readCharacteristic(00002a4e-0000-1000-8000-00805f9b34fb)
+I	16:16:24.144	Read Response received from 00002a4e-0000-1000-8000-00805f9b34fb, value: (0x) 01
+A	16:16:24.144	"Report Protocol Mode" received
+V	16:16:24.145	Reading characteristic 00002a22-0000-1000-8000-00805f9b34fb
+D	16:16:24.145	gatt.readCharacteristic(00002a22-0000-1000-8000-00805f9b34fb)
+I	16:16:24.168	Read Response received from 00002a22-0000-1000-8000-00805f9b34fb, value: (0x) 00-00-00-00-00-00-00-00
+A	16:16:24.168	"(0x) 00-00-00-00-00-00-00-00" received
+V	16:16:24.169	Reading characteristic 00002a32-0000-1000-8000-00805f9b34fb
+D	16:16:24.169	gatt.readCharacteristic(00002a32-0000-1000-8000-00805f9b34fb)
+I	16:16:24.193	Read Response received from 00002a32-0000-1000-8000-00805f9b34fb, value: (0x) 00-00
+A	16:16:24.193	"(0x) 00-00" received
+V	16:16:24.193	Reading characteristic 00002a4d-0000-1000-8000-00805f9b34fb
+D	16:16:24.193	gatt.readCharacteristic(00002a4d-0000-1000-8000-00805f9b34fb)
+E	16:16:24.194	Exception occurred (BLUETOOTH_PRIVILEGED permission required)
+V	16:16:24.194	Reading characteristic 00002a4d-0000-1000-8000-00805f9b34fb
+D	16:16:24.194	gatt.readCharacteristic(00002a4d-0000-1000-8000-00805f9b34fb)
+E	16:16:24.194	Exception occurred (BLUETOOTH_PRIVILEGED permission required)
+V	16:16:24.194	Reading characteristic 00002a4d-0000-1000-8000-00805f9b34fb
+D	16:16:24.194	gatt.readCharacteristic(00002a4d-0000-1000-8000-00805f9b34fb)
+E	16:16:24.194	Exception occurred (BLUETOOTH_PRIVILEGED permission required)
+V	16:16:24.194	Reading characteristic 00002a4d-0000-1000-8000-00805f9b34fb
+D	16:16:24.194	gatt.readCharacteristic(00002a4d-0000-1000-8000-00805f9b34fb)
+E	16:16:24.194	Exception occurred (BLUETOOTH_PRIVILEGED permission required)
+V	16:16:24.194	Reading characteristic 0000fcc1-f7e3-55b4-6c4c-9fd140100a16
+D	16:16:24.194	gatt.readCharacteristic(0000fcc1-f7e3-55b4-6c4c-9fd140100a16)
+I	16:16:24.216	Read Response received from 0000fcc1-f7e3-55b4-6c4c-9fd140100a16, value: (0x) 00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00
+A	16:16:24.216	"(0x) 00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00-00" received
+V	16:16:24.216	23 characteristics read
