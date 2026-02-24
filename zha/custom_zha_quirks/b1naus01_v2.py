@@ -8,12 +8,8 @@ from zigpy.zcl.clusters.homeautomation import ElectricalMeasurement
 from zigpy.zcl.clusters.smartenergy import Metering
 from zigpy.zcl.clusters.general import (
     AnalogInput,
-    Basic, 
-    Groups,
-    Identify, 
     MultistateInput, 
     OnOff,
-    PowerConfiguration, 
 )
 
 from zhaquirks import (
@@ -27,16 +23,12 @@ from zhaquirks.const import (
     ARGS,
     CLUSTER_ID,
     COMMAND,
-    COMMAND_BUTTON_DOUBLE,
-    COMMAND_BUTTON_SINGLE,
     DEVICE_TYPE,
     ENDPOINT_ID,
     INPUT_CLUSTERS,
     OUTPUT_CLUSTERS,
-    PRESS_TYPE,
     PROFILE_ID,
     VALUE,
-    ZHA_SEND_EVENT,
 )
 from zhaquirks.xiaomi import XiaomiCluster, ElectricalMeasurementCluster, MeteringCluster
 from zhaquirks.xiaomi.aqara.opple_remote import MultistateInputCluster
@@ -44,7 +36,6 @@ from zhaquirks.xiaomi.aqara.opple_remote import MultistateInputCluster
 
 # Lumi/Aqara uses 0xFCC0 as their manufacturer specific cluster ID
 LUMI_CLUSTER_ID = 0xFCC0
-
 
 
 class AqaraB1naus01Device(CustomDeviceV2):
@@ -91,11 +82,7 @@ class AqaraB1naus01Device(CustomDeviceV2):
 
 
 class AnalogInputCluster(CustomCluster, AnalogInput):
-    """Analog input cluster, only used to relay power consumption information to ElectricalMeasurementCluster.
-
-    The AnalogInput cluster responsible for reporting power consumption seems to be on endpoint 21 for newer devices
-    and either on endpoint 1 or 2 for older devices.
-    """
+    """Analog input cluster, only used to relay power consumption information to ElectricalMeasurementCluster."""
 
     def _update_attribute(self, attrid, value):
         super()._update_attribute(attrid, value)
@@ -104,7 +91,6 @@ class AnalogInputCluster(CustomCluster, AnalogInput):
             and value is not None
             and value >= 0
         ):
-            # ElectricalMeasurementCluster is assumed to be on endpoint 1
             self.endpoint.device.endpoints[1].electrical_measurement.update_attribute(
                 ElectricalMeasurement.AttributeDefs.active_power.id,
                 round(value * 10),
@@ -128,7 +114,6 @@ class ElectricalMeasurementCluster(LocalDataCluster, ElectricalMeasurement):
     def __init__(self, *args, **kwargs):
         """Init."""
         super().__init__(*args, **kwargs)
-        # put a default value so the sensors are created
         if self.POWER_ID not in self._attr_cache:
             self._update_attribute(self.POWER_ID, 0)
         if self.VOLTAGE_ID not in self._attr_cache:
@@ -154,10 +139,14 @@ class AqaraB1naus01ManufCluster(EventableCluster, XiaomiCluster):
         self._operation_mode = 0x01  # OPMODE_CONTROL_RELAY
         self._update_attribute(0x0200, self._operation_mode)
 
+    def _handle_attribute_report(self, event):
+        if event.attribute_id in (220, 223, 229, 247):
+            return
+        super()._handle_attribute_report(event)
+
     def _update_attribute(self, attrid, value):
 
-        # Skip sending events for attribute_id 223, 229, and 247 (LVBytes parsing error)
-        if attrid in (223, 229, 247):
+        if attrid in (220, 223, 229, 247):
             return
 
         super()._update_attribute(attrid, value)
@@ -177,7 +166,6 @@ class MeteringCluster(LocalDataCluster, Metering):
     def __init__(self, *args, **kwargs):
         """Init."""
         super().__init__(*args, **kwargs)
-        # put a default value so the sensor is created
         if self.CURRENT_SUMM_DELIVERED_ID not in self._attr_cache:
             self._update_attribute(self.CURRENT_SUMM_DELIVERED_ID, 0)
 
