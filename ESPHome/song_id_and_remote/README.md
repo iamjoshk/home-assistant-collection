@@ -21,3 +21,12 @@ This project uses an I2S MEMS microphone module (ZTS6631) to record snippets of 
 [See file](https://github.com/iamjoshk/home-assistant-collection/blob/main/ESPHome/song_id_and_remote/esphome-song-id-and-remote.yaml)
 
 Requires external component audio_recorder
+
+Note: starting with ESPHome 2026.2, [certain components are excluded by default and will only be included if using a standard ESPHome component](https://developers.esphome.io/blog/2026/02/20/esp32-unused-built-in-idf-components-excluded-by-default/). External components using these components need to implicitly include them, either in the component's `__init__.py` or in the yaml. The external component uses `spiffs`. Adding this to the yaml includes the component again.
+```
+esp32:
+  framework:
+    advanced: 
+      include_builtin_idf_components:
+        - spiffs
+```
