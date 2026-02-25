@@ -1,6 +1,13 @@
+substitutions:
+  name: yamaha-remote
+  devices: !secret devices
+  ap_pw: !secret ap_pw
+  ap_ssid: !secret ap_ssid
+  ota_pw: !secret ota_pw
+
 esphome:
-  name: "yamaha-remote"
-  friendly_name: Yamaha Remote
+  name: ${name}
+  friendly_name: ${ name | title | replace('-',' ')}
   name_add_mac_suffix: false
   platformio_options:
     board_build.partitions: /config/esphome/partitions.csv
@@ -9,6 +16,9 @@ esp32:
   board: seeed_xiao_esp32s3
   framework:
     type: esp-idf
+    advanced: 
+      include_builtin_idf_components:
+        - spiffs
   flash_size: 8MB
 
 external_components:
@@ -23,18 +33,25 @@ psram:
 logger: 
   level: DEBUG
 
-# Allow Over-The-Air updates
+debug:
+  update_interval: 5s
+
 ota:
 - platform: esphome
+  id: my_ota
+  password: ${ota_pw}${name}
 
 wifi:
   ssid: !secret iot_ssid
   password: !secret iot_password
-  fast_connect: True
+  manual_ip:
+    static_ip: ${ devices[name].wifi.ip }
+    gateway: ${ devices[name].wifi.gateway }
+    subnet: ${ devices[name].wifi.subnet }
   ap:
-#    ssid: "Yamaha Remote Fallback Hotspot"
-#    password: !secret ap_pass
-    
+    ssid: ${ap_ssid}_${name}
+    password: ${ap_pw}_${name}
+
 # Instantiate the audio recorder component
 audio_recorder:
   id: my_recorder
@@ -42,42 +59,116 @@ audio_recorder:
   i2s_lrclk_pin: 5
   i2s_din_pin: 6
   gain: 4
-  duration: 10 
+  duration: 8
 
 # Enable Home Assistant API
 api:
+  encryption:
+    key: ${ devices[name].api.key }
   services:
     - service: start_recording
       then:
         - lambda: 'id(my_recorder).record_audio();'
-            
+    - service: start_monitoring
+      then:
+        - lambda: 'id(my_recorder).start_monitoring();'
+    - service: stop_monitoring
+      then:
+        - lambda: 'id(my_recorder).stop_monitoring();'
+
 captive_portal:
 
 switch:
-  - platform: shutdown
-    name: "Shutdown"
-    restore_mode: ALWAYS_OFF
+  # Switch to enable/disable monitoring
+  - platform: template
+    name: "Audio Monitoring"
+    id: audio_monitoring_switch
+    restore_mode: RESTORE_DEFAULT_ON
+    optimistic: false
+    turn_on_action:
+      - lambda: 'id(my_recorder).start_monitoring();'
+      - switch.template.publish:
+          id: audio_monitoring_switch
+          state: ON
+    turn_off_action: 
+      - lambda: 'id(my_recorder).stop_monitoring();'
+      - switch.template.publish:
+          id: audio_monitoring_switch
+          state: OFF
 
-  - platform: restart
-    name: "Restart"
-    restore_mode: ALWAYS_OFF
+  - platform: template
+    name: "Receiver Power"
+    id: receiver_power
+    icon: mdi:power
+    device_class: switch
+    optimistic: True
+    turn_on_action: 
+      then:
+        - remote_transmitter.transmit_pioneer: 
+            rc_code_1: 0x5E1D
+    turn_off_action: 
+      then:
+        - remote_transmitter.transmit_pioneer: 
+            rc_code_1: 0x5E1E
+
+  - platform: template
+    name: "Receiver Mute"
+    id: receiver_mute
+    icon: mdi:volume
+    device_class: switch
+    optimistic: True
+    # actually uses Tape 2 Monitor command for instant mute 
+    turn_on_action: 
+      then:
+        - remote_transmitter.transmit_nec: 
+            address: 0x857A
+            command: 0xE619
+    turn_off_action: 
+      then:
+        - remote_transmitter.transmit_nec: 
+            address: 0x857A
+            command: 0xE619          
+
+
+binary_sensor:
+ 
+  - platform: template
+    name: "Recording in Progress"
+    id: recording_status
+    device_class: running
+    lambda: |-
+      return id(my_recorder).is_recording();
 
 sensor:
+
   - platform: template
-    name: "Recording Duration"
-    id: current_duration
-    entity_category: "diagnostic" 
-    unit_of_measurement: "s"
-    accuracy_decimals: 0
-    # Read the internal variable from the C++ component
-    lambda: |-
-      return id(my_recorder).duration_sec;
-    update_interval: 1h
+    name: "Audio RMS"
+    id: audio_rms
+    icon: "mdi:waveform"
+    unit_of_measurement: "RMS"
+    accuracy_decimals: 1
+    update_interval: 500ms
+    lambda: return id(my_recorder).get_audio_level();
+
+  - platform: template
+    name: "Audio Variance"
+    id: audio_variance
+    icon: "mdi:chart-bell-curve-cumulative"
+    unit_of_measurement: "Spread"
+    accuracy_decimals: 1
+    update_interval: 500ms
+    lambda: return id(my_recorder).get_variance();
 
 text_sensor:
   - platform: wifi_info
     mac_address: 
       name: "MAC Address"
+
+  - platform: debug
+    device:
+      name: "Device Info"
+    reset_reason:
+      name: "Reset Reason"
 
 remote_transmitter:
   id: yamaha_control
@@ -90,6 +181,13 @@ remote_transmitter:
   rmt_symbols: 128
 
 button:
+
+  - platform: shutdown
+    name: "Shutdown"
+
+  - platform: restart
+    name: "Restart"
+
   # --- DISCRETE POWER via Pioneer IR codes ---
   - platform: template
     name: "Power On"
@@ -113,7 +211,7 @@ button:
           address: 0x857A
           command: 0xE51A
           repeat:
-            times: 15
+            times: 10
             wait_time: 50ms
 
   - platform: template
@@ -124,7 +222,7 @@ button:
           address: 0x857A
           command: 0xE41B
           repeat:
-            times: 15
+            times: 10
             wait_time: 50ms
 
   - platform: template
@@ -140,6 +238,55 @@ button:
     icon: "mdi:mute"
     on_press:
       - remote_transmitter.transmit_nec:
-          address: 0x857A 
-          command: 0xE619 
-          # there is no mute on this receiver and volume down is too slow. This is a toggle for the Tape 2 monitor which mutes the sound since there is no output connected
+          address: 0x857A
+          command: 0xE619
+
+number:
+  # Renamed for clarity - Threshold for Variance
+  - platform: template
+    name: "Activity Threshold"
+    id: activity_threshold
+    optimistic: true
+    min_value: 1
+    max_value: 500
+    step: 5
+    initial_value: 50 
+    mode: box
+    icon: "mdi:waveform"
+    entity_category: config
+    on_value:
+      # This calls set_silence_threshold but we treat it as variance in C++
+      - lambda: |-
+          id(my_recorder).set_silence_threshold(x);
+    
+  # Gap detection duration
+  - platform: template
+    name:  "Gap Duration (ms)"
+    id: gap_duration_ms
+    optimistic: true
+    min_value: 500
+    max_value: 5000
+    step: 100
+    initial_value: 2000
+    mode: box
+    icon: "mdi:timer-sand"
+    entity_category: config
+    on_value:
+      - lambda: |- 
+          id(my_recorder).set_gap_duration((uint32_t)x);
+  
+  # Recording duration
+  - platform: template
+    name: "Recording Duration (sec)"
+    id: recording_duration_sec
+    optimistic: true
+    min_value: 1
+    max_value: 30
+    step: 1
+    initial_value: 10
+    mode:  box
+    icon: "mdi:timer-outline"
+    entity_category: config
+    on_value:
+      - lambda: |-
+          id(my_recorder).set_duration((int)x);
