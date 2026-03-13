@@ -5,10 +5,12 @@ When disconnected, states in Home Assistant with show `Unavailable` unless ESPHo
 
 Example yaml: [esphome_sonicare_ble.yaml](https://github.com/iamjoshk/home-assistant-collection/blob/main/ESPHome/Sonicare/esphome_sonicare_ble.yaml)
 
+These are service and Characteristic UUIDs for the bluetooth enabled Sonicare kids toothbrush. Other Sonicare toothbrushes may share these UUIDs.
+
 Battery:
 ```
 service_uuid: 180F
-characteristic_uuid: 2A19https://blog.jmittendorfer.at/artikel/2020/10/my-toothbrush-streams-gyroscope-data/
+characteristic_uuid: 2A19
 ```
 
 Active time in seconds:
@@ -23,14 +25,14 @@ service_uuid: 477ea600-a260-11e4-ae37-0002a5d50001
 characteristic_uuid: 477ea600-a260-11e4-ae37-0002a5d54010
 ```
 ```
-0x00 - off
-0x01 - standby
-0x02 - on
-0x03 - charging
-0x04 - shutdown
-0x05 - validate
-0x06 - ?
-0x07 - lights out
+0x00 = off
+0x01 = standby
+0x02 = on
+0x03 = charging
+0x04 = shutdown
+0x05 = validate
+0x06 = ?
+0x07 = lights out
 ```
 
 Model number:
@@ -39,6 +41,14 @@ service_uuid: 180A
 characteristic_uuid: 2A24
 ```
 
-
+Brushing Level (low/high):
+```
+service_uuid: 477ea600-a260-11e4-ae37-0002a5d50002
+characteristic_uuid: 477ea600-a260-11e4-ae37-0002a5d54080
+```
+```
+0x00 = high
+0x02 = low
+```
 
 Different toothbrushes appear to have different available `service_uuid`. There is a lot of good information available here: https://blog.jmittendorfer.at/artikel/2020/10/my-toothbrush-streams-gyroscope-data/
