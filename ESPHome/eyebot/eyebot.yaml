@@ -1,0 +1,295 @@
+substitutions:
+  name: eyebot
+  devices: !secret devices
+  ap_ssid: !secret ap_ssid
+  ap_pw: !secret ap_pw
+  ota_pw: !secret ota_pw
+
+esphome:
+  name: ${name}
+  friendly_name: ${ name | title }
+  name_add_mac_suffix: false
+
+esp32:
+  board: seeed_xiao_esp32s3
+  framework:
+    type: esp-idf
+
+# Enable logging
+logger:
+  level: DEBUG
+
+debug:
+  update_interval: 5s
+
+# Enable Home Assistant API
+api:
+  encryption: 
+    key: ${ devices[name].api.key }
+    
+# Allow Over-The-Air updates
+ota:
+- platform: esphome
+  password: ${ota_pw}${name}
+
+wifi:
+  ssid: !secret iot_ssid
+  password: !secret iot_password
+  post_connect_roaming: false
+  manual_ip:
+    static_ip: ${ devices[name].wifi.ip }
+    gateway: ${ devices[name].wifi.gateway }
+    subnet: ${ devices[name].wifi.subnet }
+  ap:
+    password: ${ap_pw}_${name}
+
+captive_portal:
+
+button:
+  - platform: shutdown
+    name: ${name} Shutdown
+
+  - platform: restart
+    name: ${name} Restart
+
+text_sensor:
+  - platform: wifi_info
+    mac_address: 
+      name: ${name} MAC Address
+
+  - platform: debug
+    device:
+      name: ${name} Device Info
+    reset_reason:
+      name: ${name} Reset Reason
+font:
+  - file:
+      type: gfonts
+      family: Roboto
+      weight: 900
+    id: roboto_16
+    size: 16
+
+i2c:
+  sda: GPIO05
+  scl: GPIO06
+  frequency: 400kHz
+
+globals:
+  - id: eye_amplitude
+    type: float
+    initial_value: '0.0'
+
+  - id: next_blink_time
+    type: uint32_t
+    initial_value: '0'
+
+number:
+  - platform: template
+    name: "Blink Max Interval"
+    id: blink_max_delay
+    min_value: 1.1
+    max_value: 15.0
+    step: 0.1
+    initial_value: 5.0
+    unit_of_measurement: "s"
+    optimistic: true
+    restore_value: true
+
+  - platform: template
+    name: "Look Around Speed"
+    id: look_speed
+    min_value: 1
+    max_value: 10
+    step: 1
+    initial_value: 3
+    optimistic: true
+    restore_value: true
+
+select:
+  - platform: template
+    name: "Eyebot Emotion"
+    id: robot_emotion
+    options:
+      - "Neutral"
+      - "Happy"
+      - "Angry"
+      - "Sad"
+      - "Worried"
+      - "Scared"
+      - "Bored"
+      - "Skeptic"
+      - "Squint"
+      - "Suspicious"
+    initial_option: "Neutral"
+    optimistic: True
+
+switch:
+  - platform: template
+    name: "Looking Around"
+    id: looking_around_toggle
+    optimistic: true
+    restore_mode: RESTORE_DEFAULT_OFF
+
+  - platform: template
+    name: "Auto Blink"
+    id: auto_blink_toggle
+    optimistic: true
+    restore_mode: RESTORE_DEFAULT_ON
+    
+display:
+  - platform: ssd1306_i2c 
+    model: "SSD1306 128x64" #tested with GME12864
+    address: 0x3C
+    update_interval: 32ms
+    lambda: |-
+      auto emotion = id(robot_emotion).current_option();
+      bool is_looking = id(looking_around_toggle).state;
+      bool is_blinking_enabled = id(auto_blink_toggle).state;
+      uint32_t now = millis();
+
+      // --- ANIMATION ENGINE ---
+      if (is_looking) { id(eye_amplitude) += 0.05f; } 
+      else { id(eye_amplitude) -= 0.05f; }
+      if (id(eye_amplitude) > 1.0f) id(eye_amplitude) = 1.0f;
+      if (id(eye_amplitude) < 0.0f) id(eye_amplitude) = 0.0f;
+
+      float speed_multiplier = id(look_speed).state * 0.0006f;
+      int lookOffset = (int)((18 * sin(now * speed_multiplier)) * id(eye_amplitude));
+
+      int centerX = 64;
+      int centerY = 32;
+      Color ON = COLOR_ON;
+      Color OFF = COLOR_OFF;
+
+      // HELPER: Tall Eyes
+      auto draw_eye = [&](int x, int y, int w, int h, int r) {
+        it.filled_rectangle(x + r, y, w - r*2, h, ON);
+        it.filled_rectangle(x, y + r, w, h - r*2, ON);
+        it.filled_circle(x + r, y + r, r, ON); 
+        it.filled_circle(x + w - r - 1, y + r, r, ON); 
+        it.filled_circle(x + r, y + h - r - 1, r, ON); 
+        it.filled_circle(x + w - r - 1, y + h - r - 1, r, ON); 
+      };
+
+      // HELPER: Solid plate
+      auto draw_flat_top_eye = [&](int x, int y, int w, int h, int r) {
+        it.filled_rectangle(x, y, w, h - r, ON); 
+        it.filled_rectangle(x + r, y + h - r, w - r*2, r, ON); 
+        it.filled_circle(x + r, y + h - r - 1, r, ON); 
+        it.filled_circle(x + w - r - 1, y + h - r - 1, r, ON); 
+      };
+
+      auto top_mask = [&](int x, int y_start, int y_end, int w) {
+        for (int i = 0; i < w; i++) {
+          int h = y_start + (i * (y_end - y_start) / w);
+          it.filled_rectangle(x + i, 0, 1, h, OFF);
+        }
+      };
+
+      auto schedule_blink = [&]() {
+        if (now > id(next_blink_time) + 150) {
+           uint32_t max_ms = (uint32_t)(id(blink_max_delay).state * 1000);
+           if (max_ms <= 1000) max_ms = 1100;
+           uint32_t range = max_ms - 1000;
+           id(next_blink_time) = now + (rand() % range) + 1000;
+        }
+      };
+
+      if (emotion == "Neutral") {
+        int w=38, h=38, gap=12;
+        bool currently_blinking = false;
+        if (is_blinking_enabled) {
+          if (now > id(next_blink_time) && now < id(next_blink_time) + 150) currently_blinking = true;
+          else schedule_blink();
+        }
+
+        if (currently_blinking) {
+          it.filled_rectangle(centerX + lookOffset - gap/2 - w, centerY, w, 1, ON);
+          it.filled_rectangle(centerX + lookOffset + gap/2, centerY, w, 1, ON);
+        } else {
+          draw_eye(centerX + lookOffset - gap/2 - w, centerY - h/2, w, h, 12);
+          draw_eye(centerX + lookOffset + gap/2, centerY - h/2, w, h, 12);
+        }
+      }
+
+      else if (emotion == "Skeptic") {
+        int w=38, gap=16, leftH = 34, rightH = 18, bottomY = centerY + 17; 
+        int lx = centerX + lookOffset - gap/2 - w;
+        int rx = centerX + lookOffset + gap/2;
+        draw_eye(lx, bottomY - leftH, w, leftH, 12);
+        top_mask(lx, bottomY - leftH + 6, bottomY - leftH, w); 
+        draw_eye(rx, bottomY - rightH, w, rightH, 6);
+        top_mask(rx, bottomY - rightH, bottomY - rightH + 8, w);
+      }
+
+      else if (emotion == "Squint") {
+        int w=40, r=2, gap=14, h = 2 * r + 1;
+        int y = centerY - h/2;
+        draw_eye(centerX + lookOffset - gap/2 - w, y, w, h, r);
+        draw_eye(centerX + lookOffset + gap/2, y, w, h, r);
+      }
+
+      else if (emotion == "Suspicious") {
+        int w=42, h=18, r=8, gap=10, y = centerY - 8;
+        draw_flat_top_eye(centerX + lookOffset - gap/2 - w, y, w, h, r);
+        draw_flat_top_eye(centerX + lookOffset + gap/2, y, w, h, r);
+        it.filled_rectangle(0, 0, 128, y + 4, OFF); 
+      }
+
+      else if (emotion == "Scared") {
+        int w=36, h=50, gap=4, y = centerY - 28;
+        draw_eye(centerX + lookOffset - gap/2 - w, y, w, h, 12);
+        draw_eye(centerX + lookOffset + gap/2, y, w, h, 12);
+        top_mask(centerX + lookOffset - gap/2 - w, y+10, y+2, w); 
+        top_mask(centerX + lookOffset + gap/2, y+2, y+10, w);     
+        it.filled_rectangle(0, centerY + 10, 128, 32, OFF);
+      }
+
+      else if (emotion == "Bored") {
+        int w=40, h=14, r=6, gap=12, y = centerY - h/2;
+        bool currently_blinking = false;
+        if (is_blinking_enabled) {
+          if (now > id(next_blink_time) && now < id(next_blink_time) + 150) currently_blinking = true;
+          else schedule_blink();
+        }
+        if (currently_blinking) {
+          it.filled_rectangle(centerX + lookOffset - gap/2 - w, centerY, w, 1, ON);
+          it.filled_rectangle(centerX + lookOffset + gap/2, centerY, w, 1, ON);
+        } else {
+          draw_flat_top_eye(centerX + lookOffset - gap/2 - w, y, w, h, r);
+          draw_flat_top_eye(centerX + lookOffset + gap/2, y, w, h, r);
+          it.filled_rectangle(0, 0, 128, y + 2, OFF);
+        }
+      }
+
+      else if (emotion == "Angry") {
+        int w=36, h=28, gap=14, y = centerY - 8;
+        draw_eye(centerX + lookOffset - gap/2 - w, y, w, h, 8);
+        draw_eye(centerX + lookOffset + gap/2, y, w, h, 8);
+        top_mask(centerX + lookOffset - gap/2 - w, y-5, y+14, w);
+        top_mask(centerX + lookOffset + gap/2, y+14, y-5, w);
+      }
+
+      else if (emotion == "Sad") {
+        int w=36, h=28, gap=14, y = centerY + 4;
+        draw_eye(centerX + lookOffset - gap/2 - w, y, w, h, 8);
+        draw_eye(centerX + lookOffset + gap/2, y, w, h, 8);
+        top_mask(centerX + lookOffset - gap/2 - w, y+14, y-5, w);
+        top_mask(centerX + lookOffset + gap/2, y-5, y+14, w);
+      }
+
+      else if (emotion == "Worried") {
+        int w=34, h=30, gap=16, y = centerY - 5;
+        draw_eye(centerX + lookOffset - gap/2 - w, y, w, h, 12);
+        draw_eye(centerX + lookOffset + gap/2, y, w, h, 12);
+        top_mask(centerX + lookOffset - gap/2 - w, y+10, y-2, w);
+        top_mask(centerX + lookOffset + gap/2, y-2, y+10, w);
+      }
+
+      else if (emotion == "Happy") {
+        int w=38, h=30, gap=10, y = centerY - 18;
+        draw_eye(centerX + lookOffset - gap/2 - w, y, w, h, 15);
+        draw_eye(centerX + lookOffset + gap/2, y, w, h, 15);
+        it.filled_rectangle(0, centerY, 128, 32, OFF);
+      }
