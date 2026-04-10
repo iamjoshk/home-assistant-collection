@@ -1,9 +1,18 @@
+## Summary
 An ESPHome config for an OLED screen (GME12864) to create Anki Cozmo-like eyes using the native ESPHome [display rendering engine](https://esphome.io/components/display/#display-rendering-engine).
 > GME12864 is compatible with the [SSD1306 OLED](https://esphome.io/components/display/ssd1306/) display.
 
-Eye shapes: Neutral, Happy, Angry, Sad, Worried, Scared, Skeptic, Bored, Squint, Suspicious
 
-These are approximations of the eye shapes.
+## Options:
+- **Eye shapes:** Neutral (default), Happy, Angry, Sad, Worried, Scared, Skeptic, Bored, Squint, Suspicious
+- **Look directions:** left, right, up, down, frontward (default)
+- **Look around animation:** looks left and right, enable/disable
+- **Look around speed:** 1 (slower) to 10 (faster)
+- **Blink animation:** blinks the eyes at a random interval, between 1s and configurable blink max interval
+- **Blink max interval:** 1.1s to 15s
+
+
+## These are approximations of the eye shapes.
 
 **Neutral**
 
