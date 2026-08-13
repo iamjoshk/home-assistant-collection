@@ -17,15 +17,18 @@ esp32:
     advanced:
       sram1_as_iram: true
 
+# Enable logging
 logger:
   level: DEBUG
 
 debug:
   update_interval: 5s
 
+# Enable Home Assistant API
 api:
   encryption:
     key: ${ devices[name].api.key }
+# Allow Over-The-Air updates
 ota:
 - platform: esphome
   id: my_ota
@@ -43,6 +46,7 @@ wifi:
     password: ${ap_pw}_${name}
 
 
+  
 #ble_client:
 #  - mac_address:  F7:80:F2:D9:AD:2F
 #    auto_connect: true
@@ -63,99 +67,14 @@ wifi:
 #  id: ble_proxy
 
 captive_portal:
-
-globals:
-  - id: fan_light_global
-    type: bool
   
-button:
-  - platform: shutdown
-    name: ${name} Shutdown
-
-  - platform: restart
-    name: ${name} Restart
-
-  - platform: template
-    name: Fan Light Toggle
-    id: light_toggle
-    on_press:
-      then:
-        - remote_transmitter.transmit_raw:
-            code: [353, -347, 635, -696, 302, -721, 277, -720, 279, -721, 280, -370, 637, -696, 302, -695, 303, -694, 305, -695, 303, -695, 304, -362, 639]
-            repeat: 8
-        - lambda: |-
-            if (id(fan_light_global)) {
-              id(fan_light_global) = false;
-            } else {
-              id(fan_light_global) = true;
-            }
-           
-  - platform: template
-    name: Fan Off
-    id: off_speed
-    on_press:
-      then:
-        - remote_transmitter.transmit_raw: 
-            code: [340, -324, 666, -649, 373, -639, 390, -625, 328, -679, 313, -359, 664, -663, 335, -661, 359, -565, 436, -603, 407, -276, 691, -657, 342]
-            repeat: 
-              times: 12
-              wait_time: 10ms
-
-  - platform: template
-    name: Low
-    id: low_speed
-    on_press:
-      then:
-        - remote_transmitter.transmit_raw: 
-            code: [339, -321, 672, -663, 336, -664, 336, -664, 336, -663, 336, -339, 673, -665, 334, -664, 335, -339, 669, -670, 316, -666, 344, -674, 318]
-            repeat: 
-              times: 12
-              wait_time: 10ms
-            
-  - platform: template
-    name: Medium
-    id: medium_speed
-    on_press:
-      then:
-        - remote_transmitter.transmit_raw: 
-            code: [316, -346, 668, -664, 316, -681, 340, -669, 316, -666, 340, -340, 672, -619, 383, -309, 726, -598, 384, -645, 316, -667, 361, -654, 321]
-            repeat: 
-              times: 12
-              wait_time: 10ms
-              
-  - platform: template
-    name: High
-    id: high_speed
-    on_press:
-      then:
-        - remote_transmitter.transmit_raw: 
-            code: [341, -323, 692, -650, 339, -659, 349, -660, 334, -665, 336, -340, 648, -344, 670, -673, 321, -671, 324, -694, 327, -668, 329, -668, 330]
-            repeat: 
-              times: 12
-              wait_time: 10ms
-
-  - platform: template
-    name: Direction
-    id: direction
-    on_press:
-      then:
-        - remote_transmitter.transmit_raw: 
-            code: [343, -311, 681, -664, 359, -625, 365, -627, 384, -649, 320, -342, 650, -666, 334, -691, 319, -668, 342, -313, 675, -667, 359, -641, 334]
-            repeat: 
-              times: 12
-              wait_time: 10ms
-              
-text_sensor:
-  - platform: wifi_info
-    mac_address: 
-      name: ${name} MAC Address
-
-  - platform: debug
-    device:
-      name: ${name} Device Info
-    reset_reason:
-      name: ${name} Reset Reason
-
+web_server:
+  port: 80
+  auth:
+    type: digest
+    password: fancontroller
+    username: fancontroller
+    
 spi:
   clk_pin: GPIO18
   mosi_pin: GPIO23
@@ -164,6 +83,8 @@ spi:
 cc1101:
   cs_pin: GPIO05
   frequency: 303.9MHz
+  output_power: 11
+  carrier_sense_above_threshold: false
 
 remote_transmitter:
   pin: GPIO12  # Must match GDO0
@@ -180,17 +101,271 @@ remote_transmitter:
 remote_receiver:
   pin:
     number: GPIO27
-  tolerance: 25%
-  filter: 300us
+#  tolerance: 25%
+#  filter: 300us
+    mode: INPUT_PULLUP
+  dump: rc_switch
+  tolerance: 30% 
+        
+globals:
+  - id: fan_light_global
+    type: bool
+
+  - id: fan_global
+    type: bool
+
+  - id: fan_direction_global
+    type: std::string
+    initial_value: 'forward'
+
+  - id: custom_test_payload
+    type: std::string
+    restore_value: no
+    initial_value: '"111110"'
+
+select:
+  - platform: template
+    name: "Fan Bruteforce Payload Select"
+    id: payload_selector
+    optimistic: true
+    options:
+      - "111110"  # Light Toggle (Known Baseline)
+      - "111101"  # Fan Off (Known Baseline)
+      - "000000"
+      - "000001"
+      - "000010"
+      - "000011"
+      - "000100"
+      - "000101"
+      - "000110"
+      - "000111"
+      - "001000"
+      - "001001"
+      - "001010"
+      - "001011"
+      - "001100"
+      - "001101"
+      - "001110"
+      - "001111"
+      - "010000"
+      - "010001"
+      - "010010"
+      - "010011"
+      - "010100"
+      - "010101"
+      - "010110"
+      - "010111"
+      - "011000"
+      - "011001"
+      - "011010"
+      - "011011"
+      - "011100"
+      - "011101"
+      - "011110"
+      - "100000"
+      - "100001"
+      - "100010"
+      - "100011"
+      - "100100"
+      - "100101"
+      - "100110"
+      - "100111"
+      - "101000"
+      - "101001"
+      - "101010"
+      - "101011"
+      - "101100"
+      - "101101"
+      - "101110"
+      - "110000"
+      - "110001"
+      - "110010"
+      - "110011"
+      - "110100"
+      - "110101"
+      - "110110"
+      - "111000"
+      - "111001"
+      - "111010"
+      - "111100"
+
+    set_action:
+      then:
+        - lambda: 'id(custom_test_payload) = x;'    
+    
+button:
+  - platform: shutdown
+    name: ${name} Shutdown
+
+  - platform: restart
+    name: ${name} Restart
+
+  - platform: template
+    name: "⚡ Fire Selected Test Code"
+    id: fire_test_code
+    on_press:
+      - remote_transmitter.transmit_rc_switch_raw:
+          code: !lambda |-
+            return "011110" + id(custom_test_payload);
+          protocol:
+            pulse_length: 321
+            sync: [1, 31]
+            zero: [1, 2]
+            one: [2, 1]
+            inverted: true
+          repeat: 
+            times: 12
+            wait_time: 10ms
+    
+  - platform: template
+    name: RC Switch Fan Off
+    on_press:
+      - remote_transmitter.transmit_rc_switch_raw:
+          code: '011110111101'
+          protocol:
+            pulse_length: 321
+            sync: [1, 31]
+            zero: [1, 2]
+            one: [2, 1]
+            inverted: true
+          repeat: 
+            times: 12
+            wait_time: 10ms
+      - globals.set:
+          id: fan_global
+          value: 'false'
+            
+  - platform: template
+    name: RC Switch Fan Low
+    on_press:
+      - remote_transmitter.transmit_rc_switch_raw:
+          code: '011110110111'
+          protocol:
+            pulse_length: 321
+            sync: [1, 31]
+            zero: [1, 2]
+            one: [2, 1]
+            inverted: true
+          repeat: 
+            times: 12
+            wait_time: 10ms
+      - globals.set:
+          id: fan_global
+          value: 'true'
+            
+  - platform: template
+    name: RC Switch Fan Med
+    on_press:
+      - remote_transmitter.transmit_rc_switch_raw:
+          code: '011110101111'
+          protocol:
+            pulse_length: 321
+            sync: [1, 31]
+            zero: [1, 2]
+            one: [2, 1]
+            inverted: true
+          repeat: 
+            times: 12
+            wait_time: 10ms
+      - globals.set:
+          id: fan_global
+          value: 'true'
+      
+  - platform: template
+    name: RC Switch Fan High
+    on_press:
+      - remote_transmitter.transmit_rc_switch_raw:
+          code: '011110011111'
+          protocol:
+            pulse_length: 321
+            sync: [1, 31]
+            zero: [1, 2]
+            one: [2, 1]
+            inverted: true
+          repeat: 
+            times: 12
+            wait_time: 10ms            
+      - globals.set:
+          id: fan_global
+          value: 'true'
+                  
+  - platform: template
+    name: RC Switch Fan Light Toggle
+    on_press:
+      - remote_transmitter.transmit_rc_switch_raw:
+          code: '011110111110'
+          protocol:
+            pulse_length: 321
+            sync: [1, 31]
+            zero: [1, 2]
+            one: [2, 1]
+            inverted: true
+          repeat: 
+            times: 12
+            wait_time: 10ms
+      - lambda: |-
+          if (id(fan_light_global)) {
+            id(fan_light_global) = false;
+          } else {
+            id(fan_light_global) = true;
+          }
+          
+  - platform: template
+    name: RC Switch Fan Direction
+    on_press:
+      - remote_transmitter.transmit_rc_switch_raw:
+          code: '011110111011'
+          protocol:
+            pulse_length: 321
+            sync: [1, 31]
+            zero: [1, 2]
+            one: [2, 1]
+            inverted: true
+          repeat: 
+            times: 12
+            wait_time: 10ms
+      - lambda: |-
+          if (id(fan_direction_global) == "forward") {
+            id(fan_direction_global) = "reverse";
+          } else {
+            id(fan_direction_global) = "forward";
+          }
+
+
+              
+text_sensor:
+  - platform: wifi_info
+    mac_address: 
+      name: ${name} MAC Address
+
+  - platform: debug
+    device:
+      name: ${name} Device Info
+    reset_reason:
+      name: ${name} Reset Reason
 
 
 binary_sensor:
-  platform: template
-  name: Fan Light Status
-  lambda: |-
-    if (id(fan_light_global)) {
-      return true;
-    } else {
-      return false;
-    }  
-  
+  - platform: template
+    name: Fan Light Status
+    lambda: |-
+      if (id(fan_light_global)) {
+        return true;
+      } else {
+        return false;
+      }  
+
+  - platform: template
+    name: Fan Status
+    lambda: |-
+      if (id(fan_global)) {
+        return true;
+      } else {
+        return false;
+      }
+
+  - platform: template
+    name: "Fan Direction Forward"
+    id: fan_direction_forward
+    lambda: 'return id(fan_direction_global) == "forward";'
+
