@@ -74,7 +74,8 @@ web_server:
     type: digest
     password: fancontroller
     username: fancontroller
-    
+  version: 3
+  
 spi:
   clk_pin: GPIO18
   mosi_pin: GPIO23
@@ -116,7 +117,7 @@ globals:
 
   - id: fan_direction_global
     type: std::string
-    initial_value: 'forward'
+    initial_value: '"forward"'
 
   - id: custom_test_payload
     type: std::string
@@ -218,7 +219,9 @@ button:
             wait_time: 10ms
     
   - platform: template
-    name: RC Switch Fan Off
+    name: Fan Off
+    id: fan_off
+#    internal: true
     on_press:
       - remote_transmitter.transmit_rc_switch_raw:
           code: '011110111101'
@@ -236,7 +239,9 @@ button:
           value: 'false'
             
   - platform: template
-    name: RC Switch Fan Low
+    name: Fan Low
+    id: fan_low
+    internal: true
     on_press:
       - remote_transmitter.transmit_rc_switch_raw:
           code: '011110110111'
@@ -254,7 +259,9 @@ button:
           value: 'true'
             
   - platform: template
-    name: RC Switch Fan Med
+    name: Fan Medium
+    id: fan_medium
+    internal: true
     on_press:
       - remote_transmitter.transmit_rc_switch_raw:
           code: '011110101111'
@@ -272,7 +279,9 @@ button:
           value: 'true'
       
   - platform: template
-    name: RC Switch Fan High
+    name: Fan High
+    id: fan_high
+    internal: true
     on_press:
       - remote_transmitter.transmit_rc_switch_raw:
           code: '011110011111'
@@ -290,7 +299,8 @@ button:
           value: 'true'
                   
   - platform: template
-    name: RC Switch Fan Light Toggle
+    name: Fan Light Toggle
+    id: fan_light
     on_press:
       - remote_transmitter.transmit_rc_switch_raw:
           code: '011110111110'
@@ -311,7 +321,9 @@ button:
           }
           
   - platform: template
-    name: RC Switch Fan Direction
+    name: Fan Direction
+    id: fan_direction
+    internal: true
     on_press:
       - remote_transmitter.transmit_rc_switch_raw:
           code: '011110111011'
@@ -331,7 +343,44 @@ button:
             id(fan_direction_global) = "forward";
           }
 
+  - platform: template
+    name: Fan Light Resync
+    id: fan_light_resync
+    entity_category: CONFIG
+    icon: "mdi:sync"
+    on_press:
+      - lambda: |-
+          if (id(fan_light_global)) {
+            id(fan_light_global) = false;
+          } else {
+            id(fan_light_global) = true;
+          }
 
+  - platform: template
+    name: Fan Resync
+    id: fan_resync
+    entity_category: CONFIG
+    icon: "mdi:sync"
+    on_press:
+      - lambda: |-
+          if (id(fan_global)) {
+            id(fan_global) = false;
+          } else {
+            id(fan_global) = true;
+          }
+
+  - platform: template
+    name: Fan Direction Resync
+    id: fan_direction_resync
+    entity_category: CONFIG
+    icon: "mdi:sync"
+    on_press:
+      - lambda: |-
+          if (id(fan_direction_global) == "forward") {
+            id(fan_direction_global) = "reverse";
+          } else {
+            id(fan_direction_global) = "forward";
+          }
               
 text_sensor:
   - platform: wifi_info
@@ -365,7 +414,66 @@ binary_sensor:
       }
 
   - platform: template
-    name: "Fan Direction Forward"
+    name: Fan Direction Status
     id: fan_direction_forward
     lambda: 'return id(fan_direction_global) == "forward";'
 
+fan:
+  - platform: template
+    name: Living Room Fan
+    id: living_room_fan
+    has_direction: true
+    has_oscillating: false
+    speed_count: 3
+    restore_mode: RESTORE_DEFAULT_OFF
+    icon: "mdi:ceiling-fan"
+    on_state:
+      then:
+        - lambda: |-
+            if (id(living_room_fan).state) {
+              id(fan_off).press();
+            } else if (id(living_room_fan).speed == 1) {
+              id(fan_low).press();
+            } else if (id(living_room_fan).speed == 2) {
+              id(fan_medium).press();
+            } else if (id(living_room_fan).speed == 3) {
+              id(fan_high).press();
+            }  
+    on_turn_on:
+      then:
+        - button.press: fan_low
+    on_turn_off:
+      then:
+        - button.press: fan_low
+        - button.press: fan_off
+    on_direction_set:
+      then:
+        - button.press: fan_low
+        - button.press: fan_direction
+ #   on_speed_set:
+ #     then:
+ #       - lambda: |-
+ #           if (id(living_room_fan).speed == 0) {
+ #             id(fan_off).press();
+ #           } else if (id(living_room_fan).speed == 1) {
+ #             id(fan_low).press();
+ #           } else if (id(living_room_fan).speed == 2) {
+ #             id(fan_medium).press();
+ #           } else if (id(living_room_fan).speed == 3) {
+ #             id(fan_high).press();
+ #           }
+
+light:
+  platform: binary
+  name: Living Room Fan Light
+  output: fan_light_output
+  restore_mode: RESTORE_DEFAULT_OFF
+  
+
+output:
+  platform: template
+  id: fan_light_output
+  type: binary
+  write_action:
+    - lambda: |-
+        id(fan_light).press();
