@@ -1,0 +1,196 @@
+substitutions:
+  name: fan-controller
+  devices: !secret devices
+  ap_pw: !secret ap_pw
+  ap_ssid: !secret ap_ssid
+  ota_pw: !secret ota_pw
+
+esphome:
+  name: ${name}
+  friendly_name: ${ name | title | replace('-',' ')}
+  name_add_mac_suffix: false
+
+esp32:
+  board: esp32dev
+  framework:
+    type: esp-idf
+    advanced:
+      sram1_as_iram: true
+
+logger:
+  level: DEBUG
+
+debug:
+  update_interval: 5s
+
+api:
+  encryption:
+    key: ${ devices[name].api.key }
+ota:
+- platform: esphome
+  id: my_ota
+  password: ${ota_pw}${name}
+
+wifi:
+  ssid: !secret iot_ssid
+  password: !secret iot_password
+  post_connect_roaming: false
+  manual_ip:
+    static_ip: ${ devices[name].wifi.ip }
+    gateway: ${ devices[name].wifi.gateway }
+    subnet: ${ devices[name].wifi.subnet }
+  ap:
+    password: ${ap_pw}_${name}
+
+
+#ble_client:
+#  - mac_address:  F7:80:F2:D9:AD:2F
+#    auto_connect: true
+#    id: control_unit
+
+#esp32_ble:
+#  max_connections: 4
+
+#esp32_ble_tracker:
+#  id: ${name}_tracker
+#  scan_parameters:
+#    interval: 320ms
+#    window: 30ms
+#    active: true
+
+#bluetooth_proxy:
+#  active: true
+#  id: ble_proxy
+
+captive_portal:
+
+globals:
+  - id: fan_light_global
+    type: bool
+  
+button:
+  - platform: shutdown
+    name: ${name} Shutdown
+
+  - platform: restart
+    name: ${name} Restart
+
+  - platform: template
+    name: Fan Light Toggle
+    id: light_toggle
+    on_press:
+      then:
+        - remote_transmitter.transmit_raw:
+            code: [353, -347, 635, -696, 302, -721, 277, -720, 279, -721, 280, -370, 637, -696, 302, -695, 303, -694, 305, -695, 303, -695, 304, -362, 639]
+            repeat: 8
+        - lambda: |-
+            if (id(fan_light_global)) {
+              id(fan_light_global) = false;
+            } else {
+              id(fan_light_global) = true;
+            }
+           
+  - platform: template
+    name: Fan Off
+    id: off_speed
+    on_press:
+      then:
+        - remote_transmitter.transmit_raw: 
+            code: [340, -324, 666, -649, 373, -639, 390, -625, 328, -679, 313, -359, 664, -663, 335, -661, 359, -565, 436, -603, 407, -276, 691, -657, 342]
+            repeat: 
+              times: 12
+              wait_time: 10ms
+
+  - platform: template
+    name: Low
+    id: low_speed
+    on_press:
+      then:
+        - remote_transmitter.transmit_raw: 
+            code: [339, -321, 672, -663, 336, -664, 336, -664, 336, -663, 336, -339, 673, -665, 334, -664, 335, -339, 669, -670, 316, -666, 344, -674, 318]
+            repeat: 
+              times: 12
+              wait_time: 10ms
+            
+  - platform: template
+    name: Medium
+    id: medium_speed
+    on_press:
+      then:
+        - remote_transmitter.transmit_raw: 
+            code: [316, -346, 668, -664, 316, -681, 340, -669, 316, -666, 340, -340, 672, -619, 383, -309, 726, -598, 384, -645, 316, -667, 361, -654, 321]
+            repeat: 
+              times: 12
+              wait_time: 10ms
+              
+  - platform: template
+    name: High
+    id: high_speed
+    on_press:
+      then:
+        - remote_transmitter.transmit_raw: 
+            code: [341, -323, 692, -650, 339, -659, 349, -660, 334, -665, 336, -340, 648, -344, 670, -673, 321, -671, 324, -694, 327, -668, 329, -668, 330]
+            repeat: 
+              times: 12
+              wait_time: 10ms
+
+  - platform: template
+    name: Direction
+    id: direction
+    on_press:
+      then:
+        - remote_transmitter.transmit_raw: 
+            code: [343, -311, 681, -664, 359, -625, 365, -627, 384, -649, 320, -342, 650, -666, 334, -691, 319, -668, 342, -313, 675, -667, 359, -641, 334]
+            repeat: 
+              times: 12
+              wait_time: 10ms
+              
+text_sensor:
+  - platform: wifi_info
+    mac_address: 
+      name: ${name} MAC Address
+
+  - platform: debug
+    device:
+      name: ${name} Device Info
+    reset_reason:
+      name: ${name} Reset Reason
+
+spi:
+  clk_pin: GPIO18
+  mosi_pin: GPIO23
+  miso_pin: GPIO19
+  
+cc1101:
+  cs_pin: GPIO05
+  frequency: 303.9MHz
+
+remote_transmitter:
+  pin: GPIO12  # Must match GDO0
+  id: c1101
+  carrier_duty_percent: 100%
+  on_transmit:
+    then:
+      - cc1101.begin_tx
+  on_complete:
+    then:
+      - cc1101.begin_rx
+  non_blocking: true
+        
+remote_receiver:
+  pin:
+    number: GPIO27
+  tolerance: 25%
+  filter: 300us
+
+
+binary_sensor:
+  platform: template
+  name: Fan Light Status
+  lambda: |-
+    if (id(fan_light_global)) {
+      return true;
+    } else {
+      return false;
+    }  
+  
