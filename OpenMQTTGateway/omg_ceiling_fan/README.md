@@ -1,5 +1,9 @@
 # OMG Ceiling Fan Control
 
+## Update Aug 2026
+- I switched this control from OpenMQTTGateway to ESPHome using the ESPHome C1101 component introduced in ESPHome 2025.12.
+- New project here: https://github.com/iamjoshk/home-assistant-collection/tree/main/ESPHome/fan%20controller
+
 ## Update Dec 2025:
 - Updated the format of my fan and fan light template entities because legacy template entities are being deprecated in 2026.6.
 
