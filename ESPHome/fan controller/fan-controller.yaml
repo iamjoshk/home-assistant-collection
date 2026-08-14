@@ -275,7 +275,7 @@ button:
   - platform: template
     name: Fan Light Dimmer
     id: fan_light_dimmer
-    icon: "mdi:lightbulb"
+    icon: mdi:lightbulb
     on_press:
     - repeat:
           count: 3
