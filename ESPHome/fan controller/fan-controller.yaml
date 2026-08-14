@@ -118,7 +118,7 @@ globals:
     restore_value: true
   - id: fan_direction_global
     type: "std::string"
-    initial_value: "forward"
+    initial_value: '"forward"'
 #  - id: custom_test_payload
 #    type: "std::string"
 #    restore_value: false
@@ -299,8 +299,8 @@ button:
           value: 'true'
                   
   - platform: template
-    name: Fan Light Toggle
-    id: fan_light
+    name: Fan Light On
+    id: fan_light_on
     on_press:
       - remote_transmitter.transmit_rc_switch_raw:
           code: '011110111110'
@@ -314,11 +314,7 @@ button:
             times: 12
             wait_time: 10ms
       - lambda: |-
-          if (id(fan_light_global)) {
-            id(fan_light_global) = false;
-          } else {
-            id(fan_light_global) = true;
-          }
+          id(fan_light_global) = true;
 
   - platform: template
     name: Fan Light Off
@@ -466,22 +462,15 @@ fan:
     on_speed_set:
       then:
         - lambda: |-
-            if (id(living_room_fan).speed == 0) {
-              id(fan_off).press();
-              id(fan_global) = false;
-            } else if (id(living_room_fan).speed == 1) {
+            if (id(living_room_fan).speed == 1) {
               id(fan_low).press();
-              id(fan_global) = true;
             } else if (id(living_room_fan).speed == 2) {
               id(fan_medium).press();
-              id(fan_global) = true;
             } else if (id(living_room_fan).speed == 3) {
               id(fan_high).press();
-              id(fan_global) = true;
             }
             id(living_room_fan).publish_state();
     
-
 light:
   platform: binary
   name: Living Room Fan Light
@@ -493,6 +482,10 @@ output:
   id: fan_light_output
   type: binary
   write_action:
-    - lambda: |-
-        id(fan_light).press();
-        
+    - if:
+        condition:
+          lambda: 'return state;'
+        then:
+          - lambda: id(fan_light_on).press();
+        else:
+          - lambda: id(fan_light_off).press();      
