@@ -1,5 +1,5 @@
 # UPDATE AUGUST 2026
-I switched fan control from OpenMquttGateway to ESPHome.
+I switched fan control from OpenMqttGateway to ESPHome.
 
 ___
 
