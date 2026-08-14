@@ -45,7 +45,6 @@ wifi:
   ap:
     password: ${ap_pw}_${name}
 
-
   
 #ble_client:
 #  - mac_address:  F7:80:F2:D9:AD:2F
@@ -111,89 +110,90 @@ remote_receiver:
 globals:
   - id: fan_light_global
     type: bool
-
+    restore_value: true
+    initial_value: "false"
   - id: fan_global
     type: bool
-
+    initial_value: "false"
+    restore_value: true
   - id: fan_direction_global
-    type: std::string
-    initial_value: '"forward"'
+    type: "std::string"
+    initial_value: "forward"
+#  - id: custom_test_payload
+#    type: "std::string"
+#    restore_value: false
+#    initial_value: \"111110\"
 
-  - id: custom_test_payload
-    type: std::string
-    restore_value: no
-    initial_value: '"111110"'
+#select:
+#  - platform: template
+#    name: "Fan Bruteforce Payload Select"
+#    id: payload_selector
+#    optimistic: true
+#    options:
+#      - "111110"  # Light Toggle (Known Baseline)
+#      - "111101"  # Fan Off (Known Baseline)
+#      - "000000"
+#      - "000001"
+#      - "000010"
+#      - "000011"
+#      - "000100"
+#      - "000101"
+#      - "000110"
+#      - "000111"
+#      - "001000"
+#      - "001001"
+#      - "001010"
+#      - "001011"
+#      - "001100"
+#      - "001101"
+#      - "001110"
+#      - "001111"
+#      - "010000"
+#      - "010001"
+#      - "010010"
+#      - "010011"
+#      - "010100"
+#      - "010101"
+#      - "010110"
+#      - "010111"
+#      - "011000"
+#      - "011001"
+#      - "011010"
+#      - "011011"
+#      - "011100"
+#      - "011101"
+#      - "011110"
+#      - "100000"
+#      - "100001"
+#      - "100010"
+#      - "100011"
+#      - "100100"
+#      - "100101"
+#      - "100110"
+#      - "100111"
+#      - "101000"
+#      - "101001"
+#      - "101010"
+#      - "101011"
+#      - "101100"
+#      - "101101"
+#      - "101110"
+#      - "110000"
+#      - "110001"
+#      - "110010"
+#      - "110011"
+#      - "110100"
+#      - "110101"
+#      - "110110"
+#      - "111000"
+#      - "111001"
+#      - "111010"
+#      - "111100"
 
-select:
-  - platform: template
-    name: "Fan Bruteforce Payload Select"
-    id: payload_selector
-    optimistic: true
-    options:
-      - "111110"  # Light Toggle (Known Baseline)
-      - "111101"  # Fan Off (Known Baseline)
-      - "000000"
-      - "000001"
-      - "000010"
-      - "000011"
-      - "000100"
-      - "000101"
-      - "000110"
-      - "000111"
-      - "001000"
-      - "001001"
-      - "001010"
-      - "001011"
-      - "001100"
-      - "001101"
-      - "001110"
-      - "001111"
-      - "010000"
-      - "010001"
-      - "010010"
-      - "010011"
-      - "010100"
-      - "010101"
-      - "010110"
-      - "010111"
-      - "011000"
-      - "011001"
-      - "011010"
-      - "011011"
-      - "011100"
-      - "011101"
-      - "011110"
-      - "100000"
-      - "100001"
-      - "100010"
-      - "100011"
-      - "100100"
-      - "100101"
-      - "100110"
-      - "100111"
-      - "101000"
-      - "101001"
-      - "101010"
-      - "101011"
-      - "101100"
-      - "101101"
-      - "101110"
-      - "110000"
-      - "110001"
-      - "110010"
-      - "110011"
-      - "110100"
-      - "110101"
-      - "110110"
-      - "111000"
-      - "111001"
-      - "111010"
-      - "111100"
-
-    set_action:
-      then:
-        - lambda: 'id(custom_test_payload) = x;'    
-    
+#    set_action:
+#      then:
+#        - lambda: 'id(custom_test_payload) = x;'    
+#    
 button:
   - platform: shutdown
     name: ${name} Shutdown
@@ -201,22 +201,22 @@ button:
   - platform: restart
     name: ${name} Restart
 
-  - platform: template
-    name: "⚡ Fire Selected Test Code"
-    id: fire_test_code
-    on_press:
-      - remote_transmitter.transmit_rc_switch_raw:
-          code: !lambda |-
-            return "011110" + id(custom_test_payload);
-          protocol:
-            pulse_length: 321
-            sync: [1, 31]
-            zero: [1, 2]
-            one: [2, 1]
-            inverted: true
-          repeat: 
-            times: 12
-            wait_time: 10ms
+#  - platform: template
+#    name: "⚡ Fire Selected Test Code"
+#    id: fire_test_code
+#    on_press:
+#      - remote_transmitter.transmit_rc_switch_raw:
+#          code: !lambda |-
+#            return "011110" + id(custom_test_payload);
+#          protocol:
+#            pulse_length: 321
+#            sync: [1, 31]
+#            zero: [1, 2]
+#            one: [2, 1]
+#            inverted: true
+#          repeat: 
+#            times: 12
+#            wait_time: 10ms
     
   - platform: template
     name: Fan Off
@@ -319,6 +319,24 @@ button:
           } else {
             id(fan_light_global) = true;
           }
+
+  - platform: template
+    name: Fan Light Off
+    id: fan_light_off
+    on_press:
+      - remote_transmitter.transmit_rc_switch_raw:
+          code: '011110000011'
+          protocol:
+            pulse_length: 321
+            sync: [1, 31]
+            zero: [1, 2]
+            one: [2, 1]
+            inverted: true
+          repeat: 
+            times: 12
+            wait_time: 10ms
+      - lambda: |-
+          id(fan_light_global) = false;
           
   - platform: template
     name: Fan Direction
@@ -420,48 +438,49 @@ binary_sensor:
 
 fan:
   - platform: template
-    name: Living Room Fan
+    name: "Living Room Fan"
     id: living_room_fan
     has_direction: true
     has_oscillating: false
     speed_count: 3
+#    optimistic: true
     restore_mode: RESTORE_DEFAULT_OFF
     icon: "mdi:ceiling-fan"
-    on_state:
-      then:
-        - lambda: |-
-            if (id(living_room_fan).state) {
-              id(fan_off).press();
-            } else if (id(living_room_fan).speed == 1) {
-              id(fan_low).press();
-            } else if (id(living_room_fan).speed == 2) {
-              id(fan_medium).press();
-            } else if (id(living_room_fan).speed == 3) {
-              id(fan_high).press();
-            }  
+
     on_turn_on:
       then:
         - button.press: fan_low
+        - delay: 200ms
+        - lambda: |-
+            id(fan_global) = true;
+            id(living_room_fan).publish_state();
+
     on_turn_off:
       then:
-        - button.press: fan_low
         - button.press: fan_off
-    on_direction_set:
+        - delay: 200ms
+        - lambda: |-
+            id(fan_global) = false;
+            id(living_room_fan).publish_state();
+
+    on_speed_set:
       then:
-        - button.press: fan_low
-        - button.press: fan_direction
- #   on_speed_set:
- #     then:
- #       - lambda: |-
- #           if (id(living_room_fan).speed == 0) {
- #             id(fan_off).press();
- #           } else if (id(living_room_fan).speed == 1) {
- #             id(fan_low).press();
- #           } else if (id(living_room_fan).speed == 2) {
- #             id(fan_medium).press();
- #           } else if (id(living_room_fan).speed == 3) {
- #             id(fan_high).press();
- #           }
+        - lambda: |-
+            if (id(living_room_fan).speed == 0) {
+              id(fan_off).press();
+              id(fan_global) = false;
+            } else if (id(living_room_fan).speed == 1) {
+              id(fan_low).press();
+              id(fan_global) = true;
+            } else if (id(living_room_fan).speed == 2) {
+              id(fan_medium).press();
+              id(fan_global) = true;
+            } else if (id(living_room_fan).speed == 3) {
+              id(fan_high).press();
+              id(fan_global) = true;
+            }
+            id(living_room_fan).publish_state();
+    
 
 light:
   platform: binary
@@ -469,7 +488,6 @@ light:
   output: fan_light_output
   restore_mode: RESTORE_DEFAULT_OFF
   
-
 output:
   platform: template
   id: fan_light_output
@@ -477,3 +495,4 @@ output:
   write_action:
     - lambda: |-
         id(fan_light).press();
+        
