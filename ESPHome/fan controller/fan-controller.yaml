@@ -17,7 +17,6 @@ esp32:
     advanced:
       sram1_as_iram: true
 
-      
 # Enable logging
 logger:
   level: DEBUG
@@ -83,164 +82,31 @@ spi:
   
 cc1101:
   cs_pin: GPIO05
-#  frequency: 303.9MHz
-  frequency: 433.92MHz
+  frequency: 303.9MHz
   output_power: 11
   carrier_sense_above_threshold: false
 
 remote_transmitter:
   pin: GPIO12  # Must match GDO0
-  id: c1101_tx
+  id: c1101
   carrier_duty_percent: 100%
   on_transmit:
     then:
-      - cc1101.set_frequency: 303.9MHz
-      - cc1101.begin_tx:   
+      - cc1101.begin_tx
   on_complete:
     then:
-      - cc1101.set_frequency: 433.92MHz
-      - cc1101.begin_rx:
+      - cc1101.begin_rx
   non_blocking: true
-
         
 remote_receiver:
-  id: c1101_rx
   pin:
     number: GPIO27
 #  tolerance: 25%
 #  filter: 300us
     mode: INPUT_PULLUP
-#  dump: 
-#    - raw
-  idle: 15ms
-  filter: 200us        # don't drop valid short pulses; relax for discovery
-  tolerance: 35%      # allow some timing variation
-
-  on_raw:
-    then:
-      - lambda: |-
-          // --- decoder (brute force) ---
-          const int CELL = 250;
-          std::vector<int> cells;
-          cells.reserve(x.size() * 3);
-          for (auto v : x) {
-            int dur = std::abs(v);
-            int level = v > 0 ? 1 : 0;
-            int count = (dur + CELL/2) / CELL;
-            if (count <= 0) count = 1;
-            for (int i = 0; i < count; ++i) cells.push_back(level);
-          }
-
-          const int NEED = 48 * 2;
-          if ((int)cells.size() < NEED) return;
-
-          auto crc8le = [&](uint8_t *data, int len, uint8_t poly, uint8_t init)->uint8_t {
-            uint8_t crc = init;
-            for (int i = 0; i < len; ++i) {
-              uint8_t in = data[i];
-              for (int j = 0; j < 8; ++j) {
-                uint8_t mix = (crc ^ in) & 0x01;
-                crc >>= 1;
-                if (mix) crc ^= poly;
-                in >>= 1;
-              }
-            }
-            return crc;
-          };
-
-          bool decoded = false;
-          uint8_t out_bytes[5] = {0};
-          uint8_t out_status = 0;
-          uint32_t out_esn = 0;
-
-          for (int start = 0; !decoded && start + NEED <= (int)cells.size(); ++start) {
-            for (int polarity = 0; !decoded && polarity < 2; ++polarity) {
-              int bits[48] = {0};
-              bool bits_valid = true;
-              for (int i = 0; i < 48; ++i) {
-                int idx = start + 2*i;
-                if (idx + 1 >= (int)cells.size()) { bits_valid = false; break; }
-                int first = cells[idx];
-                int second = cells[idx+1];
-                bits[i] = (polarity == 0) ? (first == 0 && second == 1 ? 1 : 0)
-                                         : (first == 1 && second == 0 ? 1 : 0);
-              }
-              if (!bits_valid) continue;
-
-              for (int pack_mode = 0; !decoded && pack_mode < 2; ++pack_mode) {
-                uint8_t bval[6] = {0};
-                for (int i = 0; i < 6; ++i) {
-                  uint8_t bv = 0;
-                  for (int bitpos = 0; bitpos < 8; ++bitpos) {
-                    int idx = i*8 + bitpos;
-                    if (idx >= 48) break;
-                    if (bits[idx]) {
-                      if (pack_mode == 0) bv |= (1 << (7 - bitpos)); else bv |= (1 << bitpos);
-                    }
-                  }
-                  bval[i] = bv;
-                }
-
-                uint8_t bytes[5];
-                bytes[0] = ((bval[0] & 0x0F) << 4) | ((bval[1] & 0xF0) >> 4);
-                bytes[1] = ((bval[1] & 0x07) << 5) | ((bval[2] & 0xF8) >> 3);
-                bytes[2] = ((bval[2] & 0x03) << 6) | ((bval[3] & 0xFC) >> 2);
-                bytes[3] = ((bval[3] & 0x01) << 7) | ((bval[4] & 0xFE) >> 1);
-                bytes[4] = (bval[5]);
-
-                if (crc8le(bytes, 5, 0xF5, 0x3D) == 0) {
-                  decoded = true;
-                  memcpy(out_bytes, bytes, 5);
-                  out_status = bytes[0];
-                  out_esn = ((uint32_t)bytes[1] << 16) | ((uint32_t)bytes[2] << 8) | bytes[3];
-                  break;
-                }
-              }
-            }
-          }
-
-          if (!decoded) return;
-          if (out_esn == 0x000000) return; // ignore garbage
-
-          // --- WHITELIST: only accept your specific device ---
-          static const uint32_t allowed[] = {
-            0x2935B1  // ESN from your rtl_433 output ("2935b1")
-          };
-          const int allowed_count = sizeof(allowed) / sizeof(allowed[0]);
-          bool matched = false;
-          for (int i = 0; i < allowed_count; ++i) if (allowed[i] == out_esn) { matched = true; break; }
-          if (!matched) return;
-
-          // --- DEDUP / COOLDOWN ---
-          const unsigned long COOLDOWN_MS = 2000;
-          static std::map<uint32_t, unsigned long> last_pub;
-          unsigned long now = millis();
-          auto it = last_pub.find(out_esn);
-          if (it != last_pub.end() && (now - it->second) < COOLDOWN_MS) return;
-          last_pub[out_esn] = now;
-
-          // --- LOG & PUBLISH (single binary sensor) ---
-          uint8_t status = out_status;
-          bool closed = (status & 0x02) == 0x02;
-          bool tamper = ((status & 0x01) != 0x01) || ((status & 0x10) == 0x10);
-          bool battery_low = (status & 0x08) == 0x08;
-          char esnbuf[16];
-          snprintf(esnbuf, sizeof(esnbuf), "%06lX", (unsigned long)out_esn);
-          ESP_LOGI("dsc.decode", "DSC decoded ESN=%s status=0x%02X closed=%d tamper=%d batt_low=%d",
-                   esnbuf, status, closed, tamper, battery_low);
-
-          id(light_switch_toggle).publish_state(closed);
-          
-radio_frequency:
-#  - platform: ir_rf_proxy
-#    name: RF Proxy Transmitter
-#    frequency: 303.9mHz
-#    remote_transmitter_id: c1101_tx
-  - platform: ir_rf_proxy
-    name: RF Proxy Receiver
-    frequency: 433.92MHz
-    remote_receiver_id: c1101_rx
-  
+  dump: rc_switch
+  tolerance: 30% 
+        
 globals:
   - id: fan_light_global
     type: bool
@@ -505,12 +371,6 @@ binary_sensor:
     id: fan_direction_forward
     lambda: 'return id(fan_direction_global) == "forward";'
 
-  - platform: template
-    name: "Light Switch Toggle"
-    id: light_switch_toggle
-    device_class: door
-    internal: false
-    
 ### FAN CONTROL
     
 fan:
@@ -569,6 +429,4 @@ output:
         then:
           - lambda: id(fan_light_on).press();
         else:
-          - lambda: id(fan_light_off).press();  
-
-
+          - lambda: id(fan_light_off).press();
