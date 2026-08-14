@@ -119,109 +119,20 @@ globals:
   - id: fan_direction_global
     type: "std::string"
     initial_value: '"forward"'
-#  - id: custom_test_payload
-#    type: "std::string"
-#    restore_value: false
-#    initial_value: \"111110\"
-
-#select:
-#  - platform: template
-#    name: "Fan Bruteforce Payload Select"
-#    id: payload_selector
-#    optimistic: true
-#    options:
-#      - "111110"  # Light Toggle (Known Baseline)
-#      - "111101"  # Fan Off (Known Baseline)
-#      - "000000"
-#      - "000001"
-#      - "000010"
-#      - "000011"
-#      - "000100"
-#      - "000101"
-#      - "000110"
-#      - "000111"
-#      - "001000"
-#      - "001001"
-#      - "001010"
-#      - "001011"
-#      - "001100"
-#      - "001101"
-#      - "001110"
-#      - "001111"
-#      - "010000"
-#      - "010001"
-#      - "010010"
-#      - "010011"
-#      - "010100"
-#      - "010101"
-#      - "010110"
-#      - "010111"
-#      - "011000"
-#      - "011001"
-#      - "011010"
-#      - "011011"
-#      - "011100"
-#      - "011101"
-#      - "011110"
-#      - "100000"
-#      - "100001"
-#      - "100010"
-#      - "100011"
-#      - "100100"
-#      - "100101"
-#      - "100110"
-#      - "100111"
-#      - "101000"
-#      - "101001"
-#      - "101010"
-#      - "101011"
-#      - "101100"
-#      - "101101"
-#      - "101110"
-#      - "110000"
-#      - "110001"
-#      - "110010"
-#      - "110011"
-#      - "110100"
-#      - "110101"
-#      - "110110"
-#      - "111000"
-#      - "111001"
-#      - "111010"
-#      - "111100"
-
-#    set_action:
-#      then:
-#        - lambda: 'id(custom_test_payload) = x;'    
-#    
+  
 button:
   - platform: shutdown
     name: ${name} Shutdown
 
   - platform: restart
     name: ${name} Restart
-
-#  - platform: template
-#    name: "⚡ Fire Selected Test Code"
-#    id: fire_test_code
-#    on_press:
-#      - remote_transmitter.transmit_rc_switch_raw:
-#          code: !lambda |-
-#            return "011110" + id(custom_test_payload);
-#          protocol:
-#            pulse_length: 321
-#            sync: [1, 31]
-#            zero: [1, 2]
-#            one: [2, 1]
-#            inverted: true
-#          repeat: 
-#            times: 12
-#            wait_time: 10ms
     
+#### FAN CONTROLS
+
   - platform: template
     name: Fan Off
     id: fan_off
-#    internal: true
+    internal: true
     on_press:
       - remote_transmitter.transmit_rc_switch_raw:
           code: '011110111101'
@@ -297,43 +208,7 @@ button:
       - globals.set:
           id: fan_global
           value: 'true'
-                  
-  - platform: template
-    name: Fan Light On
-    id: fan_light_on
-    on_press:
-      - remote_transmitter.transmit_rc_switch_raw:
-          code: '011110111110'
-          protocol:
-            pulse_length: 321
-            sync: [1, 31]
-            zero: [1, 2]
-            one: [2, 1]
-            inverted: true
-          repeat: 
-            times: 12
-            wait_time: 10ms
-      - lambda: |-
-          id(fan_light_global) = true;
 
-  - platform: template
-    name: Fan Light Off
-    id: fan_light_off
-    on_press:
-      - remote_transmitter.transmit_rc_switch_raw:
-          code: '011110000011'
-          protocol:
-            pulse_length: 321
-            sync: [1, 31]
-            zero: [1, 2]
-            one: [2, 1]
-            inverted: true
-          repeat: 
-            times: 12
-            wait_time: 10ms
-      - lambda: |-
-          id(fan_light_global) = false;
-          
   - platform: template
     name: Fan Direction
     id: fan_direction
@@ -357,6 +232,69 @@ button:
             id(fan_direction_global) = "forward";
           }
 
+### FAN LIGHT CONTROLS
+          
+  - platform: template
+    name: Fan Light On
+    id: fan_light_on
+    internal: true
+    on_press:
+      - remote_transmitter.transmit_rc_switch_raw:
+          code: '011110111110'
+          protocol:
+            pulse_length: 321
+            sync: [1, 31]
+            zero: [1, 2]
+            one: [2, 1]
+            inverted: true
+          repeat: 
+            times: 12
+            wait_time: 10ms
+      - lambda: |-
+          id(fan_light_global) = true;
+
+  - platform: template
+    name: Fan Light Off
+    id: fan_light_off
+    internal: true
+    on_press:
+      - remote_transmitter.transmit_rc_switch_raw:
+          code: '011110000011'
+          protocol:
+            pulse_length: 321
+            sync: [1, 31]
+            zero: [1, 2]
+            one: [2, 1]
+            inverted: true
+          repeat: 
+            times: 12
+            wait_time: 10ms
+      - lambda: |-
+          id(fan_light_global) = false;
+          
+  - platform: template
+    name: Fan Light Dimmer
+    id: fan_light_dimmer
+    icon: "mdi:lightbulb"
+    on_press:
+    - repeat:
+          count: 3
+          then:
+            - remote_transmitter.transmit_rc_switch_raw:
+                code: "011110111110"
+                protocol:
+                  pulse_length: 321
+                  sync: [1, 31]
+                  zero: [1, 2]
+                  one: [2, 1]
+                  inverted: true
+                repeat:
+                  times: 12
+                  wait_time: 10ms
+            - delay: 40ms             
+
+### RESYNC BUTTONS
+              
   - platform: template
     name: Fan Light Resync
     id: fan_light_resync
@@ -426,12 +364,15 @@ binary_sensor:
       } else {
         return false;
       }
+    publish_initial_state: "true"
 
   - platform: template
     name: Fan Direction Status
     id: fan_direction_forward
     lambda: 'return id(fan_direction_global) == "forward";'
 
+### FAN CONTROL
+    
 fan:
   - platform: template
     name: "Living Room Fan"
@@ -439,26 +380,19 @@ fan:
     has_direction: true
     has_oscillating: false
     speed_count: 3
-#    optimistic: true
-    restore_mode: RESTORE_DEFAULT_OFF
+    restore_mode: NO_RESTORE
     icon: "mdi:ceiling-fan"
-
     on_turn_on:
       then:
+        - fan.turn_on:
+            id: living_room_fan
+            speed: 1
         - button.press: fan_low
-        - delay: 200ms
-        - lambda: |-
-            id(fan_global) = true;
-            id(living_room_fan).publish_state();
-
     on_turn_off:
       then:
+        - fan.turn_off: 
+            id: living_room_fan
         - button.press: fan_off
-        - delay: 200ms
-        - lambda: |-
-            id(fan_global) = false;
-            id(living_room_fan).publish_state();
-
     on_speed_set:
       then:
         - lambda: |-
@@ -469,8 +403,15 @@ fan:
             } else if (id(living_room_fan).speed == 3) {
               id(fan_high).press();
             }
-            id(living_room_fan).publish_state();
-    
+    on_direction_set:
+      then:
+        - button.press: fan_low
+        - delay: 10ms
+        - button.press: fan_direction
+
+
+### LIGHT SWITCH
+            
 light:
   platform: binary
   name: Living Room Fan Light
@@ -488,4 +429,4 @@ output:
         then:
           - lambda: id(fan_light_on).press();
         else:
-          - lambda: id(fan_light_off).press();      
+          - lambda: id(fan_light_off).press();
