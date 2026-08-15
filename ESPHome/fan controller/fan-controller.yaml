@@ -132,18 +132,15 @@ remote_receiver:
             else if (a > 400 && a <= 800) ++long_count;
             else if (a >= 1800 && a <= 7000) ++preamble_count;
           }
-    
-          // Heuristics tuned to DSC-like frames (adjust if needed)
+      
           bool len_ok = (total >= 40 && total <= 300);
           bool pattern_ok = ((short_count + long_count) >= (int)(0.55 * (int)total));
           bool has_preamble = (preamble_count >= 1);
-    
           if (!(len_ok && pattern_ok && has_preamble)) return;
-    
-          // Optional short log for visibility (remove if you want quieter logs)
+      
+          // Optional short log
           size_t show = std::min<size_t>(total, 60);
-          std::string s;
-          s.reserve(show * 6);
+          std::string s; s.reserve(show * 6);
           for (size_t i = 0; i < show; ++i) {
             s += std::to_string(x[i]);
             if (i + 1 < show) s += ", ";
@@ -151,54 +148,48 @@ remote_receiver:
           if (show < total) s += ", ...";
           ESP_LOGI("dsc.raw", "Matched DSC-like frame len=%d short=%d long=%d pre=%d: %s",
                    (int)total, short_count, long_count, preamble_count, s.c_str());
-    
-          // CONFIRMATION + COOLDOWN (prevents multi-frame flips)
-          const unsigned long CONFIRM_WINDOW_MS = 2500; // window to gather matching proposals
-          const int REQUIRED_CONFIRM = 3;               // how many matching proposals required
-          const unsigned long COOLDOWN_MS = 3000;      // ignore proposals after a confirmed change
-    
-          static unsigned long last_publish_time = 0;   // time of last accepted publish
-          static bool candidate_state = false;          // current proposed state
-          static int candidate_count = 0;               // how many proposals seen
-          static unsigned long candidate_first_time = 0;
-    
+      
+          // CONFIRMATION (sliding-window) + COOLDOWN
+          const unsigned long CONFIRM_WINDOW_MS = 2000;
+          const int REQUIRED_CONFIRM = 2;
+          const unsigned long COOLDOWN_MS = 1000;
+      
+          static unsigned long last_action_time = 0;
+          static unsigned long proposals[REQUIRED_CONFIRM] = {0};
+          static int prop_idx = 0;
+          static int prop_filled = 0;
+      
           unsigned long now = millis();
-          bool current_state = id(fan_light_global);   // stored state (your global)
-          bool proposed_state = !current_state;        // this detector knows "toggle" events
-    
-          // If we're inside cooldown after a publish, ignore proposals
-          if ((now - last_publish_time) < COOLDOWN_MS) {
-            return;
-          }
-    
-          // If we have no active candidate, start one
-          if (candidate_count == 0) {
-            candidate_state = proposed_state;
-            candidate_first_time = now;
-            candidate_count = 1;
-          } else {
-            // If same proposed state and still inside the confirm window, increment count
-            if (proposed_state == candidate_state && (now - candidate_first_time) <= CONFIRM_WINDOW_MS) {
-              candidate_count++;
+          if ((now - last_action_time) < COOLDOWN_MS) return;
+      
+          proposals[prop_idx] = now;
+          prop_idx = (prop_idx + 1) % REQUIRED_CONFIRM;
+          if (prop_filled < REQUIRED_CONFIRM) ++prop_filled;
+          if (prop_filled < REQUIRED_CONFIRM) return;
+      
+          unsigned long oldest = proposals[prop_idx];
+          unsigned long newest_index = (prop_idx + REQUIRED_CONFIRM - 1) % REQUIRED_CONFIRM;
+          unsigned long newest = proposals[newest_index];
+      
+          if ((newest - oldest) <= CONFIRM_WINDOW_MS) {
+            // Check actual light state (use the global that your binary_sensor reads)
+            bool is_on = id(fan_light_global);
+      
+            if (is_on) {
+              // Light currently ON -> send OFF command
+              id(fan_light_off).press();
+              ESP_LOGI("dsc.action", "Confirmed event: Sent LIGHT OFF");
             } else {
-              // Different proposal or too late — restart the candidate
-              candidate_state = proposed_state;
-              candidate_first_time = now;
-              candidate_count = 1;
+              // Light currently OFF -> send ON command
+              id(fan_light_on).press();
+              ESP_LOGI("dsc.action", "Confirmed event: Sent LIGHT ON");
             }
-          }
-    
-          // If we have enough matching proposals, accept the change
-          if (candidate_count >= REQUIRED_CONFIRM) {
-            // Apply the confirmed state and publish once
-            id(fan_light_global) = candidate_state;
-            // publish to Home Assistant - ensure the binary_sensor below has id: fan_light_toggle
-            id(fan_light_toggle).publish_state(candidate_state);
-    
-            last_publish_time = now;
-            // reset candidate so next change is treated fresh
-            candidate_count = 0;
-            candidate_first_time = 0;
+      
+            // Enter cooldown and reset proposal buffer
+            last_action_time = now;
+            for (int i = 0; i < REQUIRED_CONFIRM; ++i) proposals[i] = 0;
+            prop_filled = 0;
+            prop_idx = 0;
           }
 
 radio_frequency:
@@ -216,17 +207,21 @@ globals:
     type: bool
 #    restore_value: true
 #    initial_value: "false"
+
   - id: fan_global
     type: bool
     initial_value: "false"
+    
     restore_value: true
   - id: fan_direction_global
     type: "std::string"
     initial_value: '"forward"'
-  - id: light_switch_global
-    type: bool
-    initial_value: "false"
-    restore_value: "true"
+    
+#  - id: light_switch_global
+#    type: bool
+#    initial_value: "false"
+#    restore_value: "true"
+    
 button:
   - platform: shutdown
     name: ${name} Shutdown
@@ -340,44 +335,68 @@ button:
           }
 
 ### FAN LIGHT CONTROLS
-          
+
+  # Replace your existing Fan Light On button block with this
   - platform: template
     name: Fan Light On
     id: fan_light_on
     internal: true
     on_press:
-      - remote_transmitter.transmit_rc_switch_raw:
-          code: '011110111110'
-          protocol:
-            pulse_length: 321
-            sync: [1, 31]
-            zero: [1, 2]
-            one: [2, 1]
-            inverted: true
-          repeat: 
-            times: 12
-            wait_time: 10ms
+      - output.turn_on: fan_light_output
       - lambda: |-
           id(fan_light_global) = true;
-
+          id(fan_light_toggle).publish_state(true);
+  
+  # Replace your existing Fan Light Off button block with this
   - platform: template
     name: Fan Light Off
     id: fan_light_off
     internal: true
     on_press:
-      - remote_transmitter.transmit_rc_switch_raw:
-          code: '011110000011'
-          protocol:
-            pulse_length: 321
-            sync: [1, 31]
-            zero: [1, 2]
-            one: [2, 1]
-            inverted: true
-          repeat: 
-            times: 12
-            wait_time: 10ms
+      - output.turn_off: fan_light_output
       - lambda: |-
           id(fan_light_global) = false;
+          id(fan_light_toggle).publish_state(false);
+
+#  - platform: template
+#    name: Fan Light On
+#    id: fan_light_on
+#    internal: true
+#    on_press:
+#      - remote_transmitter.transmit_rc_switch_raw:
+#          code: '011110111110'
+#          protocol:
+#            pulse_length: 321
+#            sync: [1, 31]
+#            zero: [1, 2]
+#            one: [2, 1]
+#            inverted: true
+#          repeat: 
+#            times: 12
+#            wait_time: 10ms
+#      - lambda: |- 
+#          id(fan_light_global) = true; 
+#          id(fan_light_toggle).publish_state(true);
+          
+#  - platform: template
+#    name: Fan Light Off
+#    id: fan_light_off
+#    internal: true
+#    on_press:
+#      - remote_transmitter.transmit_rc_switch_raw:
+#          code: '011110000011'
+#          protocol:
+#            pulse_length: 321
+#            sync: [1, 31]
+#            zero: [1, 2]
+#            one: [2, 1]
+#            inverted: true
+#          repeat: 
+#            times: 12
+#            wait_time: 10ms
+#      - lambda: |-
+#          id(fan_light_global) = false;
+#          id(fan_light_toggle).publish_state(false);
           
   - platform: template
     name: Fan Light Dimmer
@@ -454,14 +473,6 @@ text_sensor:
 
 
 binary_sensor:
-  - platform: template
-    name: Fan Light Status
-    lambda: |-
-      if (id(fan_light_global)) {
-        return true;
-      } else {
-        return false;
-      }  
 
   - platform: template
     name: Fan Status
@@ -478,17 +489,11 @@ binary_sensor:
     id: fan_direction_forward
     lambda: 'return id(fan_direction_global) == "forward";'
 
-  - platform: template
-    name: "Light Switch Toggle"
-    id: fan_light_toggle
-    internal: false
-    lambda: |-
-      if (id(light_switch_global)) {
-        return true;
-      } else {
-        return false;
-      } 
-    
+  - platform: template 
+    name: Fan Light Status 
+    id: fan_light_toggle 
+    lambda: |- 
+      return id(fan_light_global);    
     
 ### FAN CONTROL
     
@@ -534,9 +539,23 @@ fan:
 light:
   platform: binary
   name: Living Room Fan Light
+  id: living_room_fan_light
   output: fan_light_output
-  restore_mode: RESTORE_DEFAULT_OFF
+#  restore_mode: RESTORE_DEFAULT_OFF
   
+#output:
+#  platform: template
+#  id: fan_light_output
+#  type: binary
+#  write_action:
+#    - if:
+#        condition:
+#          lambda: 'return state;'
+#        then:
+#          - lambda: id(fan_light_on).press();
+#        else:
+#          - lambda: id(fan_light_off).press(); 
+
 output:
   platform: template
   id: fan_light_output
@@ -546,8 +565,27 @@ output:
         condition:
           lambda: 'return state;'
         then:
-          - lambda: id(fan_light_on).press();
+          - remote_transmitter.transmit_rc_switch_raw:
+              code: '011110111110'   # ON code (same as your Fan Light On)
+              protocol:
+                pulse_length: 321
+                sync: [1, 31]
+                zero: [1, 2]
+                one: [2, 1]
+                inverted: true
+              repeat:
+                times: 12
+                wait_time: 10ms
         else:
-          - lambda: id(fan_light_off).press();  
-
+          - remote_transmitter.transmit_rc_switch_raw:
+              code: '011110000011'   # OFF code (same as your Fan Light Off)
+              protocol:
+                pulse_length: 321
+                sync: [1, 31]
+                zero: [1, 2]
+                one: [2, 1]
+                inverted: true
+              repeat:
+                times: 12
+                wait_time: 10ms
 
