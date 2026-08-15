@@ -343,10 +343,10 @@ button:
     internal: true
     on_press:
       - output.turn_on: fan_light_output
-      - lambda: |-
-          id(fan_light_global) = true;
-          id(fan_light_toggle).publish_state(true);
-  
+#      - lambda: |-
+#          id(fan_light_global) = true;
+#          id(fan_light_toggle).publish_state(true);
+ 
   # Replace your existing Fan Light Off button block with this
   - platform: template
     name: Fan Light Off
@@ -354,9 +354,9 @@ button:
     internal: true
     on_press:
       - output.turn_off: fan_light_output
-      - lambda: |-
-          id(fan_light_global) = false;
-          id(fan_light_toggle).publish_state(false);
+#      - lambda: |-
+#          id(fan_light_global) = false;
+#          id(fan_light_toggle).publish_state(false);
 
 #  - platform: template
 #    name: Fan Light On
@@ -493,7 +493,7 @@ binary_sensor:
     name: Fan Light Status 
     id: fan_light_toggle 
     lambda: |- 
-      return id(fan_light_global);    
+      return id(fan_light_global);
     
 ### FAN CONTROL
     
@@ -576,6 +576,10 @@ output:
               repeat:
                 times: 12
                 wait_time: 10ms
+          - lambda: |-
+              id(fan_light_global) = true;
+              id(fan_light_toggle).publish_state(true);
+              
         else:
           - remote_transmitter.transmit_rc_switch_raw:
               code: '011110000011'   # OFF code (same as your Fan Light Off)
@@ -588,4 +592,6 @@ output:
               repeat:
                 times: 12
                 wait_time: 10ms
-
+          - lambda: |-
+              id(fan_light_global) = false;
+              id(fan_light_toggle).publish_state(false);
