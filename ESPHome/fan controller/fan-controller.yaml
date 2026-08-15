@@ -17,6 +17,7 @@ esp32:
     advanced:
       sram1_as_iram: true
 
+      
 # Enable logging
 logger:
   level: DEBUG
@@ -82,36 +83,139 @@ spi:
   
 cc1101:
   cs_pin: GPIO05
-  frequency: 303.9MHz
+#  frequency: 303.9MHz
+  frequency: 433.92MHz
   output_power: 11
   carrier_sense_above_threshold: false
 
 remote_transmitter:
   pin: GPIO12  # Must match GDO0
-  id: c1101
+  id: c1101_tx
   carrier_duty_percent: 100%
   on_transmit:
     then:
-      - cc1101.begin_tx
+      - cc1101.set_frequency: 303.9MHz
+      - cc1101.begin_tx:   
   on_complete:
     then:
-      - cc1101.begin_rx
+      - cc1101.set_frequency: 433.92MHz
+      - cc1101.begin_rx:
   non_blocking: true
+
         
 remote_receiver:
+  id: c1101_rx
   pin:
     number: GPIO27
 #  tolerance: 25%
 #  filter: 300us
     mode: INPUT_PULLUP
-  dump: rc_switch
-  tolerance: 30% 
-        
+#  dump: 
+#    - raw
+  idle: 15ms
+  filter: 200us        # don't drop valid short pulses; relax for discovery
+  tolerance: 35%      # allow some timing variation
+
+  on_raw:
+    then:
+      - lambda: |-
+
+          // Convert the pulse vector into simple heuristics to detect a DSC-like frame 
+          size_t total = x.size(); 
+          int short_count = 0; // ~250us pulses 
+          int long_count = 0; // ~500us pulses 
+          int preamble_count = 0; // longer gaps/preamble
+          
+          for (auto v : x) {
+            int a = std::abs(v);
+            if (a >= 150 && a <= 400) ++short_count;
+            else if (a > 400 && a <= 800) ++long_count;
+            else if (a >= 1800 && a <= 7000) ++preamble_count;
+          }
+    
+          // Heuristics tuned to DSC-like frames (adjust if needed)
+          bool len_ok = (total >= 40 && total <= 300);
+          bool pattern_ok = ((short_count + long_count) >= (int)(0.55 * (int)total));
+          bool has_preamble = (preamble_count >= 1);
+    
+          if (!(len_ok && pattern_ok && has_preamble)) return;
+    
+          // Optional short log for visibility (remove if you want quieter logs)
+          size_t show = std::min<size_t>(total, 60);
+          std::string s;
+          s.reserve(show * 6);
+          for (size_t i = 0; i < show; ++i) {
+            s += std::to_string(x[i]);
+            if (i + 1 < show) s += ", ";
+          }
+          if (show < total) s += ", ...";
+          ESP_LOGI("dsc.raw", "Matched DSC-like frame len=%d short=%d long=%d pre=%d: %s",
+                   (int)total, short_count, long_count, preamble_count, s.c_str());
+    
+          // CONFIRMATION + COOLDOWN (prevents multi-frame flips)
+          const unsigned long CONFIRM_WINDOW_MS = 2500; // window to gather matching proposals
+          const int REQUIRED_CONFIRM = 3;               // how many matching proposals required
+          const unsigned long COOLDOWN_MS = 3000;      // ignore proposals after a confirmed change
+    
+          static unsigned long last_publish_time = 0;   // time of last accepted publish
+          static bool candidate_state = false;          // current proposed state
+          static int candidate_count = 0;               // how many proposals seen
+          static unsigned long candidate_first_time = 0;
+    
+          unsigned long now = millis();
+          bool current_state = id(fan_light_global);   // stored state (your global)
+          bool proposed_state = !current_state;        // this detector knows "toggle" events
+    
+          // If we're inside cooldown after a publish, ignore proposals
+          if ((now - last_publish_time) < COOLDOWN_MS) {
+            return;
+          }
+    
+          // If we have no active candidate, start one
+          if (candidate_count == 0) {
+            candidate_state = proposed_state;
+            candidate_first_time = now;
+            candidate_count = 1;
+          } else {
+            // If same proposed state and still inside the confirm window, increment count
+            if (proposed_state == candidate_state && (now - candidate_first_time) <= CONFIRM_WINDOW_MS) {
+              candidate_count++;
+            } else {
+              // Different proposal or too late — restart the candidate
+              candidate_state = proposed_state;
+              candidate_first_time = now;
+              candidate_count = 1;
+            }
+          }
+    
+          // If we have enough matching proposals, accept the change
+          if (candidate_count >= REQUIRED_CONFIRM) {
+            // Apply the confirmed state and publish once
+            id(fan_light_global) = candidate_state;
+            // publish to Home Assistant - ensure the binary_sensor below has id: fan_light_toggle
+            id(fan_light_toggle).publish_state(candidate_state);
+    
+            last_publish_time = now;
+            // reset candidate so next change is treated fresh
+            candidate_count = 0;
+            candidate_first_time = 0;
+          }
+
+radio_frequency:
+#  - platform: ir_rf_proxy
+#    name: RF Proxy Transmitter
+#    frequency: 303.9mHz
+#    remote_transmitter_id: c1101_tx
+  - platform: ir_rf_proxy
+    name: RF Proxy Receiver
+    frequency: 433.92MHz
+    remote_receiver_id: c1101_rx
+  
 globals:
   - id: fan_light_global
     type: bool
-    restore_value: true
-    initial_value: "false"
+#    restore_value: true
+#    initial_value: "false"
   - id: fan_global
     type: bool
     initial_value: "false"
@@ -119,7 +223,10 @@ globals:
   - id: fan_direction_global
     type: "std::string"
     initial_value: '"forward"'
-  
+  - id: light_switch_global
+    type: bool
+    initial_value: "false"
+    restore_value: "true"
 button:
   - platform: shutdown
     name: ${name} Shutdown
@@ -371,6 +478,18 @@ binary_sensor:
     id: fan_direction_forward
     lambda: 'return id(fan_direction_global) == "forward";'
 
+  - platform: template
+    name: "Light Switch Toggle"
+    id: fan_light_toggle
+    internal: false
+    lambda: |-
+      if (id(light_switch_global)) {
+        return true;
+      } else {
+        return false;
+      } 
+    
+    
 ### FAN CONTROL
     
 fan:
@@ -429,4 +548,6 @@ output:
         then:
           - lambda: id(fan_light_on).press();
         else:
-          - lambda: id(fan_light_off).press();
+          - lambda: id(fan_light_off).press();  
+
+
