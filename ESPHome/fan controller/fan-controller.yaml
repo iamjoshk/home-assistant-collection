@@ -118,79 +118,69 @@ remote_receiver:
 
   on_raw:
     then:
-      - lambda: |-
-
-          // Convert the pulse vector into simple heuristics to detect a DSC-like frame 
-          size_t total = x.size(); 
-          int short_count = 0; // ~250us pulses 
-          int long_count = 0; // ~500us pulses 
-          int preamble_count = 0; // longer gaps/preamble
-          
-          for (auto v : x) {
-            int a = std::abs(v);
-            if (a >= 150 && a <= 400) ++short_count;
-            else if (a > 400 && a <= 800) ++long_count;
-            else if (a >= 1800 && a <= 7000) ++preamble_count;
+      lambda: |-
+        // Lightweight on_raw: no std::string / large allocations
+        size_t total = x.size();
+        int short_count = 0;
+        int long_count = 0;
+        int preamble_count = 0;
+      
+        for (auto v : x) {
+          int a = std::abs(v);
+          if (a >= 150 && a <= 400) ++short_count;
+          else if (a > 400 && a <= 800) ++long_count;
+          else if (a >= 1800 && a <= 7000) ++preamble_count;
+        }
+      
+        // Heuristics: tune these if needed
+        if (!(total >= 40 && total <= 300)) return;
+        if (!((short_count + long_count) >= (int)(0.55 * (int)total))) return;
+        if (preamble_count < 1) return;
+      
+        // Small, safe log (no string building)
+        ESP_LOGI("dsc.raw", "Matched DSC-like frame len=%d short=%d long=%d pre=%d",
+                 (int)total, short_count, long_count, preamble_count);
+      
+        // CONFIRMATION (sliding-window) + COOLDOWN (no heap)
+        const unsigned long CONFIRM_WINDOW_MS = 2000;
+        const int REQUIRED_CONFIRM = 3;
+        const unsigned long COOLDOWN_MS = 1000;
+      
+        static unsigned long last_action_time = 0;
+        static unsigned long proposals[REQUIRED_CONFIRM] = {0};
+        static int prop_idx = 0;
+        static int prop_filled = 0;
+      
+        unsigned long now = millis();
+      
+        // cooldown: ignore proposals if still cooling down
+        if ((now - last_action_time) < COOLDOWN_MS) return;
+      
+        // record this proposal
+        proposals[prop_idx] = now;
+        prop_idx = (prop_idx + 1) % REQUIRED_CONFIRM;
+        if (prop_filled < REQUIRED_CONFIRM) ++prop_filled;
+        if (prop_filled < REQUIRED_CONFIRM) return;
+      
+        unsigned long oldest = proposals[prop_idx]; // next index to overwrite
+        unsigned long newest_index = (prop_idx + REQUIRED_CONFIRM - 1) % REQUIRED_CONFIRM;
+        unsigned long newest = proposals[newest_index];
+      
+        if ((newest - oldest) <= CONFIRM_WINDOW_MS) {
+          // Use the canonical global to decide which RF command to send.
+          // This uses the output API (safe) so write_action updates global + publishes.
+          if (id(fan_light_global)) {
+            id(fan_light_output).turn_off();
+          } else {
+            id(fan_light_output).turn_on();
           }
       
-          bool len_ok = (total >= 40 && total <= 300);
-          bool pattern_ok = ((short_count + long_count) >= (int)(0.55 * (int)total));
-          bool has_preamble = (preamble_count >= 1);
-          if (!(len_ok && pattern_ok && has_preamble)) return;
-      
-          // Optional short log
-          size_t show = std::min<size_t>(total, 60);
-          std::string s; s.reserve(show * 6);
-          for (size_t i = 0; i < show; ++i) {
-            s += std::to_string(x[i]);
-            if (i + 1 < show) s += ", ";
-          }
-          if (show < total) s += ", ...";
-          ESP_LOGI("dsc.raw", "Matched DSC-like frame len=%d short=%d long=%d pre=%d: %s",
-                   (int)total, short_count, long_count, preamble_count, s.c_str());
-      
-          // CONFIRMATION (sliding-window) + COOLDOWN
-          const unsigned long CONFIRM_WINDOW_MS = 2000;
-          const int REQUIRED_CONFIRM = 3;
-          const unsigned long COOLDOWN_MS = 1000;
-      
-          static unsigned long last_action_time = 0;
-          static unsigned long proposals[REQUIRED_CONFIRM] = {0};
-          static int prop_idx = 0;
-          static int prop_filled = 0;
-      
-          unsigned long now = millis();
-          if ((now - last_action_time) < COOLDOWN_MS) return;
-      
-          proposals[prop_idx] = now;
-          prop_idx = (prop_idx + 1) % REQUIRED_CONFIRM;
-          if (prop_filled < REQUIRED_CONFIRM) ++prop_filled;
-          if (prop_filled < REQUIRED_CONFIRM) return;
-      
-          unsigned long oldest = proposals[prop_idx];
-          unsigned long newest_index = (prop_idx + REQUIRED_CONFIRM - 1) % REQUIRED_CONFIRM;
-          unsigned long newest = proposals[newest_index];
-      
-          if ((newest - oldest) <= CONFIRM_WINDOW_MS) {
-            // Check actual light state (use the global that your binary_sensor reads)
-            bool is_on = id(fan_light_global);
-      
-            if (is_on) {
-              // Light currently ON -> send OFF command
-              id(fan_light_output).turn_off();
-              ESP_LOGI("dsc.action", "Confirmed event: Sent LIGHT OFF");
-            } else {
-              // Light currently OFF -> send ON command
-              id(fan_light_output).turn_on();
-              ESP_LOGI("dsc.action", "Confirmed event: Sent LIGHT ON");
-            }
-      
-            // Enter cooldown and reset proposal buffer
-            last_action_time = now;
-            for (int i = 0; i < REQUIRED_CONFIRM; ++i) proposals[i] = 0;
-            prop_filled = 0;
-            prop_idx = 0;
-          }
+          // enter cooldown and reset buffer
+          last_action_time = now;
+          for (int i = 0; i < REQUIRED_CONFIRM; ++i) proposals[i] = 0;
+          prop_filled = 0;
+          prop_idx = 0;
+        }
 
 radio_frequency:
 #  - platform: ir_rf_proxy
@@ -482,7 +472,7 @@ binary_sensor:
       } else {
         return false;
       }
-    publish_initial_state: "true"
+#    publish_initial_state: "true"
 
   - platform: template
     name: Fan Direction Status
@@ -566,7 +556,7 @@ output:
           lambda: 'return state;'
         then:
           - remote_transmitter.transmit_rc_switch_raw:
-              code: '011110111110'   # ON code (same as your Fan Light On)
+              code: '011110111110'
               protocol:
                 pulse_length: 321
                 sync: [1, 31]
@@ -577,13 +567,12 @@ output:
                 times: 12
                 wait_time: 10ms
           - lambda: |-
+              ESP_LOGI("fan.output","write_action: state=ON");
               id(fan_light_global) = true;
               id(fan_light_toggle).publish_state(true);
-          - output.turn_on: fan_light_output
-              
         else:
           - remote_transmitter.transmit_rc_switch_raw:
-              code: '011110000011'   # OFF code (same as your Fan Light Off)
+              code: '011110000011'
               protocol:
                 pulse_length: 321
                 sync: [1, 31]
@@ -594,6 +583,6 @@ output:
                 times: 12
                 wait_time: 10ms
           - lambda: |-
+              ESP_LOGI("fan.output","write_action: state=OFF");
               id(fan_light_global) = false;
               id(fan_light_toggle).publish_state(false);
-          - output.turn_off: fan_light_output
