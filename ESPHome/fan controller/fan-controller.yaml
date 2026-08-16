@@ -151,7 +151,7 @@ remote_receiver:
       
           // CONFIRMATION (sliding-window) + COOLDOWN
           const unsigned long CONFIRM_WINDOW_MS = 2000;
-          const int REQUIRED_CONFIRM = 2;
+          const int REQUIRED_CONFIRM = 3;
           const unsigned long COOLDOWN_MS = 1000;
       
           static unsigned long last_action_time = 0;
@@ -177,11 +177,11 @@ remote_receiver:
       
             if (is_on) {
               // Light currently ON -> send OFF command
-              id(fan_light_off).press();
+              id(fan_light_output).turn_off();
               ESP_LOGI("dsc.action", "Confirmed event: Sent LIGHT OFF");
             } else {
               // Light currently OFF -> send ON command
-              id(fan_light_on).press();
+              id(fan_light_output).turn_on();
               ESP_LOGI("dsc.action", "Confirmed event: Sent LIGHT ON");
             }
       
@@ -579,6 +579,7 @@ output:
           - lambda: |-
               id(fan_light_global) = true;
               id(fan_light_toggle).publish_state(true);
+          - output.turn_on: fan_light_output
               
         else:
           - remote_transmitter.transmit_rc_switch_raw:
@@ -595,3 +596,4 @@ output:
           - lambda: |-
               id(fan_light_global) = false;
               id(fan_light_toggle).publish_state(false);
+          - output.turn_off: fan_light_output
