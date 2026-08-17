@@ -17,6 +17,9 @@ esp32:
     advanced:
       sram1_as_iram: true
 
+preferences:
+  flash_write_interval: 0s
+  
       
 # Enable logging
 logger:
@@ -89,6 +92,7 @@ cc1101:
   carrier_sense_above_threshold: false
 
 remote_transmitter:
+# switch to 303.9MHz for tx fan controls, otherwise listen at 433.92MHz for the physical switch
   pin: GPIO12  # Must match GDO0
   id: c1101_tx
   carrier_duty_percent: 100%
@@ -107,14 +111,12 @@ remote_receiver:
   id: c1101_rx
   pin:
     number: GPIO27
-#  tolerance: 25%
-#  filter: 300us
     mode: INPUT_PULLUP
 #  dump: 
 #    - raw
   idle: 15ms
-  filter: 200us        # don't drop valid short pulses; relax for discovery
-  tolerance: 35%      # allow some timing variation
+  filter: 200us 
+  tolerance: 35% 
 
   on_raw:
     then:
@@ -169,10 +171,13 @@ remote_receiver:
         if ((newest - oldest) <= CONFIRM_WINDOW_MS) {
           // Use the canonical global to decide which RF command to send.
           // This uses the output API (safe) so write_action updates global + publishes.
-          if (id(fan_light_global)) {
-            id(fan_light_output).turn_off();
+          bool is_on = id(fan_light_global);
+          if (is_on) {
+            id(fan_light_switch).turn_off();
+            ESP_LOGI("dsc.action", "Confirmed event: Requested LIGHT OFF");
           } else {
-            id(fan_light_output).turn_on();
+            id(fan_light_switch).turn_on();
+            ESP_LOGI("dsc.action", "Confirmed event: Requested LIGHT ON");
           }
       
           // enter cooldown and reset buffer
@@ -183,10 +188,6 @@ remote_receiver:
         }
 
 radio_frequency:
-#  - platform: ir_rf_proxy
-#    name: RF Proxy Transmitter
-#    frequency: 303.9mHz
-#    remote_transmitter_id: c1101_tx
   - platform: ir_rf_proxy
     name: RF Proxy Receiver
     frequency: 433.92MHz
@@ -195,22 +196,15 @@ radio_frequency:
 globals:
   - id: fan_light_global
     type: bool
-#    restore_value: true
-#    initial_value: "false"
-
+    restore_value: true
+    initial_value: "false"
   - id: fan_global
     type: bool
-    initial_value: "false"
-    
     restore_value: true
+    initial_value: "false"
   - id: fan_direction_global
     type: "std::string"
-    initial_value: '"forward"'
-    
-#  - id: light_switch_global
-#    type: bool
-#    initial_value: "false"
-#    restore_value: "true"
+    initial_value: "\"forward\""
     
 button:
   - platform: shutdown
@@ -325,28 +319,21 @@ button:
           }
 
 ### FAN LIGHT CONTROLS
+# the light controls run through the switch, output, and binary light
 
-  # Replace your existing Fan Light On button block with this
-  - platform: template
-    name: Fan Light On
-    id: fan_light_on
-    internal: true
-    on_press:
-      - output.turn_on: fan_light_output
-#      - lambda: |-
-#          id(fan_light_global) = true;
-#          id(fan_light_toggle).publish_state(true);
- 
-  # Replace your existing Fan Light Off button block with this
-  - platform: template
-    name: Fan Light Off
-    id: fan_light_off
-    internal: true
-    on_press:
-      - output.turn_off: fan_light_output
-#      - lambda: |-
-#          id(fan_light_global) = false;
-#          id(fan_light_toggle).publish_state(false);
+#  - platform: template
+#    name: Fan Light On
+#    id: fan_light_on
+#    internal: true
+#    on_press:
+#      - output.turn_on: fan_light_output
+
+#  - platform: template
+#    name: Fan Light Off
+#    id: fan_light_off
+#    internal: true
+#    on_press:
+#      - output.turn_off: fan_light_output
 
 #  - platform: template
 #    name: Fan Light On
@@ -387,7 +374,8 @@ button:
 #      - lambda: |-
 #          id(fan_light_global) = false;
 #          id(fan_light_toggle).publish_state(false);
-          
+
+# this automates the dimming process, the light brightens until max and then reverses until dimmest, then starts brightening again
   - platform: template
     name: Fan Light Dimmer
     id: fan_light_dimmer
@@ -410,7 +398,7 @@ button:
             - delay: 40ms             
 
 ### RESYNC BUTTONS
-              
+# config buttons if the states get out of sync              
   - platform: template
     name: Fan Light Resync
     id: fan_light_resync
@@ -463,27 +451,26 @@ text_sensor:
 
 
 binary_sensor:
-
+# binary sensors that can help with states or automations
   - platform: template
     name: Fan Status
+    id: fan_status
     lambda: |-
-      if (id(fan_global)) {
-        return true;
-      } else {
-        return false;
-      }
-#    publish_initial_state: "true"
+      return id(fan_global);
+
 
   - platform: template
     name: Fan Direction Status
     id: fan_direction_forward
-    lambda: 'return id(fan_direction_global) == "forward";'
+    lambda: |-
+      'return id(fan_direction_global) == "forward";
 
   - platform: template 
     name: Fan Light Status 
     id: fan_light_toggle 
     lambda: |- 
       return id(fan_light_global);
+    
     
 ### FAN CONTROL
     
@@ -494,7 +481,7 @@ fan:
     has_direction: true
     has_oscillating: false
     speed_count: 3
-    restore_mode: NO_RESTORE
+    restore_mode: RESTORE_DEFAULT_OFF
     icon: "mdi:ceiling-fan"
     on_turn_on:
       then:
@@ -518,6 +505,7 @@ fan:
               id(fan_high).press();
             }
     on_direction_set:
+# fan needs to be on for the direction to be changed      
       then:
         - button.press: fan_low
         - delay: 10ms
@@ -531,20 +519,51 @@ light:
   name: Living Room Fan Light
   id: living_room_fan_light
   output: fan_light_output
-#  restore_mode: RESTORE_DEFAULT_OFF
-  
-#output:
-#  platform: template
-#  id: fan_light_output
-#  type: binary
-#  write_action:
-#    - if:
-#        condition:
-#          lambda: 'return state;'
-#        then:
-#          - lambda: id(fan_light_on).press();
-#        else:
-#          - lambda: id(fan_light_off).press(); 
+  restore_mode: RESTORE_DEFAULT_OFF
+  on_turn_on:
+    then:
+      - remote_transmitter.transmit_rc_switch_raw:
+          code: '011110111110'
+          protocol:
+            pulse_length: 321
+            sync: [1, 31]
+            zero: [1, 2]
+            one: [2, 1]
+            inverted: true
+          repeat:
+            times: 12
+            wait_time: 10ms
+      - globals.set:
+          id: fan_light_global
+          value: "true"
+  on_turn_off:
+    then:
+      - remote_transmitter.transmit_rc_switch_raw:
+# code 011110000011 turns both light and fan off, so if statement accounts for this (if fan is on, it is almost always on low)
+          code: '011110000011'
+          protocol:
+            pulse_length: 321
+            sync:
+              - 1
+              - 31
+            zero:
+              - 1
+              - 2
+            one:
+              - 2
+              - 1
+            inverted: true
+          repeat:
+            times: 12
+            wait_time: 10ms
+      - globals.set:
+          id: fan_light_global
+          value: 'false'
+      - if:
+          condition:
+            binary_sensor.is_on: fan_status
+          then:
+            - button.press: fan_low        
 
 output:
   platform: template
@@ -555,34 +574,26 @@ output:
         condition:
           lambda: 'return state;'
         then:
-          - remote_transmitter.transmit_rc_switch_raw:
-              code: '011110111110'
-              protocol:
-                pulse_length: 321
-                sync: [1, 31]
-                zero: [1, 2]
-                one: [2, 1]
-                inverted: true
-              repeat:
-                times: 12
-                wait_time: 10ms
           - lambda: |-
               ESP_LOGI("fan.output","write_action: state=ON");
-              id(fan_light_global) = true;
-              id(fan_light_toggle).publish_state(true);
         else:
-          - remote_transmitter.transmit_rc_switch_raw:
-              code: '011110000011'
-              protocol:
-                pulse_length: 321
-                sync: [1, 31]
-                zero: [1, 2]
-                one: [2, 1]
-                inverted: true
-              repeat:
-                times: 12
-                wait_time: 10ms
           - lambda: |-
               ESP_LOGI("fan.output","write_action: state=OFF");
-              id(fan_light_global) = false;
-              id(fan_light_toggle).publish_state(false);
+
+
+switch:
+  platform: template
+  id: fan_light_switch
+  internal: true
+  turn_on_action:
+    - output.turn_on: fan_light_output
+    - globals.set:
+        id: fan_light_global
+        value: 'true'
+    - light.turn_on: living_room_fan_light
+  turn_off_action:
+    - output.turn_off: fan_light_output
+    - globals.set:
+        id: fan_light_global
+        value: 'false'      
+    - light.turn_off: living_room_fan_light
