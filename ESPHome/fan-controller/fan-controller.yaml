@@ -10,31 +10,6 @@ esphome:
   friendly_name: ${ name | title | replace('-',' ')}
   name_add_mac_suffix: false
 
-  on_boot:
-    then:
-      - lambda: |-
-          // Publish light state to Home Assistant (no RF transmitted)
-          if (id(fan_light_global)) {
-            id(living_room_fan_light).publish_state(true);
-          } else {
-            id(living_room_fan_light).publish_state(false);
-          }
-
-          // Publish fan on/off state to Home Assistant (no RF transmitted)
-          if (id(fan_global)) {
-            id(living_room_fan).publish_state(true);
-          } else {
-            id(living_room_fan).publish_state(false);
-          }
-
-          // Publish status binary sensors
-          id(fan_direction_forward).publish_state(id(fan_direction_global) == "forward");
-
-          id(fan_light_toggle).publish_state(id(fan_light_global));
-
-          id(fan_status).publish_state(id(fan_global));
-
-
 esp32:
   board: esp32dev
   framework:
@@ -43,12 +18,11 @@ esp32:
       sram1_as_iram: true
 
 preferences:
-  flash_write_interval: 0s
+  flash_write_interval: 30s
   
-      
 # Enable logging
 logger:
-  level: DEBUG
+  level: VERBOSE
 
 debug:
   update_interval: 5s
@@ -110,7 +84,7 @@ spi:
   miso_pin: GPIO19
   
 cc1101:
-  cs_pin: GPIO05
+  cs_pin: GPIO25
 #  frequency: 303.9MHz
   frequency: 433.92MHz
   output_power: 11
@@ -118,7 +92,7 @@ cc1101:
 
 remote_transmitter:
 # switch to 303.9MHz for tx fan controls, otherwise listen at 433.92MHz for the physical switch
-  pin: GPIO12  # Must match GDO0
+  pin: GPIO22  # Must match GDO0
   id: c1101_tx
   carrier_duty_percent: 100%
   on_transmit:
@@ -223,14 +197,19 @@ globals:
     type: bool
     restore_value: true
     initial_value: "false"
+    update_interval: 5s
+    
   - id: fan_global
     type: bool
     restore_value: true
     initial_value: "false"
+    update_interval: 5s
+    
   - id: fan_direction_global
     type: "std::string"
     restore_value: true
     initial_value: "\"forward\""
+    update_interval: 5s
     
 button:
   - platform: shutdown
@@ -431,12 +410,13 @@ button:
     entity_category: CONFIG
     icon: "mdi:sync"
     on_press:
-      - lambda: |-
-          if (id(fan_light_global)) {
-            id(fan_light_global) = false;
-          } else {
-            id(fan_light_global) = true;
-          }
+      then:
+        - lambda: |
+            if (id(fan_light_global)) {
+              id(fan_light_global) = false;
+            } else {
+              id(fan_light_global) = true;
+            }
 
   - platform: template
     name: Fan Resync
@@ -515,11 +495,17 @@ fan:
             id: living_room_fan
             speed: 1
         - button.press: fan_low
+        - globals.set:
+            id: fan_global
+            value: "true"
     on_turn_off:
       then:
         - fan.turn_off: 
             id: living_room_fan
         - button.press: fan_off
+        - globals.set:
+            id: fan_global
+            value: "false"
     on_speed_set:
       then:
         - lambda: |-
@@ -602,15 +588,22 @@ output:
         then:
           - lambda: |-
               ESP_LOGI("fan.output","write_action: state=ON");
+          - globals.set: 
+              id: fan_light_global
+              value: "false"
         else:
           - lambda: |-
               ESP_LOGI("fan.output","write_action: state=OFF");
-
+          - globals.set: 
+              id: fan_light_global
+              value: "false"
 
 switch:
   platform: template
   id: fan_light_switch
   internal: true
+  optimistic: true
+  restore_mode: RESTORE_DEFAULT_OFF
   turn_on_action:
     - output.turn_on: fan_light_output
     - globals.set:
@@ -623,3 +616,4 @@ switch:
         id: fan_light_global
         value: 'false'      
     - light.turn_off: living_room_fan_light
+
