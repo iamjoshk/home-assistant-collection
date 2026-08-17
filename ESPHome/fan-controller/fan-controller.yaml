@@ -10,6 +10,31 @@ esphome:
   friendly_name: ${ name | title | replace('-',' ')}
   name_add_mac_suffix: false
 
+  on_boot:
+    then:
+      - lambda: |-
+          // Publish light state to Home Assistant (no RF transmitted)
+          if (id(fan_light_global)) {
+            id(living_room_fan_light).publish_state(true);
+          } else {
+            id(living_room_fan_light).publish_state(false);
+          }
+
+          // Publish fan on/off state to Home Assistant (no RF transmitted)
+          if (id(fan_global)) {
+            id(living_room_fan).publish_state(true);
+          } else {
+            id(living_room_fan).publish_state(false);
+          }
+
+          // Publish status binary sensors
+          id(fan_direction_forward).publish_state(id(fan_direction_global) == "forward");
+
+          id(fan_light_toggle).publish_state(id(fan_light_global));
+
+          id(fan_status).publish_state(id(fan_global));
+
+
 esp32:
   board: esp32dev
   framework:
@@ -204,6 +229,7 @@ globals:
     initial_value: "false"
   - id: fan_direction_global
     type: "std::string"
+    restore_value: true
     initial_value: "\"forward\""
     
 button:
@@ -463,7 +489,7 @@ binary_sensor:
     name: Fan Direction Status
     id: fan_direction_forward
     lambda: |-
-      'return id(fan_direction_global) == "forward";
+      return id(fan_direction_global) == "forward";
 
   - platform: template 
     name: Fan Light Status 
