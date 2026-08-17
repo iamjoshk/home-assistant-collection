@@ -1,6 +1,6 @@
 # ESPHome Controller for RF Ceiling Fan
 
-This is an ESPHome and C1101 controller for a dumb RF ceiling fan.
+This is an ESP32 with C1101 controller for a dumb RF ceiling fan and light.
 ___
 
 ### Notes
@@ -14,3 +14,5 @@ ___
  
 + Physical light control is handled with a paddle switch connected to a contact sensor.
   + https://github.com/iamjoshk/home-assistant-collection/blob/main/rtl_433/contact_sensor_light_switch_toggle.md
+
++ Everything runs on the ESP32 so if HA is down for some reason, the light and fan will still work.
