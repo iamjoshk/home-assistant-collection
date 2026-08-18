@@ -9,20 +9,47 @@ esphome:
   name: ${name}
   friendly_name: ${ name | title | replace('-',' ')}
   name_add_mac_suffix: false
-
+  on_boot:
+      priority: 100.0 # Runs after preferences/globals are restored from NVS memory
+      then:
+        - lambda: |-
+            ESP_LOGI("boot_sync", "Restoring states from globals...");
+  
+            // 1. Restore Fan State silently to match global
+            if (id(fan_global)) {
+              id(living_room_fan).state = true;
+              id(living_room_fan).publish_state();
+              ESP_LOGI("boot_sync", "Restored Fan state to ON");
+            } else {
+              id(living_room_fan).state = false;
+              id(living_room_fan).publish_state();
+              ESP_LOGI("boot_sync", "Restored Fan state to OFF");
+            }
+  
+            // 2. Restore Light State silently to match global
+            if (id(fan_light_global)) {
+              id(living_room_fan_light).current_values.set_state(true);
+              id(living_room_fan_light).publish_state();
+              ESP_LOGI("boot_sync", "Restored Light state to ON");
+            } else {
+              id(living_room_fan_light).current_values.set_state(false);
+              id(living_room_fan_light).publish_state();
+              ESP_LOGI("boot_sync", "Restored Light state to OFF");
+            }
+            
 esp32:
   board: esp32dev
   framework:
     type: esp-idf
     advanced:
       sram1_as_iram: true
-
+        
 preferences:
   flash_write_interval: 30s
   
 # Enable logging
 logger:
-  level: VERBOSE
+  level: DEBUG
 
 debug:
   update_interval: 5s
@@ -206,9 +233,9 @@ globals:
     update_interval: 5s
     
   - id: fan_direction_global
-    type: "std::string"
+    type: bool
     restore_value: true
-    initial_value: "\"forward\""
+    initial_value: "true"
     update_interval: 5s
     
 button:
@@ -317,12 +344,11 @@ button:
             times: 12
             wait_time: 10ms
       - lambda: |-
-          if (id(fan_direction_global) == "forward") {
-            id(fan_direction_global) = "reverse";
+          if (id(fan_direction_global)) {
+            id(fan_direction_global) = false;
           } else {
-            id(fan_direction_global) = "forward";
+            id(fan_direction_global) = true;
           }
-
 ### FAN LIGHT CONTROLS
 # the light controls run through the switch, output, and binary light
 
@@ -437,12 +463,13 @@ button:
     entity_category: CONFIG
     icon: "mdi:sync"
     on_press:
-      - lambda: |-
-          if (id(fan_direction_global) == "forward") {
-            id(fan_direction_global) = "reverse";
-          } else {
-            id(fan_direction_global) = "forward";
-          }
+      then:
+        - lambda: |
+            if (id(fan_direction_global)) {
+              id(fan_direction_global) = false;
+            } else {
+              id(fan_direction_global) = true;
+            }
               
 text_sensor:
   - platform: wifi_info
@@ -454,30 +481,30 @@ text_sensor:
       name: ${name} Device Info
     reset_reason:
       name: ${name} Reset Reason
-
-
+      
 binary_sensor:
 # binary sensors that can help with states or automations
   - platform: template
     name: Fan Status
     id: fan_status
+    entity_category: ""
     lambda: |-
       return id(fan_global);
-
-
-  - platform: template
-    name: Fan Direction Status
-    id: fan_direction_forward
-    lambda: |-
-      return id(fan_direction_global) == "forward";
 
   - platform: template 
     name: Fan Light Status 
     id: fan_light_toggle 
+    entity_category: ""
     lambda: |- 
       return id(fan_light_global);
     
-    
+  - platform: template
+    name: Fan Direction Summer
+    id: fan_direction_forward
+    entity_category: ""
+    lambda: |-
+      return id(fan_direction_global);
+      
 ### FAN CONTROL
     
 fan:
@@ -487,7 +514,7 @@ fan:
     has_direction: true
     has_oscillating: false
     speed_count: 3
-    restore_mode: RESTORE_DEFAULT_OFF
+    restore_mode: ALWAYS_OFF
     icon: "mdi:ceiling-fan"
     on_turn_on:
       then:
@@ -531,7 +558,7 @@ light:
   name: Living Room Fan Light
   id: living_room_fan_light
   output: fan_light_output
-  restore_mode: RESTORE_DEFAULT_OFF
+  restore_mode: ALWAYS_OFF
   on_turn_on:
     then:
       - remote_transmitter.transmit_rc_switch_raw:
@@ -590,7 +617,7 @@ output:
               ESP_LOGI("fan.output","write_action: state=ON");
           - globals.set: 
               id: fan_light_global
-              value: "false"
+              value: "true"
         else:
           - lambda: |-
               ESP_LOGI("fan.output","write_action: state=OFF");
@@ -617,3 +644,36 @@ switch:
         value: 'false'      
     - light.turn_off: living_room_fan_light
 
+interval:
+  - interval: 1s
+    then:
+      - lambda: |-
+          // fan_global (bool) - use -1 as "unknown" sentinel so startup logs the initial value
+          static int last_fan = -1;
+          int cur_fan = id(fan_global) ? 1 : 0;
+          if (cur_fan != last_fan) {
+            ESP_LOGI("globals", "fan_global: %s -> %s",
+                     last_fan == -1 ? "<unknown>" : (last_fan ? "ON" : "OFF"),
+                     cur_fan ? "ON" : "OFF");
+            last_fan = cur_fan;
+          }
+
+          // fan_light_global (bool)
+          static int last_fan_light = -1;
+          int cur_fan_light = id(fan_light_global) ? 1 : 0;
+          if (cur_fan_light != last_fan_light) {
+            ESP_LOGI("globals", "fan_light_global: %s -> %s",
+                     last_fan_light == -1 ? "<unknown>" : (last_fan_light ? "ON" : "OFF"),
+                     cur_fan_light ? "ON" : "OFF");
+            last_fan_light = cur_fan_light;
+          }
+
+          // fan_direction_global
+          static int last_fan_direction = -1;
+          int cur_fan_direction = id(fan_direction_global) ? 1 : 0;
+          if (cur_fan_direction != last_fan_direction) {
+            ESP_LOGI("globals", "fan_direction_global: %s -> %s",
+                     last_fan_direction == -1 ? "<unknown>" : (last_fan_direction ? "ON" : "OFF"),
+                     cur_fan_direction ? "ON" : "OFF");
+            last_fan_direction = cur_fan_direction;
+          }
