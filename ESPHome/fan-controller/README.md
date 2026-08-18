@@ -16,3 +16,7 @@ ___
   + https://github.com/iamjoshk/home-assistant-collection/blob/main/rtl_433/contact_sensor_light_switch_toggle.md
 
 + Everything runs on the ESP32 so if HA is down for some reason, the light and fan will still work.
+  
++ Fan and light states persist across ESP32 and HA reboots.
+
++ Controls accessible via webserver if HA is down.
