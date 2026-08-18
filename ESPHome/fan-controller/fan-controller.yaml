@@ -10,32 +10,30 @@ esphome:
   friendly_name: ${ name | title | replace('-',' ')}
   name_add_mac_suffix: false
   on_boot:
-      priority: 100.0 # Runs after preferences/globals are restored from NVS memory
-      then:
-        - lambda: |-
-            ESP_LOGI("boot_sync", "Restoring states from globals...");
+    priority: -100.0
+    then:
+      - lambda: |-
+          ESP_LOGI("boot_sync", "Restoring states from globals...");
   
-            // 1. Restore Fan State silently to match global
-            if (id(fan_global)) {
-              id(living_room_fan).state = true;
-              id(living_room_fan).publish_state();
-              ESP_LOGI("boot_sync", "Restored Fan state to ON");
-            } else {
-              id(living_room_fan).state = false;
-              id(living_room_fan).publish_state();
-              ESP_LOGI("boot_sync", "Restored Fan state to OFF");
-            }
+          // 1. Restore fan state silently
+          bool fan_st = id(fan_global);
+          id(living_room_fan).state = fan_st;
+          if (fan_st) {
+            id(living_room_fan).speed = 1;
+          }
+          id(living_room_fan).publish_state();
   
-            // 2. Restore Light State silently to match global
-            if (id(fan_light_global)) {
-              id(living_room_fan_light).current_values.set_state(true);
-              id(living_room_fan_light).publish_state();
-              ESP_LOGI("boot_sync", "Restored Light state to ON");
-            } else {
-              id(living_room_fan_light).current_values.set_state(false);
-              id(living_room_fan_light).publish_state();
-              ESP_LOGI("boot_sync", "Restored Light state to OFF");
-            }
+          // 2. Restore light switch and binary light state silently
+          bool light_st = id(fan_light_global);
+          
+          id(fan_light_switch).publish_state(light_st);
+          id(living_room_fan_light).current_values.set_state(light_st);
+          id(living_room_fan_light).remote_values.set_state(light_st);
+          id(living_room_fan_light).publish_state();
+
+          // 3. Clear boot flag
+          id(is_booting) = false;
+          ESP_LOGI("boot_sync", "Boot restoration complete. Actions enabled.");
             
 esp32:
   board: esp32dev
@@ -224,19 +222,21 @@ globals:
     type: bool
     restore_value: true
     initial_value: "false"
-    update_interval: 5s
     
   - id: fan_global
     type: bool
     restore_value: true
     initial_value: "false"
-    update_interval: 5s
     
   - id: fan_direction_global
     type: bool
     restore_value: true
     initial_value: "true"
-    update_interval: 5s
+    
+  - id: is_booting
+    type: bool
+    restore_value: no
+    initial_value: "true"    
     
 button:
   - platform: shutdown
@@ -349,62 +349,55 @@ button:
           } else {
             id(fan_direction_global) = true;
           }
-### FAN LIGHT CONTROLS
-# the light controls run through the switch, output, and binary light
-
-#  - platform: template
-#    name: Fan Light On
-#    id: fan_light_on
-#    internal: true
-#    on_press:
-#      - output.turn_on: fan_light_output
-
-#  - platform: template
-#    name: Fan Light Off
-#    id: fan_light_off
-#    internal: true
-#    on_press:
-#      - output.turn_off: fan_light_output
-
-#  - platform: template
-#    name: Fan Light On
-#    id: fan_light_on
-#    internal: true
-#    on_press:
-#      - remote_transmitter.transmit_rc_switch_raw:
-#          code: '011110111110'
-#          protocol:
-#            pulse_length: 321
-#            sync: [1, 31]
-#            zero: [1, 2]
-#            one: [2, 1]
-#            inverted: true
-#          repeat: 
-#            times: 12
-#            wait_time: 10ms
-#      - lambda: |- 
-#          id(fan_light_global) = true; 
-#          id(fan_light_toggle).publish_state(true);
           
-#  - platform: template
-#    name: Fan Light Off
-#    id: fan_light_off
-#    internal: true
-#    on_press:
-#      - remote_transmitter.transmit_rc_switch_raw:
-#          code: '011110000011'
-#          protocol:
-#            pulse_length: 321
-#            sync: [1, 31]
-#            zero: [1, 2]
-#            one: [2, 1]
-#            inverted: true
-#          repeat: 
-#            times: 12
-#            wait_time: 10ms
-#      - lambda: |-
-#          id(fan_light_global) = false;
-#          id(fan_light_toggle).publish_state(false);
+### FAN LIGHT CONTROLS
+  - platform: template
+    name: Fan Light On
+    id: fan_light_on
+    internal: true
+    on_press:
+      - if:
+          condition:
+            lambda: 'return !id(is_booting);'
+          then:
+            - remote_transmitter.transmit_rc_switch_raw:
+                code: '011110111110'
+                protocol:
+                  pulse_length: 321
+                  sync: [1, 31]
+                  zero: [1, 2]
+                  one: [2, 1]
+                  inverted: true
+                repeat:
+                  times: 12
+                  wait_time: 10ms
+            - globals.set:
+                id: fan_light_global
+                value: "true"
+          
+  - platform: template
+    name: Fan Light Off
+    id: fan_light_off
+    internal: true
+    on_press:
+      - if:
+          condition:
+            lambda: 'return !id(is_booting);'
+          then:
+            - remote_transmitter.transmit_rc_switch_raw:
+                code: '011110111110'
+                protocol:
+                  pulse_length: 321
+                  sync: [1, 31]
+                  zero: [1, 2]
+                  one: [2, 1]
+                  inverted: true
+                repeat:
+                  times: 12
+                  wait_time: 10ms
+            - globals.set:
+                id: fan_light_global
+                value: 'false'
 
 # this automates the dimming process, the light brightens until max and then reverses until dimmest, then starts brightening again
   - platform: template
@@ -428,8 +421,41 @@ button:
                   wait_time: 10ms
             - delay: 40ms             
 
+# this button turns both the fan and light off, which is helpful if states get out of sync in HA
+  - platform: template
+    name: Fan All Off
+    id: fan_all_off
+    icon: "mdi:power"
+    on_press:
+      - remote_transmitter.transmit_rc_switch_raw:
+# code 011110000011 turns both light and fan off
+          code: '011110000011'
+          protocol:
+            pulse_length: 321
+            sync:
+              - 1
+              - 31
+            zero:
+              - 1
+              - 2
+            one:
+              - 2
+              - 1
+            inverted: true
+          repeat:
+            times: 12
+            wait_time: 10ms
+      - globals.set:
+          id: fan_light_global
+          value: 'false'
+      - globals.set:
+          id: fan_global
+          value: "false"
+      - fan.turn_off: living_room_fan    
+   
+              
 ### RESYNC BUTTONS
-# config buttons if the states get out of sync              
+# buttons if the states get out of sync              
   - platform: template
     name: Fan Light Resync
     id: fan_light_resync
@@ -490,7 +516,7 @@ binary_sensor:
     entity_category: ""
     lambda: |-
       return id(fan_global);
-
+      
   - platform: template 
     name: Fan Light Status 
     id: fan_light_toggle 
@@ -506,7 +532,6 @@ binary_sensor:
       return id(fan_direction_global);
       
 ### FAN CONTROL
-    
 fan:
   - platform: template
     name: "Living Room Fan"
@@ -518,41 +543,54 @@ fan:
     icon: "mdi:ceiling-fan"
     on_turn_on:
       then:
-        - fan.turn_on:
-            id: living_room_fan
-            speed: 1
-        - button.press: fan_low
-        - globals.set:
-            id: fan_global
-            value: "true"
+        - if:
+            condition:
+              lambda: 'return !id(is_booting);'
+            then:
+              - button.press: fan_low
+              - lambda: |-
+                  id(living_room_fan).speed = 1;
+              - globals.set:
+                  id: fan_global
+                  value: "true"
     on_turn_off:
       then:
-        - fan.turn_off: 
-            id: living_room_fan
-        - button.press: fan_off
-        - globals.set:
-            id: fan_global
-            value: "false"
+        - if:
+            condition:
+              lambda: 'return !id(is_booting);'
+            then:
+              - button.press: fan_off
+              - globals.set:
+                  id: fan_global
+                  value: "false"
     on_speed_set:
       then:
-        - lambda: |-
-            if (id(living_room_fan).speed == 1) {
-              id(fan_low).press();
-            } else if (id(living_room_fan).speed == 2) {
-              id(fan_medium).press();
-            } else if (id(living_room_fan).speed == 3) {
-              id(fan_high).press();
-            }
+        - if:
+            condition:
+              lambda: 'return !id(is_booting);'
+            then:
+              - lambda: |-
+                  if (id(living_room_fan).speed == 1) {
+                    id(fan_low).press();
+                  } else if (id(living_room_fan).speed == 2) {
+                    id(fan_medium).press();
+                  } else if (id(living_room_fan).speed == 3) {
+                    id(fan_high).press();
+                  }
     on_direction_set:
 # fan needs to be on for the direction to be changed      
       then:
-        - button.press: fan_low
-        - delay: 10ms
-        - button.press: fan_direction
+        - if:
+            condition:
+              lambda: 'return !id(is_booting);'
+            then:
+              - button.press: fan_low
+              - delay: 10ms
+              - button.press: fan_direction
 
 
-### LIGHT SWITCH
-            
+### LIGHT CONTROL
+# virtual light switch
 light:
   platform: binary
   name: Living Room Fan Light
@@ -561,48 +599,18 @@ light:
   restore_mode: ALWAYS_OFF
   on_turn_on:
     then:
-      - remote_transmitter.transmit_rc_switch_raw:
-          code: '011110111110'
-          protocol:
-            pulse_length: 321
-            sync: [1, 31]
-            zero: [1, 2]
-            one: [2, 1]
-            inverted: true
-          repeat:
-            times: 12
-            wait_time: 10ms
-      - globals.set:
-          id: fan_light_global
-          value: "true"
-  on_turn_off:
-    then:
-      - remote_transmitter.transmit_rc_switch_raw:
-# code 011110000011 turns both light and fan off, so if statement accounts for this (if fan is on, it is almost always on low)
-          code: '011110000011'
-          protocol:
-            pulse_length: 321
-            sync:
-              - 1
-              - 31
-            zero:
-              - 1
-              - 2
-            one:
-              - 2
-              - 1
-            inverted: true
-          repeat:
-            times: 12
-            wait_time: 10ms
-      - globals.set:
-          id: fan_light_global
-          value: 'false'
       - if:
           condition:
-            binary_sensor.is_on: fan_status
+            lambda: 'return !id(is_booting);'
           then:
-            - button.press: fan_low        
+            - button.press: fan_light_on
+  on_turn_off:
+    then:
+      - if:
+          condition:
+            lambda: 'return !id(is_booting);'
+          then:
+            - button.press: fan_light_off
 
 output:
   platform: template
@@ -611,69 +619,29 @@ output:
   write_action:
     - if:
         condition:
-          lambda: 'return state;'
+          lambda: 'return !id(is_booting);'
         then:
-          - lambda: |-
-              ESP_LOGI("fan.output","write_action: state=ON");
-          - globals.set: 
-              id: fan_light_global
-              value: "true"
-        else:
-          - lambda: |-
-              ESP_LOGI("fan.output","write_action: state=OFF");
-          - globals.set: 
-              id: fan_light_global
-              value: "false"
+          - if:
+              condition:
+                lambda: 'return state;'
+              then:
+                - globals.set: 
+                    id: fan_light_global
+                    value: "true"
+              else:
+                - globals.set: 
+                    id: fan_light_global
+                    value: "false"
 
 switch:
   platform: template
   id: fan_light_switch
   internal: true
   optimistic: true
-  restore_mode: RESTORE_DEFAULT_OFF
+  restore_mode: ALWAYS_OFF
   turn_on_action:
     - output.turn_on: fan_light_output
-    - globals.set:
-        id: fan_light_global
-        value: 'true'
     - light.turn_on: living_room_fan_light
   turn_off_action:
     - output.turn_off: fan_light_output
-    - globals.set:
-        id: fan_light_global
-        value: 'false'      
     - light.turn_off: living_room_fan_light
-
-interval:
-  - interval: 1s
-    then:
-      - lambda: |-
-          // fan_global (bool) - use -1 as "unknown" sentinel so startup logs the initial value
-          static int last_fan = -1;
-          int cur_fan = id(fan_global) ? 1 : 0;
-          if (cur_fan != last_fan) {
-            ESP_LOGI("globals", "fan_global: %s -> %s",
-                     last_fan == -1 ? "<unknown>" : (last_fan ? "ON" : "OFF"),
-                     cur_fan ? "ON" : "OFF");
-            last_fan = cur_fan;
-          }
-
-          // fan_light_global (bool)
-          static int last_fan_light = -1;
-          int cur_fan_light = id(fan_light_global) ? 1 : 0;
-          if (cur_fan_light != last_fan_light) {
-            ESP_LOGI("globals", "fan_light_global: %s -> %s",
-                     last_fan_light == -1 ? "<unknown>" : (last_fan_light ? "ON" : "OFF"),
-                     cur_fan_light ? "ON" : "OFF");
-            last_fan_light = cur_fan_light;
-          }
-
-          // fan_direction_global
-          static int last_fan_direction = -1;
-          int cur_fan_direction = id(fan_direction_global) ? 1 : 0;
-          if (cur_fan_direction != last_fan_direction) {
-            ESP_LOGI("globals", "fan_direction_global: %s -> %s",
-                     last_fan_direction == -1 ? "<unknown>" : (last_fan_direction ? "ON" : "OFF"),
-                     cur_fan_direction ? "ON" : "OFF");
-            last_fan_direction = cur_fan_direction;
-          }
