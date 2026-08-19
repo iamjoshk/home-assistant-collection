@@ -102,7 +102,20 @@ web_server:
     password: fancontroller
     username: fancontroller
   version: 3
-  
+  css_url: "http://192.168.86.53:8123/local/web_server.css"
+#  js_url: "http://192.168.86.53:8123/local/web_server.js"
+  ota: false
+  sorting_groups: 
+    - id: controls
+      name: "Controls"
+      sorting_weight: 0
+    - id: status
+      name: "Status"
+      sorting_weight: 1
+    - id: system
+      name: "System"
+      sorting_weight: 2
+      
 spi:
   clk_pin: GPIO18
   mosi_pin: GPIO23
@@ -169,7 +182,7 @@ remote_receiver:
       
         // CONFIRMATION (sliding-window) + COOLDOWN (no heap)
         const unsigned long CONFIRM_WINDOW_MS = 2000;
-        const int REQUIRED_CONFIRM = 3;
+        const int REQUIRED_CONFIRM = 4;
         const unsigned long COOLDOWN_MS = 1000;
       
         static unsigned long last_action_time = 0;
@@ -216,6 +229,7 @@ radio_frequency:
     name: RF Proxy Receiver
     frequency: 433.92MHz
     remote_receiver_id: c1101_rx
+    internal: true
   
 globals:
   - id: fan_light_global
@@ -241,10 +255,14 @@ globals:
 button:
   - platform: shutdown
     name: ${name} Shutdown
-
+    web_server:
+      sorting_group_id: system
+      
   - platform: restart
     name: ${name} Restart
-    
+    web_server:
+      sorting_group_id: system
+
 #### FAN CONTROLS
 
   - platform: template
@@ -420,7 +438,10 @@ button:
                   times: 12
                   wait_time: 10ms
             - delay: 40ms             
-
+    web_server: 
+      sorting_group_id: controls
+      sorting_weight: 30
+      
 # this button turns both the fan and light off, which is helpful if states get out of sync in HA
   - platform: template
     name: Fan All Off
@@ -452,7 +473,9 @@ button:
           id: fan_global
           value: "false"
       - fan.turn_off: living_room_fan    
-   
+    web_server:
+      sorting_group_id: controls
+      sorting_weight: 40
               
 ### RESYNC BUTTONS
 # buttons if the states get out of sync              
@@ -469,7 +492,9 @@ button:
             } else {
               id(fan_light_global) = true;
             }
-
+    web_server:
+      sorting_group_id: status
+      
   - platform: template
     name: Fan Resync
     id: fan_resync
@@ -482,7 +507,9 @@ button:
           } else {
             id(fan_global) = true;
           }
-
+    web_server:
+      sorting_group_id: status
+      
   - platform: template
     name: Fan Direction Resync
     id: fan_direction_resync
@@ -496,17 +523,29 @@ button:
             } else {
               id(fan_direction_global) = true;
             }
-              
+    web_server:
+      sorting_group_id: status
+      
 text_sensor:
   - platform: wifi_info
+    ip_address:
+      name: IP Address
+      web_server:
+        sorting_group_id: system
     mac_address: 
       name: ${name} MAC Address
-
+      web_server:
+        sorting_group_id: system
+        
   - platform: debug
     device:
       name: ${name} Device Info
+      web_server:
+        sorting_group_id: system
     reset_reason:
       name: ${name} Reset Reason
+      web_server:
+        sorting_group_id: system
       
 binary_sensor:
 # binary sensors that can help with states or automations
@@ -516,6 +555,8 @@ binary_sensor:
     entity_category: ""
     lambda: |-
       return id(fan_global);
+    web_server:
+      sorting_group_id: status
       
   - platform: template 
     name: Fan Light Status 
@@ -523,13 +564,17 @@ binary_sensor:
     entity_category: ""
     lambda: |- 
       return id(fan_light_global);
-    
+    web_server:
+      sorting_group_id: status
+      
   - platform: template
     name: Fan Direction Summer
     id: fan_direction_forward
     entity_category: ""
     lambda: |-
       return id(fan_direction_global);
+    web_server:
+      sorting_group_id: status
       
 ### FAN CONTROL
 fan:
@@ -587,31 +632,37 @@ fan:
               - button.press: fan_low
               - delay: 10ms
               - button.press: fan_direction
-
+    web_server: 
+      sorting_group_id: controls
+      sorting_weight: 20
 
 ### LIGHT CONTROL
 # virtual light switch
 light:
-  platform: binary
-  name: Living Room Fan Light
-  id: living_room_fan_light
-  output: fan_light_output
-  restore_mode: ALWAYS_OFF
-  on_turn_on:
-    then:
-      - if:
-          condition:
-            lambda: 'return !id(is_booting);'
-          then:
-            - button.press: fan_light_on
-  on_turn_off:
-    then:
-      - if:
-          condition:
-            lambda: 'return !id(is_booting);'
-          then:
-            - button.press: fan_light_off
-
+  - platform: binary
+    name: Living Room Fan Light
+    id: living_room_fan_light
+    output: fan_light_output
+    restore_mode: ALWAYS_OFF
+    icon: "mdi:ceiling-fan-light"
+    on_turn_on:
+      then:
+        - if:
+            condition:
+              lambda: 'return !id(is_booting);'
+            then:
+              - button.press: fan_light_on
+    on_turn_off:
+      then:
+        - if:
+            condition:
+              lambda: 'return !id(is_booting);'
+            then:
+              - button.press: fan_light_off
+    web_server: 
+      sorting_group_id: controls
+      sorting_weight: 10
+      
 output:
   platform: template
   id: fan_light_output
