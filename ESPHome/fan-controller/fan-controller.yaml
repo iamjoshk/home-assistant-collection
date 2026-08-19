@@ -4,6 +4,8 @@ substitutions:
   ap_pw: !secret ap_pw
   ap_ssid: !secret ap_ssid
   ota_pw: !secret ota_pw
+  ws_css: !secret ws_css
+  ws_js: !secret ws_js
 
 esphome:
   name: ${name}
@@ -72,26 +74,17 @@ wifi:
     subnet: ${ devices[name].wifi.subnet }
   ap:
     password: ${ap_pw}_${name}
-
   
-#ble_client:
-#  - mac_address:  F7:80:F2:D9:AD:2F
-#    auto_connect: true
-#    id: control_unit
+esp32_ble_tracker:
+  id: ${name | replace('-','_')}_tracker
+  scan_parameters:
+    interval: 320ms
+    window: 30ms
+    active: true
 
-#esp32_ble:
-#  max_connections: 4
-
-#esp32_ble_tracker:
-#  id: ${name}_tracker
-#  scan_parameters:
-#    interval: 320ms
-#    window: 30ms
-#    active: true
-
-#bluetooth_proxy:
-#  active: true
-#  id: ble_proxy
+bluetooth_proxy:
+  active: true
+  id: ble_proxy
 
 captive_portal:
   
@@ -102,8 +95,8 @@ web_server:
     password: fancontroller
     username: fancontroller
   version: 3
-  css_url: "http://192.168.86.53:8123/local/web_server.css"
-#  js_url: "http://192.168.86.53:8123/local/web_server.js"
+  css_url: "${ws_css}web_server.css"
+  js_url: "${ws_js}web_server.js"
   ota: false
   sorting_groups: 
     - id: controls
