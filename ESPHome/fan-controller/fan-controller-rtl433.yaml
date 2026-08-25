@@ -1,0 +1,682 @@
+substitutions:
+  name: fan-controller
+  devices: !secret devices
+  ap_pw: !secret ap_pw
+  ap_ssid: !secret ap_ssid
+  ota_pw: !secret ota_pw
+  ws_css: !secret ws_css
+  ws_js: !secret ws_js
+
+esphome:
+  name: ${name}
+  friendly_name: ${ name | title | replace('-',' ')}
+  name_add_mac_suffix: false
+  on_boot:
+    - priority: 200
+      then:
+        # only decode protocol for DSC contact sensors
+        - lambda: |-
+            // build a new custom protocol list for rtl_433
+            rtl_433_Decoder* rd=id(my_rtl433_rx).get_rtl_433_Decoder();
+            r_cfg_t* cfg=&rd->g_cfg;
+            list_t* r_devs=&cfg->demod->r_devs;
+            ESP_LOGI("boot_rtl_433", "There are %d devices currently",r_devs->len);
+            list_free_elems(r_devs,&free);
+            char* arg = NULL;
+  
+            for (int i = 0; i < cfg->num_r_devices; i++) {
+              if (cfg->devices[i].disabled <= 2) { // ignore anything hidden
+                r_device* rdev=&cfg->devices[i];
+                if ((strstr(rdev->name,"DSC"))) {
+                  register_protocol(cfg, &cfg->devices[i], arg);
+                  ESP_LOGI("boot_rtl_433", "Enabled protocol %s",rdev->name);
+                }
+              }
+            }
+  
+            ESP_LOGI("boot_rtl_433", "... and now there are %d devices.",r_devs->len);
+            
+    - priority: -100.0
+      then:
+        - lambda: |-
+            ESP_LOGI("boot_sync", "Restoring states from globals...");
+    
+            // 1. Restore fan state silently
+            bool fan_st = id(fan_global);
+            id(living_room_fan).state = fan_st;
+            if (fan_st) {
+              id(living_room_fan).speed = 1;
+            }
+            id(living_room_fan).publish_state();
+    
+            // 2. Restore light switch and binary light state silently
+            bool light_st = id(fan_light_global);
+            
+            id(fan_light_switch).publish_state(light_st);
+            id(living_room_fan_light).current_values.set_state(light_st);
+            id(living_room_fan_light).remote_values.set_state(light_st);
+            id(living_room_fan_light).publish_state();
+  
+            // 3. Clear boot flag
+            id(is_booting) = false;
+            ESP_LOGI("boot_sync", "Boot restoration complete. Actions enabled.");
+
+external_components:
+  # uses the rtl_433 decoder for ESPHome without the full package
+  - source: github://juanboro/esphome-rtl_433-decoder
+
+esp32:
+  board: esp32dev
+  framework:
+    type: esp-idf
+    advanced:
+      sram1_as_iram: true
+        
+preferences:
+  flash_write_interval: 30s
+  
+# Enable logging
+logger:
+  level: DEBUG
+
+debug:
+  update_interval: 5s
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: ${ devices[name].api.key }
+# Allow Over-The-Air updates
+ota:
+- platform: esphome
+  id: my_ota
+  password: ${ota_pw}${name}
+
+wifi:
+  ssid: !secret iot_ssid
+  password: !secret iot_password
+  post_connect_roaming: false
+  manual_ip:
+    static_ip: ${ devices[name].wifi.ip }
+    gateway: ${ devices[name].wifi.gateway }
+    subnet: ${ devices[name].wifi.subnet }
+  ap:
+    password: ${ap_pw}_${name}
+  
+#esp32_ble_tracker:
+#  id: ${name | replace('-','_')}_tracker
+#  scan_parameters:
+#    interval: 320ms
+#    window: 30ms
+#    active: true
+
+#bluetooth_proxy:
+#  active: true
+#  id: ble_proxy
+
+ 
+web_server:
+  id: fancontroller
+  port: 80
+  auth:
+    type: digest
+    password: fancontroller
+    username: fancontroller
+  version: 3
+#  css_url: "${ws_css}web_server.css"
+#  js_url: "${ws_js}web_server.js"
+  ota: false
+  sorting_groups: 
+    - id: controls
+      name: "Controls"
+      sorting_weight: 0
+    - id: status
+      name: "Status"
+      sorting_weight: 1
+    - id: system
+      name: "System"
+      sorting_weight: 2
+#  allowed_origins:
+#    - https://oi.esphome.io
+#    - http://192.168.16.194
+     
+spi:
+  clk_pin: GPIO18
+  mosi_pin: GPIO23
+  miso_pin: GPIO19
+
+captive_portal:
+
+rtl_433:
+  id: my_rtl433_rx
+  receiver_id: c1101_rx
+  on_json_message: 
+    then:  
+      - lambda: |-         
+          if (x["model"] == "DSC-Security" && x["id"].as<int>() == 2700721) {
+            
+            // 1. Implement a cooldown to ignore burst transmissions
+            static uint32_t last_action_time = 0;
+            uint32_t now = millis();
+            
+            // Only proceed if 1.5 seconds have passed since the last trigger
+            if (now - last_action_time > 1500) {
+              last_action_time = now;
+              
+              // 2. Execute your toggle logic
+              bool is_on = id(fan_light_global);
+              if (is_on) {
+                id(fan_light_switch).turn_off();
+                ESP_LOGI("dsc.action", "Confirmed event: Requested LIGHT OFF");
+              } else {
+                id(fan_light_switch).turn_on();
+                ESP_LOGI("dsc.action", "Confirmed event: Requested LIGHT ON");
+              }
+            }
+          }
+          
+cc1101:
+  cs_pin: GPIO25
+#  frequency: 303.9MHz
+  frequency: 433.92MHz
+  output_power: 11
+  carrier_sense_above_threshold: false
+
+remote_transmitter:
+# switch to 303.9MHz for tx fan controls, otherwise listen at 433.92MHz for the physical switch
+  pin: GPIO22  # Must match GDO0
+  id: c1101_tx
+  carrier_duty_percent: 100%
+  on_transmit:
+    then:
+      - cc1101.set_frequency: 303.9MHz
+      - cc1101.begin_tx:   
+  on_complete:
+    then:
+      - cc1101.set_frequency: 433.92MHz
+      - cc1101.begin_rx:
+  non_blocking: true
+        
+remote_receiver:
+  id: c1101_rx
+  pin:
+    number: GPIO27
+    mode: INPUT_PULLUP
+#  dump: 
+#    - raw
+  idle: 15ms
+  filter: 200us 
+  tolerance: 35% 
+
+radio_frequency:
+  - platform: ir_rf_proxy
+    name: RF Proxy Receiver
+    frequency: 433.92MHz
+    remote_receiver_id: c1101_rx
+    internal: true
+  
+globals:
+  - id: fan_light_global
+    type: bool
+    restore_value: true
+    initial_value: "false"
+    
+  - id: fan_global
+    type: bool
+    restore_value: true
+    initial_value: "false"
+    
+  - id: fan_direction_global
+    type: bool
+    restore_value: true
+    initial_value: "true"
+    
+  - id: is_booting
+    type: bool
+    restore_value: no
+    initial_value: "true"    
+    
+button:
+  - platform: shutdown
+    name: ${name} Shutdown
+    web_server:
+      sorting_group_id: system
+      
+  - platform: restart
+    name: ${name} Restart
+    web_server:
+      sorting_group_id: system
+
+#### FAN CONTROLS
+
+  - platform: template
+    name: Fan Off
+    id: fan_off
+    internal: true
+    on_press:
+      - remote_transmitter.transmit_rc_switch_raw:
+          code: '011110111101'
+          protocol:
+            pulse_length: 321
+            sync: [1, 31]
+            zero: [1, 2]
+            one: [2, 1]
+            inverted: true
+          repeat: 
+            times: 12
+            wait_time: 10ms
+      - globals.set:
+          id: fan_global
+          value: 'false'
+            
+  - platform: template
+    name: Fan Low
+    id: fan_low
+    internal: true
+    on_press:
+      - remote_transmitter.transmit_rc_switch_raw:
+          code: '011110110111'
+          protocol:
+            pulse_length: 321
+            sync: [1, 31]
+            zero: [1, 2]
+            one: [2, 1]
+            inverted: true
+          repeat: 
+            times: 12
+            wait_time: 10ms
+      - globals.set:
+          id: fan_global
+          value: 'true'
+            
+  - platform: template
+    name: Fan Medium
+    id: fan_medium
+    internal: true
+    on_press:
+      - remote_transmitter.transmit_rc_switch_raw:
+          code: '011110101111'
+          protocol:
+            pulse_length: 321
+            sync: [1, 31]
+            zero: [1, 2]
+            one: [2, 1]
+            inverted: true
+          repeat: 
+            times: 12
+            wait_time: 10ms
+      - globals.set:
+          id: fan_global
+          value: 'true'
+      
+  - platform: template
+    name: Fan High
+    id: fan_high
+    internal: true
+    on_press:
+      - remote_transmitter.transmit_rc_switch_raw:
+          code: '011110011111'
+          protocol:
+            pulse_length: 321
+            sync: [1, 31]
+            zero: [1, 2]
+            one: [2, 1]
+            inverted: true
+          repeat: 
+            times: 12
+            wait_time: 10ms            
+      - globals.set:
+          id: fan_global
+          value: 'true'
+
+  - platform: template
+    name: Fan Direction
+    id: fan_direction
+    internal: true
+    on_press:
+      - remote_transmitter.transmit_rc_switch_raw:
+          code: '011110111011'
+          protocol:
+            pulse_length: 321
+            sync: [1, 31]
+            zero: [1, 2]
+            one: [2, 1]
+            inverted: true
+          repeat: 
+            times: 12
+            wait_time: 10ms
+      - lambda: |-
+          if (id(fan_direction_global)) {
+            id(fan_direction_global) = false;
+          } else {
+            id(fan_direction_global) = true;
+          }
+          
+### FAN LIGHT CONTROLS
+  - platform: template
+    name: Fan Light On
+    id: fan_light_on
+    internal: true
+    on_press:
+      - if:
+          condition:
+            lambda: 'return !id(is_booting);'
+          then:
+            - remote_transmitter.transmit_rc_switch_raw:
+                code: '011110111110'
+                protocol:
+                  pulse_length: 321
+                  sync: [1, 31]
+                  zero: [1, 2]
+                  one: [2, 1]
+                  inverted: true
+                repeat:
+                  times: 12
+                  wait_time: 10ms
+            - globals.set:
+                id: fan_light_global
+                value: "true"
+          
+  - platform: template
+    name: Fan Light Off
+    id: fan_light_off
+    internal: true
+    on_press:
+      - if:
+          condition:
+            lambda: 'return !id(is_booting);'
+          then:
+            - remote_transmitter.transmit_rc_switch_raw:
+                code: '011110111110'
+                protocol:
+                  pulse_length: 321
+                  sync: [1, 31]
+                  zero: [1, 2]
+                  one: [2, 1]
+                  inverted: true
+                repeat:
+                  times: 12
+                  wait_time: 10ms
+            - globals.set:
+                id: fan_light_global
+                value: 'false'
+
+# this automates the dimming process, the light brightens until max and then reverses until dimmest, then starts brightening again
+  - platform: template
+    name: Fan Light Dimmer
+    id: fan_light_dimmer
+    icon: mdi:lightbulb
+    on_press:
+    - repeat:
+          count: 3
+          then:
+            - remote_transmitter.transmit_rc_switch_raw:
+                code: "011110111110"
+                protocol:
+                  pulse_length: 321
+                  sync: [1, 31]
+                  zero: [1, 2]
+                  one: [2, 1]
+                  inverted: true
+                repeat:
+                  times: 12
+                  wait_time: 10ms
+            - delay: 40ms             
+    web_server: 
+      sorting_group_id: controls
+      sorting_weight: 30
+      
+# this button turns both the fan and light off, which is helpful if states get out of sync in HA
+  - platform: template
+    name: Fan All Off
+    id: fan_all_off
+    icon: "mdi:power"
+    on_press:
+      - remote_transmitter.transmit_rc_switch_raw:
+# code 011110000011 turns both light and fan off
+          code: '011110000011'
+          protocol:
+            pulse_length: 321
+            sync:
+              - 1
+              - 31
+            zero:
+              - 1
+              - 2
+            one:
+              - 2
+              - 1
+            inverted: true
+          repeat:
+            times: 12
+            wait_time: 10ms
+      - globals.set:
+          id: fan_light_global
+          value: 'false'
+      - globals.set:
+          id: fan_global
+          value: "false"
+      - fan.turn_off: living_room_fan    
+    web_server:
+      sorting_group_id: controls
+      sorting_weight: 40
+              
+### RESYNC BUTTONS
+# buttons if the states get out of sync              
+  - platform: template
+    name: Fan Light Resync
+    id: fan_light_resync
+    entity_category: CONFIG
+    icon: "mdi:sync"
+    on_press:
+      then:
+        - lambda: |
+            if (id(fan_light_global)) {
+              id(fan_light_global) = false;
+            } else {
+              id(fan_light_global) = true;
+            }
+    web_server:
+      sorting_group_id: status
+      
+  - platform: template
+    name: Fan Resync
+    id: fan_resync
+    entity_category: CONFIG
+    icon: "mdi:sync"
+    on_press:
+      - lambda: |-
+          if (id(fan_global)) {
+            id(fan_global) = false;
+          } else {
+            id(fan_global) = true;
+          }
+    web_server:
+      sorting_group_id: status
+      
+  - platform: template
+    name: Fan Direction Resync
+    id: fan_direction_resync
+    entity_category: CONFIG
+    icon: "mdi:sync"
+    on_press:
+      then:
+        - lambda: |
+            if (id(fan_direction_global)) {
+              id(fan_direction_global) = false;
+            } else {
+              id(fan_direction_global) = true;
+            }
+    web_server:
+      sorting_group_id: status
+      
+text_sensor:
+  - platform: wifi_info
+    ip_address:
+      name: IP Address
+      web_server:
+        sorting_group_id: system
+    mac_address: 
+      name: ${name} MAC Address
+      web_server:
+        sorting_group_id: system
+        
+  - platform: debug
+    device:
+      name: ${name} Device Info
+      web_server:
+        sorting_group_id: system
+    reset_reason:
+      name: ${name} Reset Reason
+      web_server:
+        sorting_group_id: system
+      
+binary_sensor:
+# binary sensors that can help with states or automations
+  - platform: template
+    name: Fan Status
+    id: fan_status
+    entity_category: ""
+    lambda: |-
+      return id(fan_global);
+    web_server:
+      sorting_group_id: status
+      
+  - platform: template 
+    name: Fan Light Status 
+    id: fan_light_toggle 
+    entity_category: ""
+    lambda: |- 
+      return id(fan_light_global);
+    web_server:
+      sorting_group_id: status
+      
+  - platform: template
+    name: Fan Direction Summer
+    id: fan_direction_forward
+    entity_category: ""
+    lambda: |-
+      return id(fan_direction_global);
+    web_server:
+      sorting_group_id: status
+      
+### FAN CONTROL
+fan:
+  - platform: template
+    name: "Living Room Fan"
+    id: living_room_fan
+    has_direction: true
+    has_oscillating: false
+    speed_count: 3
+    restore_mode: ALWAYS_OFF
+    icon: "mdi:ceiling-fan"
+    on_turn_on:
+      then:
+        - if:
+            condition:
+              lambda: 'return !id(is_booting);'
+            then:
+              - button.press: fan_low
+              - lambda: |-
+                  id(living_room_fan).speed = 1;
+              - globals.set:
+                  id: fan_global
+                  value: "true"
+    on_turn_off:
+      then:
+        - if:
+            condition:
+              lambda: 'return !id(is_booting);'
+            then:
+              - button.press: fan_off
+              - globals.set:
+                  id: fan_global
+                  value: "false"
+    on_speed_set:
+      then:
+        - if:
+            condition:
+              lambda: 'return !id(is_booting);'
+            then:
+              - lambda: |-
+                  if (id(living_room_fan).speed == 1) {
+                    id(fan_low).press();
+                  } else if (id(living_room_fan).speed == 2) {
+                    id(fan_medium).press();
+                  } else if (id(living_room_fan).speed == 3) {
+                    id(fan_high).press();
+                  }
+    on_direction_set:
+# fan needs to be on for the direction to be changed      
+      then:
+        - if:
+            condition:
+              lambda: 'return !id(is_booting);'
+            then:
+              - button.press: fan_low
+              - delay: 10ms
+              - button.press: fan_direction
+    web_server: 
+      sorting_group_id: controls
+      sorting_weight: 20
+
+### LIGHT CONTROL
+# virtual light switch
+light:
+  - platform: binary
+    name: Living Room Fan Light
+    id: living_room_fan_light
+    output: fan_light_output
+    restore_mode: ALWAYS_OFF
+    icon: "mdi:ceiling-fan-light"
+    on_turn_on:
+      then:
+        - if:
+            condition:
+              lambda: 'return !id(is_booting);'
+            then:
+              - button.press: fan_light_on
+    on_turn_off:
+      then:
+        - if:
+            condition:
+              lambda: 'return !id(is_booting);'
+            then:
+              - button.press: fan_light_off
+    web_server: 
+      sorting_group_id: controls
+      sorting_weight: 10
+      
+output:
+  platform: template
+  id: fan_light_output
+  type: binary
+  write_action:
+    - if:
+        condition:
+          lambda: 'return !id(is_booting);'
+        then:
+          - if:
+              condition:
+                lambda: 'return state;'
+              then:
+                - globals.set: 
+                    id: fan_light_global
+                    value: "true"
+              else:
+                - globals.set: 
+                    id: fan_light_global
+                    value: "false"
+
+switch:
+  platform: template
+  id: fan_light_switch
+  internal: true
+  optimistic: true
+  restore_mode: ALWAYS_OFF
+  turn_on_action:
+    - output.turn_on: fan_light_output
+    - light.turn_on: living_room_fan_light
+  turn_off_action:
+    - output.turn_off: fan_light_output
+    - light.turn_off: living_room_fan_light
