@@ -74,17 +74,18 @@ wifi:
     subnet: ${ devices[name].wifi.subnet }
   ap:
     password: ${ap_pw}_${name}
-  
-esp32_ble_tracker:
-  id: ${name | replace('-','_')}_tracker
-  scan_parameters:
-    interval: 320ms
-    window: 30ms
-    active: true
 
-bluetooth_proxy:
-  active: true
-  id: ble_proxy
+# bluetooth proxy disabled to prevent crashing  
+#esp32_ble_tracker:
+#  id: ${name | replace('-','_')}_tracker
+#  scan_parameters:
+#    interval: 320ms
+#    window: 30ms
+#    active: true
+
+#bluetooth_proxy:
+#  active: true
+#  id: ble_proxy
 
 captive_portal:
   
