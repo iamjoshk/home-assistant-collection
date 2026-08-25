@@ -22,3 +22,11 @@ ___
 + Controls accessible via webserver if HA is down.
 
 + The ESP32-WROOM-32D board I am currently using crashes with the bluetooth proxy enabled, so I have it disabled in the config.
+
++ Two example yaml configurations are included:
+  + One that uses a lambda to decode the raw RF signals
+  + One that uses the [rtl_433 decoder component](https://github.com/juanboro/esphome-rtl_433-decoder) to decode only the specific DSC contact sensor I am using for the light switch.
+    + I chose to load the external component and not the entire package so I could better control what parts of the component I utilized. Instead of a separate include file for the protocols, I just added the script to the `on_boot` configuration.
+    + Since this works kind of like a virtual multi-way switch, I don't need to capture the state of the contact sensor. I only care that the state changed. I don't create an entity in HA for the state of the toggle.
+    + I capture the battery state as a sensor for visibility in HA.
+    + I don't need MQTT messages or to generate API events.
