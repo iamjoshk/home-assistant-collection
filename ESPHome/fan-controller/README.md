@@ -20,3 +20,5 @@ ___
 + Fan and light states persist across ESP32 and HA reboots.
 
 + Controls accessible via webserver if HA is down.
+
++ The ESP32-WROOM-32D board I am currently using crashes with the bluetooth proxy enabled, so I have it disabled in the config.
