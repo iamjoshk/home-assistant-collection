@@ -56,8 +56,11 @@ esphome:
             id(living_room_fan_light).current_values.set_state(light_st);
             id(living_room_fan_light).remote_values.set_state(light_st);
             id(living_room_fan_light).publish_state();
-  
-            // 3. Clear boot flag
+
+            // 3. And the battery state
+            id(dsc_battery).publish_state(id(battery_low_global));
+            
+            // 4. Clear boot flag
             id(is_booting) = false;
             ESP_LOGI("boot_sync", "Boot restoration complete. Actions enabled.");
 
@@ -155,15 +158,27 @@ rtl_433:
       - lambda: |-         
           if (x["model"] == "DSC-Security" && x["id"].as<int>() == 2700721) {
             
-            // 1. Implement a cooldown to ignore burst transmissions
+            // 1. Extract Battery Status
+            // If battery_ok == 0, the statement evaluates to true (Low Battery)
+            if (x.containsKey("battery_ok")) {
+              bool is_low = (x["battery_ok"].as<int>() == 0);
+              
+              // Only update flash and publish state if the state actually changed
+              if (id(battery_low_global) != is_low) {
+                id(battery_low_global) = is_low;
+                id(dsc_battery).publish_state(is_low);
+                ESP_LOGI("dsc.battery", "DSC Sensor Battery state updated: %s", is_low ? "LOW" : "OK");
+              }
+            }
+            
+            // 2. Cooldown logic for the fan light toggle
             static uint32_t last_action_time = 0;
             uint32_t now = millis();
             
-            // Only proceed if 1.5 seconds have passed since the last trigger
             if (now - last_action_time > 1500) {
               last_action_time = now;
               
-              // 2. Execute your toggle logic
+            // 3. Action based on contact sensor state change  
               bool is_on = id(fan_light_global);
               if (is_on) {
                 id(fan_light_switch).turn_off();
@@ -196,6 +211,7 @@ remote_transmitter:
       - cc1101.set_frequency: 433.92MHz
       - cc1101.begin_rx:
   non_blocking: true
+
         
 remote_receiver:
   id: c1101_rx
@@ -230,6 +246,11 @@ globals:
     type: bool
     restore_value: true
     initial_value: "true"
+
+  - id: battery_low_global
+    type: bool
+    restore_value: true
+    initial_value: "false"    
     
   - id: is_booting
     type: bool
@@ -559,6 +580,13 @@ binary_sensor:
       return id(fan_direction_global);
     web_server:
       sorting_group_id: status
+
+  - platform: template
+    name: Light Switch Battery
+    id: dsc_battery
+    device_class: battery
+    lambda: |-
+      return id(battery_low_global);
       
 ### FAN CONTROL
 fan:
