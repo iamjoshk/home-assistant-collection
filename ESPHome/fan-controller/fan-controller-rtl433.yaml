@@ -158,47 +158,49 @@ rtl_433:
       - lambda: |-         
           if (x["model"] == "DSC-Security" && x["id"].as<int>() == 2700721) {
             
-            // 1. Cooldown logic for debounce repetitive messages
-            static uint32_t last_action_time = 0;
-            uint32_t now = millis();
-            
-            if (now - last_action_time > 1500) {
-              last_action_time = now;
+            // 1. Extract Battery Status (Safe to process on every hourly heartbeat)
+            if (x["battery_ok"].is<int>()) {
+              int batt_ok = x["battery_ok"].as<int>();
               
-            // 2. Extract Battery Status
-              if (x["battery_ok"].is<int>()) {
-                int batt_ok = x["battery_ok"].as<int>();
-                
-                // Only update flash and publish state if the state actually changed
-                if (id(battery_low_global) != (batt_ok == 0)) {
-                  id(battery_low_global) = (batt_ok == 0);
-                  id(dsc_battery).publish_state(batt_ok == 0);
-                  ESP_LOGI("dsc.battery", "DSC Sensor Battery state updated: %s", (batt_ok == 0) ? "LOW" : "OK");
-                }
+              if (id(battery_low_global) != (batt_ok == 0)) {
+                id(battery_low_global) = (batt_ok == 0);
+                id(dsc_battery).publish_state(batt_ok == 0);
+                ESP_LOGI("dsc.battery", "DSC Sensor Battery state updated: %s", (batt_ok == 0) ? "LOW" : "OK");
               }
+            }
               
-            // 3. Action based on contact sensor state change  
-              bool is_on = id(fan_light_global);
-              if (is_on) {
-                id(fan_light_switch).turn_off();
-                ESP_LOGI("dsc.action", "Confirmed event: Requested LIGHT OFF");
-              } else {
-                id(fan_light_switch).turn_on();
-                ESP_LOGI("dsc.action", "Confirmed event: Requested LIGHT ON");
-              }
-              
-            // 4. Tracking closed state for debugging    
-              if (x["closed"].is<int>()) {
+            // 2. Contact Sensor State & Light Action
+            if (x["closed"].is<int>()) {
               int closed = x["closed"].as<int>();
               
-              // Only update flash and publish state if the state actually changed
-                if (id(dsc_toggle_global) != (closed == 0)) {
+              // ONLY proceed if the state physically changed from the last known state
+              // This ignores heartbeats and redundant burst packets
+              if (id(dsc_toggle_global) != (closed == 0)) {
+                
+                // 3. Cooldown to prevent state bouncing
+                static uint32_t last_action_time = 0;
+                uint32_t now = millis();
+                
+                if (now - last_action_time > 1500) {
+                  last_action_time = now;
+                  
+                  // Update the tracked state global
                   id(dsc_toggle_global) = (closed == 0);
                   id(dsc_toggle).publish_state(closed == 0);
                   ESP_LOGI("dsc.toggle", "DSC Sensor Closed state updated: %s", (closed == 0) ? "CLOSED" : "OPEN");
+                  
+                  // Toggle the fan light
+                  bool is_on = id(fan_light_global);
+                  if (is_on) {
+                    id(fan_light_switch).turn_off();
+                    ESP_LOGI("dsc.action", "Confirmed state change: Requested LIGHT OFF");
+                  } else {
+                    id(fan_light_switch).turn_on();
+                    ESP_LOGI("dsc.action", "Confirmed state change: Requested LIGHT ON");
+                  }
+                }
               }
             }
-          }
           }
           
 cc1101:
