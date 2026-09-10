@@ -3,31 +3,36 @@ blueprint:
   description: Roll a custom combination of dice via voice using PyScript.
   domain: automation
   input:
-    command_prompt1:
-      name: Command Text 1
-      description: Primary phrase to trigger the automation. Must include the {notation} wildcard.
-      default: "roll {notation}"
-    command_prompt2:
-      name: Command Text 2
-      description: Alternate phrase to trigger the automation.
-      default: "roll a {notation}"
-      
-alias: View Assist - Dice Roller
-description: "Handles voice commands for dice rolling and returns the result"
+    trigger_sentences_section:
+      name: "Trigger Sentence Configuration"
+      icon: mdi:form-select
+      description: "Modify these sentences to match how you ask to roll dice."
+      collapsed: false
+      input:
+        roll_commands:
+          name: Roll Commands
+          description: "Sentences to trigger the dice roll. Must include {notation}."
+          default:
+            - "(roll | throw) {notation}"
+            - "(roll | throw) [a | an | the] {notation}"
+            - "give me [a] {notation}"
+          selector:
+            object: {}
+
+alias: VIEW ASSIST - Dice Roller
+description: "Handles flexible voice commands for dice rolling"
 trigger:
   - platform: conversation
-    command:
-      - !input command_prompt1
-      - !input command_prompt2
+    command: !input roll_commands
 condition: []
 action:
-  # Step 1: Send the spoken wildcard directly to the PyScript
+  # Pass the captured wildcard slot to the PyScript
   - service: pyscript.roll_dice
     data:
       notation: "{{ trigger.slots.notation }}"
     response_variable: roll_results
     
-  # Step 2: Format the Assist response based on the PyScript output
+  # Read the results aloud via View Assist
   - set_conversation_response: >
       {% if roll_results.error is defined %}
         I had trouble with that roll: {{ roll_results.error }}
