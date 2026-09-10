@@ -1,5 +1,5 @@
 blueprint:
-  name: View Assist - RPG Dice Roller
+  name: View Assist - Dice Roller
   description: Roll a custom combination of dice via voice using PyScript.
   domain: automation
   input:
@@ -19,7 +19,7 @@ blueprint:
           selector:
             object: {}
 
-alias: VIEW ASSIST - Dice Roller
+alias: View Assist - Dice Roller
 description: "Handles flexible voice commands for dice rolling"
 trigger:
   - platform: conversation
