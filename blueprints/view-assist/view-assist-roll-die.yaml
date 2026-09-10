@@ -5,7 +5,6 @@ blueprint:
   input:
     trigger_sentences_section:
       name: "Trigger Sentence Configuration"
-      icon: mdi:form-select
       description: "Modify these sentences to match how you ask to roll dice."
       collapsed: false
       input:
