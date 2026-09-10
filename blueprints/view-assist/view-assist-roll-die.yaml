@@ -1,5 +1,5 @@
 blueprint:
-  name: View Assist - RPG Dice Roller
+  name: View Assist - Dice Roller
   description: Roll a custom combination of dice via voice using PyScript, with an optional sound effect.
   domain: automation
   input:
@@ -25,16 +25,16 @@ blueprint:
       icon: mdi:music-note
     sound_delay:
       name: Sound Delay (Seconds)
-      description: "How long to wait after the sound starts before speaking the result."
-      default: 2
-      icon: mdi:timer-outline
+      description: "How long to wait after the sound starts before speaking. Set to 0 if your assistant's natural processing time is long enough."
+      default: 0
       selector:
         number:
           min: 0
           max: 10
+          step: 0.1
           mode: slider
 
-alias: VIEW ASSIST - Dice Roller
+alias: View Assist - Dice Roller
 description: "Handles flexible voice commands for dice rolling and plays an optional sound."
 trigger:
   - platform: conversation
@@ -65,8 +65,8 @@ action:
         data:
           media_content_id: "{{ sound_path }}"
           media_content_type: "music"
-      - delay:
-          seconds: "{{ delay_sec | int }}"
+      - delay: 
+          seconds: "{{ delay_sec | float }}"
           
   # Step 4: Read the results aloud via View Assist
   - set_conversation_response: >
