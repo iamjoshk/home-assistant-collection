@@ -22,7 +22,6 @@ blueprint:
       name: Roll Sound File Path
       description: "Optional path to a sound file (e.g., media-source://media_source/local/dice.wav or /media/dice.wav). Leave empty to disable."
       default: ""
-      icon: mdi:music-note
     sound_delay:
       name: Sound Delay (Seconds)
       description: "How long to wait after the sound starts before speaking. Set to 0 if your assistant's natural processing time is long enough."
