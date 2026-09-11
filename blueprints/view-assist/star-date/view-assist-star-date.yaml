@@ -7,10 +7,10 @@ blueprint:
       name: Trigger Sentences
       description: A list of voice commands that will trigger this automation.
       default:
-        - "What is the stardate"
-        - "What's the stardate"
-        - "Current stardate"
-        - "stardate"
+        - "What is the star date"
+        - "What's the star date"
+        - "Current star date"
+        - "star date"
       
 trigger:
   - platform: conversation
@@ -19,10 +19,19 @@ trigger:
 action:
   - variables:
       stardate: >
-        {% set year = now().year %}
+        {% set year = now().year + 340 %}
         {% set day_of_year = now().strftime('%j') | float %}
         {% set days_in_year = 366 if (year % 4 == 0 and year % 100 != 0) or (year % 400 == 0) else 365 %}
-        {{ (((year - 2323) * 1000) + ((day_of_year / days_in_year) * 1000)) | round(1, 'floor') }}
+        {% set raw_num = (((year - 2323) * 1000) + ((day_of_year / days_in_year) * 1000)) | round(1, 'floor') | string %}
+        {% set ns = namespace(text='') %}
+        {% for char in raw_num %}
+          {% if char == '.' %}
+            {% set ns.text = ns.text ~ 'point ' %}
+          {% else %}
+            {% set ns.text = ns.text ~ char ~ ' ' %}
+          {% endif %}
+        {% endfor %}
+        {{ ns.text | trim }}
         
   - set_conversation_response: "Captain's log. The current stardate is {{ stardate }}."
 
