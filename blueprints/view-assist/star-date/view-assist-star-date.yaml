@@ -1,16 +1,16 @@
 blueprint:
   name: View Assist - Stardate
-  description: Calculates a fictional Star Trek TNG Stardate.
+  description: Calculates the current Star Trek TNG Stardate using your custom formula and responds via View Assist.
   domain: automation
   input:
-    trigger_phrase:
-      name: Trigger Phrase
-      description: The voice command to trigger the stardate response.
-      default: "What is the stardate"
+    command_prompt:
+      name: Command Text
+      description: The phrase you want to use to trigger the automation.
+      default: "(What is the|What's the) stardate"
       
 trigger:
   - platform: conversation
-    command: !input trigger_phrase
+    command: !input command_prompt
     
 action:
   - variables:
@@ -19,6 +19,7 @@ action:
         {% set day_of_year = now().strftime('%j') | float %}
         {% set days_in_year = 366 if (year % 4 == 0 and year % 100 != 0) or (year % 400 == 0) else 365 %}
         {{ (((year - 2323) * 1000) + ((day_of_year / days_in_year) * 1000)) | round(1, 'floor') }}
+        
   - set_conversation_response: "Captain's log. The current stardate is {{ stardate }}."
 
 mode: single
