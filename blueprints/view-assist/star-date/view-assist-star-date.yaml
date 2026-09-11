@@ -1,6 +1,6 @@
 blueprint:
   name: View Assist - Stardate
-  description: Calculates the current Star Trek TNG Stardate using your custom formula and responds via View Assist.
+  description: Calculates a fictional stardate based on the current date.
   domain: automation
   input:
     command_prompt:
