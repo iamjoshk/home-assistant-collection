@@ -11,3 +11,9 @@ To use:
 4. Optionally download the `dice_roll.wav` and/or `dice_roll_boost.wav` for an audio sound effect. Move the file to your media directory or other accessible location.
 5. Create a new automation using the blueprint.
 6. May the virtual math rocks be in your favor.
+
+
+### Stardate
+
+A blueprint that calculates a fictional Star Trek: The Next Generation stardate based on the current date.
+It doesn't work well. 😅
