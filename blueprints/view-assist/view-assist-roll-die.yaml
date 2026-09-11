@@ -1,6 +1,7 @@
 blueprint:
   name: View Assist - Dice Roller
-  description: Roll a custom combination of dice via voice using PyScript, with an optional sound effect.
+  description: Roll RPG dice with an optional sound effect. (View Assist - Dice Roller v1.0.0)
+  source_url: https://github.com/iamjoshk/home-assistant-collection/blob/main/blueprints/view-assist/view-assist-roll-die.yaml
   domain: automation
   input:
     trigger_sentences_section:
@@ -67,13 +68,15 @@ action:
           seconds: "{{ delay_sec | float }}"
           
   # Step 4: Read the results aloud via View Assist
-  - set_conversation_response: >
+``- set_conversation_response: >
       {% if roll_results.error is defined %}
         I had trouble with that roll: {{ roll_results.error }}
       {% else %}
         {% set total_dice = roll_results.breakdown | map(attribute='count') | sum %}
         {% if total_dice == 1 %}
-          You rolled a {{ roll_results.total }}.
+          {% set t_str = roll_results.total | string %}
+          {% set article = 'an' if t_str == '11' or t_str == '18' or t_str.startswith('8') else 'a' %}
+          You rolled {{ article }} {{ t_str }}.
         {% else %}
           You rolled a total of {{ roll_results.total }}. 
           {% for group in roll_results.breakdown %}
