@@ -16,4 +16,5 @@ To use:
 ### Stardate
 
 A blueprint that calculates a fictional Star Trek: The Next Generation stardate based on the current date.
+
 It doesn't work well. 😅
