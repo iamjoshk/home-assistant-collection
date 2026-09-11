@@ -3,14 +3,18 @@ blueprint:
   description: Calculates a fictional stardate based on the current date.
   domain: automation
   input:
-    command_prompt:
-      name: Command Text
-      description: The phrase you want to use to trigger the automation.
-      default: "(What is the|What's the) stardate"
+    trigger_sentences:
+      name: Trigger Sentences
+      description: A list of voice commands that will trigger this automation.
+      default:
+        - "What is the stardate"
+        - "What's the stardate"
+        - "Current stardate"
+        - "stardate"
       
 trigger:
   - platform: conversation
-    command: !input command_prompt
+    command: !input trigger_sentences
     
 action:
   - variables:
