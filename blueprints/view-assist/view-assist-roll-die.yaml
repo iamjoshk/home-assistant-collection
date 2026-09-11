@@ -68,7 +68,7 @@ action:
           seconds: "{{ delay_sec | float }}"
           
   # Step 4: Read the results aloud via View Assist
-``- set_conversation_response: >
+  - set_conversation_response: >
       {% if roll_results.error is defined %}
         I had trouble with that roll: {{ roll_results.error }}
       {% else %}
