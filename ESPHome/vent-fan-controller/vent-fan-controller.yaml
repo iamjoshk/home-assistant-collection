@@ -1,0 +1,125 @@
+substitutions:
+  name: vent-fan
+  devices: !secret devices
+  ap_ssid: !secret ap_ssid
+  ap_pw: !secret ap_pw
+  ota_pw: !secret ota_pw
+
+esphome:
+  name: ${name}
+  friendly_name: ${ name | title | replace('-',' ')}
+  name_add_mac_suffix: false
+
+esp32:
+  board: seeed_xiao_esp32s3
+  framework:
+    type: esp-idf
+
+logger:
+  level: DEBUG
+
+debug:
+  update_interval: 5s
+
+api:
+  encryption:
+    key: ${ devices[name].api.key }
+
+ota:
+  - platform: esphome
+    password: ${ota_pw}${name}
+    
+
+wifi:
+  ssid: FHIoT
+  password: LocalNetworkofThings
+#  post_connect_roaming: false
+  power_save_mode: NONE
+  manual_ip:
+    static_ip: ${ devices[name].wifi.ip }
+    gateway: ${ devices[name].wifi.gateway }
+    subnet: ${ devices[name].wifi.subnet }
+  ap:
+    password: ${ap_pw}_${name}
+
+esp32_ble_tracker:
+  id: ${name}_tracker
+  scan_parameters:
+    interval: 320ms
+    window: 30ms
+    active: true
+
+bluetooth_proxy:
+  active: true
+  id: ble_proxy
+    
+
+captive_portal:
+
+button:
+  - platform: shutdown
+    name: "Shutdown"
+
+  - platform: restart
+    name: "Restart"
+
+sensor:
+  - platform: pulse_counter
+    pin: 
+      number: GPIO4   # Connect to any input PIN on the ESP
+      mode: INPUT_PULLUP
+    unit_of_measurement: 'RPM'
+    id: fan_speed
+    name: ${name} Fan Speed
+    accuracy_decimals: 0
+    filters:
+      - multiply: 0.5
+    update_interval: 10s
+
+  - platform: template
+    name: "Fan PWM Voltage"
+    unit_of_measurement: "%"
+    id: fan_speed_pwm_voltage
+
+output:
+  - platform: ledc
+    id: console_fan_speed
+    pin: GPIO6
+    frequency: "25000 Hz" 
+    min_power: 16% # below 16% fan turns off
+    max_power: 84% # fans are distractingly loud at this speed
+    zero_means_zero: true
+
+  - platform: template
+    id: proxy_output
+    type: float
+    write_action:
+      lambda: |-
+        float write_val = 
+          (id(manual_fan_control).state) ?
+            id(manual_fan_control).speed / 100.0 : state*1.0;
+        id(console_fan_speed).set_level(write_val);
+        id(fan_speed_pwm_voltage).publish_state(write_val*100.0);
+
+fan:
+  - platform: speed
+    id: manual_fan_control
+    output: proxy_output
+    name: "Vent Fan Switch"
+    
+text_sensor:
+  - platform: debug
+    device:
+      name: ${name} Device Info
+    reset_reason:
+      name: ${name} Reset Reason
+      
+  - platform: wifi_info
+    mac_address: 
+      name: ${name} MAC Address
+    ip_address:
+      name: ${name} IP Address
+    ssid:
+      name: ${name} SSID
+  
+  
