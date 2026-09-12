@@ -1,0 +1,62 @@
+alias: Bedroom Vent Fan
+description: ''
+triggers:
+  - trigger: state
+    entity_id:
+      - sensor.your_hvac_action
+    to:
+      - heating
+      - cooling
+    id: heat-cool
+  - trigger: state
+    entity_id:
+      - sensor.your_hvac_action
+    to:
+      - fan
+    id: fan
+  - trigger: state
+    entity_id:
+      - sensor.your_hvac_action
+    to:
+      - idle
+    id: idle
+conditions: []
+actions:
+  - choose:
+      - conditions:
+          - condition: trigger
+            id:
+              - heat-cool
+        sequence:
+          - action: fan.set_percentage
+            metadata: {}
+            target:
+              entity_id: fan.bedroom_vent_fan_switch
+            data:
+              percentage: >
+                {% set dt = 9 <= now().hour <= 20 %} {% if dt == true %} 75 {%
+                else %} 50 {% endif %}
+      - conditions:
+          - condition: trigger
+            id:
+              - fan
+        sequence:
+          - action: fan.set_percentage
+            metadata: {}
+            target:
+              entity_id: fan.bedroom_vent_fan_switch
+            data:
+              percentage: >
+                {% set dt = 9 <= now().hour <= 20 %} {% if dt == true %} 50 {%
+                else %} 25 {% endif %}
+      - conditions:
+          - condition: trigger
+            id:
+              - idle
+        sequence:
+          - action: fan.turn_off
+            metadata: {}
+            target:
+              entity_id: fan.bedroom_vent_fan_switch
+            data: {}
+mode: single
