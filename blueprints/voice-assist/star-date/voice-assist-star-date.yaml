@@ -1,5 +1,5 @@
 blueprint:
-  name: View Assist - Stardate
+  name: Voice Assist - Stardate
   description: Calculates a fictional stardate based on the current date.
   domain: automation
   input:
