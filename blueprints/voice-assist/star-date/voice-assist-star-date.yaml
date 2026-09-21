@@ -33,6 +33,6 @@ action:
         {% endfor %}
         {{ ns.text | trim }}
         
-  - set_conversation_response: "Captain's log. The current stardate is {{ stardate }}."
+  - set_conversation_response: "Captain's log. Stardate {{ stardate }}."
 
 mode: single
