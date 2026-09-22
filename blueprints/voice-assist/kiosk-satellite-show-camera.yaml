@@ -1,0 +1,57 @@
+blueprint:
+  name: Kiosk Satellite - Dynamic Voice Camera View
+  description: Dynamically trigger Kiosk Satellite camera views based on the specific device spoken to.
+  domain: automation
+  input:
+    trigger_sentences:
+      name: Trigger Sentences
+      description: "Sentences to trigger the camera view. Must include {camera_name}."
+      default:
+        - "show [me] [the] {camera_name}"
+        - "pull up [the] {camera_name}"
+        - "view [the] {camera_name}"
+      selector:
+        object: {}
+    camera_map:
+      name: Optional Camera Aliases
+      description: "Map spoken names to entity names IF they don't match perfectly. Example: {\"front yard\": \"front_door\"}."
+      default: {}
+      selector:
+        object: {}
+
+alias: Kiosk Satellite - Dynamic Voice Camera View
+mode: single
+
+trigger:
+  - trigger: conversation
+    command: !input trigger_sentences
+
+action:
+  - variables:
+      camera_map: !input camera_map
+      spoken_name: "{{ trigger.slots.camera_name | lower }}"
+      
+      # 1. Map the spoken word (if applicable) and slugify it
+      raw_slug: "{{ camera_map.get(spoken_name, spoken_name) | slugify }}"
+      
+      # 2. Normalize it by stripping out the word "camera" if you happened to say it
+      base_camera: "{{ raw_slug | replace('_camera', '') }}"
+      
+      # 3. Extract the Area and Device Name
+      area_slug: "{{ area_name(trigger.device_id) | slugify }}"
+      device_slug: "{{ device_attr(trigger.device_id, 'name') | slugify }}"
+      
+      # 4. Stitch it together, permanently appending _camera to the end
+      target_button: "button.{{ area_slug }}_{{ device_slug }}_show_{{ base_camera }}_camera"
+
+  - if:
+      - condition: template
+        value_template: "{{ states[target_button] is defined }}"
+    then:
+      - action: button.press
+        target:
+          entity_id: "{{ target_button }}"
+          
+      - set_conversation_response: "Showing {{ trigger.slots.camera_name }}."
+    else:
+      - set_conversation_response: "I could not find the camera button for this device."

@@ -1,0 +1,34 @@
+blueprint:
+  name: Voice Assist - Spell a Word
+  description: Ask Assist to spell a word and it spells it out letter-by-letter.
+  domain: automation
+  input:
+    command_prompt:
+      name: Command Text
+      description: The phrase you want to use to trigger the automation
+      default: '[please] [how do you | can you] spell {word}'
+    slow:
+      name: Use Slower Spelling?
+      description: This option adds slightly more space between letters of the word in the response.
+      default: false
+      selector:
+        boolean: {}
+
+alias: Voice Assist - Spell a Word
+description: Spells a word letter by letter for generic Assist pipelines.
+mode: single
+
+trigger:
+  - trigger: conversation
+    command: !input command_prompt
+
+action:
+  - variables:
+      slow: !input slow
+      # Convert the word to a list of characters and join them with punctuation so TTS reads them individually
+      spaced_text: >
+        {% set chars = trigger.slots.word | list %}
+        {{ chars | join('. . . . ') if slow else chars | join('. . ') }}
+
+  # Route the spoken English response back to the specific device automatically
+  - set_conversation_response: "{{ trigger.slots.word }} is spelled ... {{ spaced_text }}"
