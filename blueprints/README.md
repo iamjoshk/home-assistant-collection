@@ -18,7 +18,7 @@ To use:
 ### Stardate
 ##### Blueprint import url: 
 ```
-https://github.com/iamjoshk/home-assistant-collection/blob/main/blueprints/voice-assist/roll-dice/voice-assist-roll-die.yaml
+https://github.com/iamjoshk/home-assistant-collection/blob/main/blueprints/voice-assist/star-date/voice-assist-star-date.yaml
 ```
 
 A blueprint that calculates a fictional Star Trek: The Next Generation stardate based on the current date.
