@@ -1,0 +1,100 @@
+blueprint:
+  name: Voice Assist - Broadcasts
+  description: "Broadcasts a spoken message to all satellites, or dynamically targets a specific area, floor, or device by name."
+  domain: automation
+  input:
+    trigger_sentences:
+      name: Trigger Sentences
+      description: "Sentences to trigger the announcement. Use {targets} for the location and {message} for the text."
+      default:
+        - "send [a | an] (announcement | announce | broadcast) to {targets} (that says | saying ) {message}"
+        - "(tell | tell the) {targets} [that] {message}"
+        - "send [a | an] (announcement | announce | broadcast | tell everyone) [saying | that says] {message}"
+        - "send [a | an] (announcement | announce | broadcast | tell everyone) {message}"
+      selector:
+        object: {}
+    target_aliases:
+      name: Target Aliases
+      description: 'Optional. Map spoken speech-to-text errors or nicknames to actual satellite, area, or floor names. Example: {"bob":"satellite1"}'
+      default: {}
+      selector:
+        object: {}
+
+trigger:
+  - platform: conversation
+    command: !input trigger_sentences
+    id: broadcast
+
+condition: []
+
+action:
+  - variables:
+      raw_targets: "{{ trigger.slots.targets | default('') | lower | trim }}"
+      message: "{{ trigger.slots.message | default('Attention') | title }}"
+      aliases: !input target_aliases
+      
+      # Identify the satellite you are currently talking to
+      source_device_id: "{{ trigger.device_id | default('') }}"
+      source_entities: "{{ device_entities(source_device_id) if source_device_id != '' else [] }}"
+      source_satellite: "{{ source_entities | select('match', '^assist_satellite\\.') | first | default('') }}"
+      
+      all_satellites: "{{ states.assist_satellite | map(attribute='entity_id') | list }}"
+      
+      target_list: >-
+        {% if raw_targets == '' or raw_targets in ['all', 'everyone', 'everywhere', 'the house'] %}
+          {{ all_satellites | reject('eq', source_satellite) | list }}
+        {% else %}
+          {% set ns = namespace(clean=raw_targets) %}
+          
+          {# Apply user-defined aliases as a find-and-replace #}
+          {% if aliases is mapping %}
+            {% for spoken, actual in aliases.items() %}
+              {% set ns.clean = ns.clean | replace(spoken | string | lower, actual | string | lower) %}
+            {% endfor %}
+          {% endif %}
+          
+          {% set fillers = ['the ', ' room', ' floor', ' area'] %}
+          {% for f in fillers %}
+            {% set ns.clean = ns.clean | replace(f, '') %}
+          {% endfor %}
+          {% set search = ns.clean | trim %}
+          
+          {% set ns_found = namespace(entities=[]) %}
+          {% for ent in all_satellites %}
+            {% set e_name = state_attr(ent, 'friendly_name') | lower | default('') %}
+            {% set a_id = area_id(ent) %}
+            {% set a_name = area_name(ent) | lower | default('') %}
+            {% set f_name = floor_name(a_id) | lower | default('') if a_id else '' %}
+            
+            {% if search in e_name or search in a_name or search in f_name %}
+              {% set ns_found.entities = ns_found.entities + [ent] %}
+            {% endif %}
+          {% endfor %}
+          
+          {{ ns_found.entities | reject('eq', source_satellite) | list }}
+        {% endif %}
+
+  - if:
+      - condition: template
+        value_template: "{{ target_list | length > 0 }}"
+    then:
+      - action: assist_satellite.announce
+        target:
+          entity_id: "{{ target_list }}"
+        data:
+          message: "{{ message }}"
+      - set_conversation_response: >
+          {% if raw_targets == '' or raw_targets in ['all', 'everyone', 'everywhere', 'the house'] %}
+            Broadcasting to all other satellites: {{ message }}
+          {% else %}
+            Broadcasting to {{ raw_targets }}: {{ message }}
+          {% endif %}
+    else:
+      - set_conversation_response: >
+          {% if raw_targets == '' %}
+            No other satellites available to broadcast to.
+          {% else %}
+            No other satellites found for {{ raw_targets }}.
+          {% endif %}
+
+mode: parallel
