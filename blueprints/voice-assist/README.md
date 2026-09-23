@@ -65,3 +65,11 @@ https://github.com/iamjoshk/home-assistant-collection/blob/main/blueprints/voice
 ```
 
 Provides the sports scores for team_tracker entities. Needs the entity names to be `sensor.team_tracker_<teamname>`, like `sensor.team_tracker_eagles`. Can add aliases to map back to the correct name, like `"birds":"eagles"`.
+
+### Broadcasts
+##### Blueprint import url:
+```
+https://github.com/iamjoshk/home-assistant-collection/blob/main/blueprints/voice-assist/broadcasts/voice-assist-broadcasts.yaml
+```
+
+Send broadcasts to all, some, or specific satellites by area, floor, or name. Allows for custom name mappings.
