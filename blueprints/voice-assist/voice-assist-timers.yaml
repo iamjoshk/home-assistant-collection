@@ -1,0 +1,161 @@
+blueprint:
+  name: Voice Satellite - Absolute Timer/Alarm
+  description: "Sets a timer on an Assist Satellite by calculating the duration until an absolute time. Uses Regex to ignore junk text."
+  domain: automation
+  input:
+    timer_sentences:
+      name: Trigger Sentences
+      description: "Use {when} for the time and {name} for an optional timer name."
+      default:
+        - "set [a] timer [for] [called {name}] for {when}"
+        - "set [a] timer [for] [named {name}] for {when}"
+        - "(set|start) [a|an] [{name}] timer for {when}"
+        - "set [an] alarm [for] [called {name}] for {when}"
+        - "set [an] alarm [for] [named {name}] for {when}"
+        - "(set|start) [a|an] [{name}] alarm for {when}"
+      selector:
+        text:
+          multiple: true
+    fallback_satellite:
+      name: Fallback Satellite Entity
+      description: "If the automation cannot determine which satellite you spoke to, it will default to this entity."
+      default: ""
+      selector:
+        entity:
+          domain: assist_satellite
+
+trigger:
+  - platform: conversation
+    command: !input timer_sentences
+    id: set_timer
+
+condition: []
+
+action:
+  - variables:
+      when_raw: "{{ trigger.slots.when | default('12:00 pm') }}"
+      timer_name: "{{ trigger.slots.name | default('Timer') | title }}"
+      fallback_entity: !input fallback_satellite
+      
+      device_id: "{{ trigger.device_id | default('') }}"
+      device_entities_list: "{{ device_entities(device_id) if device_id != '' else [] }}"
+      satellite_entities: "{{ device_entities_list | select('match', '^assist_satellite\\.') | list }}"
+      satellite_entity: >
+        {% if satellite_entities | length > 0 %}
+          {{ satellite_entities[0] }}
+        {% elif fallback_entity != '' %}
+          {{ fallback_entity }}
+        {% else %}
+          none
+        {% endif %}
+
+      target_sec: >-
+        {%- set when = when_raw | lower | replace('.','') -%}
+        
+        {# Convert spelled-out speech-to-text words to actual digits #}
+        {%- set num_map = (
+          ('twenty one', '21'), ('twenty two', '22'), ('twenty three', '23'), ('twenty four', '24'), ('twenty five', '25'), ('twenty six', '26'), ('twenty seven', '27'), ('twenty eight', '28'), ('twenty nine', '29'),
+          ('thirty one', '31'), ('thirty two', '32'), ('thirty three', '33'), ('thirty four', '34'), ('thirty five', '35'), ('thirty six', '36'), ('thirty seven', '37'), ('thirty eight', '38'), ('thirty nine', '39'),
+          ('forty one', '41'), ('forty two', '42'), ('forty three', '43'), ('forty four', '44'), ('forty five', '45'), ('forty six', '46'), ('forty seven', '47'), ('forty eight', '48'), ('forty nine', '49'),
+          ('fifty one', '51'), ('fifty two', '52'), ('fifty three', '53'), ('fifty four', '54'), ('fifty five', '55'), ('fifty six', '56'), ('fifty seven', '57'), ('fifty eight', '58'), ('fifty nine', '59'),
+          ('eleven', '11'), ('twelve', '12'), ('thirteen', '13'), ('fourteen', '14'), ('fifteen', '15'), ('sixteen', '16'), ('seventeen', '17'), ('eighteen', '18'), ('nineteen', '19'),
+          ('ten', '10'), ('twenty', '20'), ('thirty', '30'), ('forty', '40'), ('fifty', '50'),
+          ('one', '1'), ('two', '2'), ('three', '3'), ('four', '4'), ('five', '5'), ('six', '6'), ('seven', '7'), ('eight', '8'), ('nine', '9')
+        ) -%}
+        {%- set ns = namespace(time_str = when) -%}
+        {%- for word, digit in num_map -%}
+          {%- set ns.time_str = ns.time_str | replace(word, digit) -%}
+        {%- endfor -%}
+        {%- set text_val = ns.time_str -%}
+        
+        {%- set days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'] -%}
+        {%- set target_day_idx = -1 -%}
+        {%- for d in days -%}
+          {%- if d in text_val -%}
+            {%- set target_day_idx = loop.index0 -%}
+          {%- endif -%}
+        {%- endfor -%}
+        {%- set is_tomorrow = 'tomorrow' in text_val -%}
+        {%- set is_pm = 'pm' in text_val or 'p m' in text_val or 'tonight' in text_val or 'evening' in text_val -%}
+        {%- set is_am = 'am' in text_val or 'a m' in text_val or 'morning' in text_val -%}
+        
+        {# Regex sweeps through and grabs ONLY numbers, ignoring any rogue STT text #}
+        {%- set numbers = text_val | regex_findall('[0-9]+') -%}
+        
+        {%- if numbers | length >= 2 -%}
+          {%- set h = numbers[0] | int(0) -%}
+          {%- set m = numbers[1] | int(0) -%}
+        {%- elif numbers | length == 1 -%}
+          {%- set num_str = numbers[0] | string -%}
+          {%- if num_str | length == 4 -%}
+            {%- set h = num_str[:2] | int(0) -%}
+            {%- set m = num_str[2:] | int(0) -%}
+          {%- elif num_str | length == 3 -%}
+            {%- set h = num_str[:1] | int(0) -%}
+            {%- set m = num_str[1:] | int(0) -%}
+          {%- else -%}
+            {%- set h = num_str | int(0) -%}
+            {%- set m = 0 -%}
+          {%- endif -%}
+        {%- else -%}
+          {%- set h = 12 -%} {# Default if absolutely no numbers are found #}
+          {%- set m = 0 -%}
+        {%- endif -%}
+        
+        {%- if is_pm and h < 12 -%}
+          {%- set h = h + 12 -%}
+        {%- elif is_am and h == 12 -%}
+          {%- set h = 0 -%}
+        {%- endif -%}
+        
+        {%- set h = [0, [h, 23] | min] | max -%}
+        {%- set m = [0, [m, 59] | min] | max -%}
+        {%- set target = today_at("%02d:%02d" % (h, m)) -%}
+        
+        {%- if not is_am and not is_pm and h < 12 and target < now() -%}
+          {%- set target = target + timedelta(hours=12) -%}
+        {%- endif -%}
+        
+        {%- if target_day_idx != -1 -%}
+          {%- set current_day_idx = now().weekday() -%}
+          {%- set days_ahead = target_day_idx - current_day_idx -%}
+          {%- if days_ahead < 0 or (days_ahead == 0 and target < now()) -%}
+            {%- set days_ahead = days_ahead + 7 -%}
+          {%- endif -%}
+          {%- set target = target + timedelta(days=days_ahead) -%}
+        {%- elif is_tomorrow -%}
+          {%- set target = target + timedelta(days=1) -%}
+        {%- else -%}
+          {%- if target < now() -%}
+            {%- set target = target + timedelta(days=1) -%}
+          {%- endif -%}
+        {%- endif -%}
+        {{- (target - now()).total_seconds() | int(0) -}}
+
+      hours: "{{ ((target_sec | int(0)) // 3600) | int(0) }}"
+      minutes: "{{ (((target_sec | int(0)) % 3600) // 60) | int(0) }}"
+      seconds: "{{ ((target_sec | int(0)) % 60) | int(0) }}"
+
+  - if:
+      - condition: template
+        value_template: "{{ satellite_entity != 'none' and (target_sec | int(0)) > 0 }}"
+    then:
+      - action: voice_satellite.start_timer
+        target:
+          entity_id: "{{ satellite_entity }}"
+        data:
+          name: "{{ timer_name }}"
+          hours: "{{ hours }}"
+          minutes: "{{ minutes }}"
+          seconds: "{{ seconds }}"
+      - set_conversation_response: >
+          {{ timer_name }} set for {% if hours | int(0) > 0 %}{{ hours }} hour{% if hours | int(0) > 1 %}s{% endif %} and {% endif %}{{ minutes }} minute{% if minutes | int(0) != 1 %}s{% endif %} from now.
+    else:
+      - set_conversation_response: >
+          {% if satellite_entity == 'none' %}
+            I couldn't determine which satellite to set the timer on.
+          {% else %}
+            I couldn't understand that time format.
+          {% endif %}
+
+mode: single
