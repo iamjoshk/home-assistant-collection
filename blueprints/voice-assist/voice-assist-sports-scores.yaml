@@ -1,0 +1,81 @@
+blueprint:
+  name: Voice Assist - Get Sports Scores
+  description: Get live sports scores. Automatically builds the sensor name and supports custom aliases (e.g., mapping "Birds" to "Eagles").
+  domain: automation
+  input:
+    trigger_phrases:
+      name: Trigger Phrases
+      description: "The phrases to trigger the sports score conversation. Must include {team}."
+      default:
+        - "how did [the] {team} do"
+        - "(what is | what's) the score of the {team} (game | match)"
+        - "how (is | are) [the] {team} doing"
+        - "how (is | are) [the] {team} (game | match) [going]"
+      selector:
+        object: {}
+    sensor_prefix:
+      name: Sensor Prefix
+      description: "The beginning of your sensor entity ID."
+      default: "sensor.team_tracker_"
+    team_aliases:
+      name: Team Aliases (Optional)
+      description: "Map spoken nicknames to the actual team name used in your sensor. Write in standard YAML format. Example:\nbirds: eagles\nphils: phillies\nsixers: 76ers"
+      default: {}
+      selector:
+        object: {}
+
+alias: Voice Assist - Get Sports Scores
+mode: single
+
+trigger:
+  - trigger: conversation
+    command: !input trigger_phrases
+
+action:
+  - variables:
+      aliases: !input team_aliases
+      prefix: !input sensor_prefix
+      spoken_team: "{{ trigger.slots.team | lower }}"
+      
+      # 1. Check if the spoken name has an alias (Birds -> eagles). If not, use what was spoken.
+      # 2. Slugify the result to ensure there are no spaces (e.g., "penn state" -> "penn_state").
+      resolved_team: "{{ aliases.get(spoken_team, spoken_team) | slugify }}"
+      
+      # 3. Construct the exact entity ID
+      target_tracker: "{{ prefix }}{{ resolved_team }}"
+
+  - if:
+      # Check if this dynamically generated sensor actually exists
+      - condition: template
+        value_template: "{{ states[target_tracker] is defined }}"
+    then:
+      - variables:
+          state: "{{ states(target_tracker) }}"
+          team_name: "{{ state_attr(target_tracker, 'team_name') }}"
+          opp_name: "{{ state_attr(target_tracker, 'opponent_name') }}"
+          team_score: "{{ state_attr(target_tracker, 'team_score') }}"
+          opp_score: "{{ state_attr(target_tracker, 'opponent_score') }}"
+          kickoff: "{{ state_attr(target_tracker, 'kickoff_in') }}"
+          
+          # Determine win/loss logic
+          won_game: "{{ state_attr(target_tracker, 'team_winner') == true }}"
+          outcome: "{{ 'won' if won_game else 'lost' }}"
+
+          conversation_response: >
+            {% if state == 'POST' %}
+              The {{ team_name }} played the {{ opp_name }} and {{ outcome }} {{ team_score }} to {{ opp_score }}.
+            {% elif state == 'PRE' %}
+              The {{ team_name }} play the {{ opp_name }} {{ kickoff }}.
+            {% elif state == 'IN' %}
+              The {{ team_name }} are currently playing the {{ opp_name }}. The score is {{ team_name }} {{ team_score }}, {{ opp_name }} {{ opp_score }}.
+            {% elif state == 'NOT_FOUND' %}
+              The {{ team_name }} have no games on today's schedule.
+            {% else %}
+              Sorry, I could not find any recent or upcoming games for the {{ trigger.slots.team }}.
+            {% endif %}
+
+      - set_conversation_response: "{{ conversation_response }}"
+
+    else:
+      # Fallback if the generated sensor doesn't exist
+      - set_conversation_response: "I do not have a tracker set up for the {{ trigger.slots.team }}."
