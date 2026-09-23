@@ -1,29 +1,48 @@
 blueprint:
   name: Voice Assist - Dynamic Length Weather Forecast
-  description: Speaks a short forecast (Today/Tomorrow) or an extended 5-day forecast based on the spoken command.
+  description: Speaks a single-day (Today/Tomorrow), short (Today & Tomorrow), extended (5-day), or detailed (hourly) forecast based on the spoken command.
   domain: automation
   input:
+    trigger_sentences_today:
+      name: Today Forecast Sentences
+      description: "Sentences to trigger just today's forecast."
+      default:
+        - "(tell|give|what is|what's) [me] the weather today"
+        - "(tell|give|what is|what's) today's (forecast|weather)"
+      selector:
+        object: {}
+    trigger_sentences_tomorrow:
+      name: Tomorrow Forecast Sentences
+      description: "Sentences to trigger just tomorrow's forecast."
+      default:
+        - "(tell|give|what is|what's) [me] the weather tomorrow"
+        - "(tell|give|what is|what's) tomorrow's (forecast|weather)"
+      selector:
+        object: {}
     trigger_sentences_short:
       name: Short Forecast Sentences
       description: "Sentences to trigger the 2-day forecast (Today and Tomorrow)."
       default:
-        - "what is the forecast"
-        - "what's the weather forecast"
-        - "tell me the [weather] forecast"
+        - "(tell me|give me|what is|what's) the [weather] forecast"
       selector:
         object: {}
     trigger_sentences_extended:
       name: Extended Forecast Sentences
       description: "Sentences to trigger the full 5-day forecast."
       default:
-        - "what is the extended forecast"
-        - "tell me the extended forecast"
-        - "give me the five day forecast"
+        - "(tell me|give me|what is|what's) the (five day|extended) [weather] forecast"
+      selector:
+        object: {}
+    trigger_sentences_detailed:
+      name: Detailed Forecast Sentences
+      description: "Sentences to trigger the hourly forecast for the next 6 hours."
+      default:
+        - "(tell|give|what is|what's) [me] the (detailed|hourly) [weather] (weather|forecast) [forecast]"
       selector:
         object: {}
     weather_entity:
       name: Weather Entity
-      description: "The weather entity to query."
+      description: "The weather entity to query. Must provide daily, twice-daily, and hourly forecasts."
       selector:
         entity:
           domain: weather
@@ -32,68 +51,208 @@ alias: Voice Assist - Dynamic Length Weather Forecast
 mode: single
 
 trigger:
-  # Trigger 1: The Short Forecast
+  # Trigger 1: Today's Forecast Only
+  - trigger: conversation
+    command: !input trigger_sentences_today
+    id: today
+
+  # Trigger 2: Tomorrow's Forecast Only
+  - trigger: conversation
+    command: !input trigger_sentences_tomorrow
+    id: tomorrow
+
+  # Trigger 3: The Short Forecast
   - trigger: conversation
     command: !input trigger_sentences_short
     id: short
 
-  # Trigger 2: The Extended Forecast
+  # Trigger 4: The Extended Forecast
   - trigger: conversation
     command: !input trigger_sentences_extended
     id: extended
 
+  # Trigger 5: The Detailed Forecast
+  - trigger: conversation
+    command: !input trigger_sentences_detailed
+    id: detailed
+
 action:
   - variables:
       weather_entity: !input weather_entity
-      # Check which trigger started the automation
-      is_extended: "{{ trigger.id == 'extended' }}"
+      # Determine which data structure to request based on the trigger
+      forecast_type: >
+        {% if trigger.id == 'extended' %}
+          daily
+        {% elif trigger.id == 'detailed' %}
+          hourly
+        {% else %}
+          twice_daily
+        {% endif %}
 
-  # 1. Fetch the daily forecast from the selected entity
+  # 1. Fetch the forecast from the selected entity dynamically
   - action: weather.get_forecasts
     data:
-      type: daily
+      type: "{{ forecast_type }}"
     target:
       entity_id: "{{ weather_entity }}"
     response_variable: forecast_response
+    continue_on_error: true
 
   # 2. Parse the response and dynamically build the spoken English text
   - variables:
-      forecasts: "{{ forecast_response[weather_entity].forecast }}"
-      
+      forecasts: >
+        {% if forecast_response is defined %}
+          {{ forecast_response[weather_entity].forecast }}
+        {% else %}
+          {{ '' }}
+        {% endif %}      
       spoken_forecast: >
         {% if forecasts | length > 0 %}
           {% set ns = namespace(sentences=[]) %}
           
-          {# Set the loop limit based on the trigger ID #}
-          {% set limit = 5 if is_extended else 2 %}
-          
-          {# The [ : limit ] syntax slices the array so it only loops exactly that many times #}
-          {% for f in forecasts[:limit] %}
+          {% if trigger.id == 'extended' %}
+            {# --- DAILY PARSING FOR EXTENDED (5 DAYS) --- #}
+            {% for f in forecasts[:5] %}
+              {% set cond = f.condition | replace('partlycloudy', 'partly cloudy') | replace('clear-night', 'clear') | replace('lightning', 'thunderstorms') | replace('pouring', 'heavy rain') | replace('-', ' ') %}
+              {% set high = f.temperature %}
+              {% set low = f.templow | default('unknown') %}
+              {% set precip_prob = f.precipitation_probability | default(0) | int(0) %}
+              
+              {% if loop.index0 == 0 %}
+                {% set day_name = "Today" %}
+              {% elif loop.index0 == 1 %}
+                {% set day_name = "Tomorrow" %}
+              {% else %}
+                {% set day_name = "On " ~ (as_timestamp(f.datetime) | timestamp_custom('%A', true)) %}
+              {% endif %}
+              
+              {% if precip_prob > 0 %}
+                {% set phrase = day_name ~ ", expect " ~ cond ~ " with a high of " ~ high ~ ", a low of " ~ low ~ ", and a " ~ precip_prob ~ " percent chance of precipitation." %}
+              {% else %}
+                {% set phrase = day_name ~ ", expect " ~ cond ~ " with a high of " ~ high ~ " and a low of " ~ low ~ "." %}
+              {% endif %}
+              
+              {% set ns.sentences = ns.sentences + [phrase] %}
+            {% endfor %}
             
-            {# Clean up HA's backend condition strings for natural TTS reading #}
-            {% set cond = f.condition | replace('partlycloudy', 'partly cloudy') | replace('lightning', 'thunderstorms') | replace('pouring', 'heavy rain') | replace('-', ' ') %}
-            {% set high = f.temperature %}
-            {% set low = f.templow | default('unknown') %}
+          {% elif trigger.id == 'detailed' %}
+            {# --- HOURLY PARSING FOR DETAILED (UP TO 6 HOURS, CURRENT DAY ONLY, CONSECUTIVE GROUPING) --- #}
+            {% set ns_det = namespace(count=0, start_time="", last_time="", cond="", temp="", precip=0, sentences=[]) %}
             
-            {# Determine how to refer to the day based on the loop index #}
-            {% if loop.index0 == 0 %}
-              {% set phrase = "Today will be " ~ cond ~ " with a high of " ~ high ~ " and a low of " ~ low ~ "." %}
-            {% elif loop.index0 == 1 %}
-              {% set phrase = "Tomorrow will be " ~ cond ~ " with a high of " ~ high ~ " and a low of " ~ low ~ "." %}
+            {% for f in forecasts %}
+              {% set f_time = as_local(as_datetime(f.datetime)) %}
+              
+              {# Only process up to 6 hours, and strictly stop if the day rolls over to tomorrow #}
+              {% if f_time.date() == now().date() and ns_det.count < 6 and f_time >= now().replace(minute=0, second=0, microsecond=0) %}
+                
+                {% set cond = f.condition | replace('partlycloudy', 'partly cloudy') | replace('clear-night', 'clear') | replace('lightning', 'thunderstorms') | replace('pouring', 'heavy rain') | replace('-', ' ') %}
+                {% set temp = f.temperature %}
+                {% set precip = f.precipitation_probability | default(0) | int(0) %}
+                {% set hour_str = f_time.strftime('%-I %p') | lower %}
+                
+                {% if ns_det.count == 0 %}
+                  {# First hour processed: set baseline #}
+                  {% set ns_det.start_time = hour_str %}
+                  {% set ns_det.last_time = hour_str %}
+                  {% set ns_det.cond = cond %}
+                  {% set ns_det.temp = temp %}
+                  {% set ns_det.precip = precip %}
+                {% else %}
+                  {# Consecutive hour: check if condition, temp, and precip match the baseline #}
+                  {% if cond == ns_det.cond and temp == ns_det.temp and precip == ns_det.precip %}
+                    {% set ns_det.last_time = hour_str %}
+                  {% else %}
+                    {# A change occurred! Format the previous block and push to sentences #}
+                    {% if ns_det.start_time == ns_det.last_time %}
+                      {% set phrase = "At " ~ ns_det.start_time ~ " it will be " ~ ns_det.temp ~ " degrees and " ~ ns_det.cond %}
+                    {% else %}
+                      {% set phrase = "From " ~ ns_det.start_time ~ " to " ~ ns_det.last_time ~ " it will be " ~ ns_det.temp ~ " degrees and " ~ ns_det.cond %}
+                    {% endif %}
+                    
+                    {% if ns_det.precip > 0 %}
+                      {% set phrase = phrase ~ " with a " ~ ns_det.precip ~ " percent chance of precipitation." %}
+                    {% else %}
+                      {% set phrase = phrase ~ "." %}
+                    {% endif %}
+                    
+                    {% set ns_det.sentences = ns_det.sentences + [phrase] %}
+                    
+                    {# Reset baseline to the current hour #}
+                    {% set ns_det.start_time = hour_str %}
+                    {% set ns_det.last_time = hour_str %}
+                    {% set ns_det.cond = cond %}
+                    {% set ns_det.temp = temp %}
+                    {% set ns_det.precip = precip %}
+                  {% endif %}
+                {% endif %}
+                
+                {% set ns_det.count = ns_det.count + 1 %}
+              {% endif %}
+            {% endfor %}
+            
+            {# Loop finished: Make sure we push the final group to the sentences list #}
+            {% if ns_det.count > 0 %}
+              {% if ns_det.start_time == ns_det.last_time %}
+                {% set phrase = "At " ~ ns_det.start_time ~ " it will be " ~ ns_det.temp ~ " degrees and " ~ ns_det.cond %}
+              {% else %}
+                {% set phrase = "From " ~ ns_det.start_time ~ " to " ~ ns_det.last_time ~ " it will be " ~ ns_det.temp ~ " degrees and " ~ ns_det.cond %}
+              {% endif %}
+              
+              {% if ns_det.precip > 0 %}
+                {% set phrase = phrase ~ " with a " ~ ns_det.precip ~ " percent chance of precipitation." %}
+              {% else %}
+                {% set phrase = phrase ~ "." %}
+              {% endif %}
+              
+              {% set ns_det.sentences = ns_det.sentences + [phrase] %}
             {% else %}
-              {# Convert the raw datetime string to a full weekday name #}
-              {% set day_name = as_timestamp(f.datetime) | timestamp_custom('%A', true) %}
-              {% set phrase = "On " ~ day_name ~ ", expect " ~ cond ~ " with a high of " ~ high ~ " and a low of " ~ low ~ "." %}
+              {% set ns_det.sentences = ["There are no more hourly forecasts available for today."] %}
             {% endif %}
             
-            {# Add the generated phrase to our list #}
-            {% set ns.sentences = ns.sentences + [phrase] %}
-          {% endfor %}
+            {% set ns.sentences = ns.sentences + ns_det.sentences %}
+            
+          {% else %}
+            {# --- TWICE-DAILY PARSING FOR TODAY / TOMORROW / SHORT --- #}
+            {% if trigger.id == 'today' %}
+              {% set min_diff = 0 %}
+              {% set max_diff = 0 %}
+            {% elif trigger.id == 'tomorrow' %}
+              {% set min_diff = 1 %}
+              {% set max_diff = 1 %}
+            {% else %}
+              {% set min_diff = 0 %}
+              {% set max_diff = 1 %}
+            {% endif %}
+            
+            {% for f in forecasts %}
+              {% set f_date = as_local(as_datetime(f.datetime)).date() %}
+              {% set date_diff = (f_date - now().date()).days %}
+              
+              {% if min_diff <= date_diff <= max_diff %}
+                {% set cond = f.condition | replace('partlycloudy', 'partly cloudy') | replace('clear-night', 'clear') | replace('lightning', 'thunderstorms') | replace('pouring', 'heavy rain') | replace('-', ' ') %}
+                {% set temp = f.temperature %}
+                {% set precip_prob = f.precipitation_probability | default(0) | int(0) %}
+                
+                {% if date_diff == 0 %}
+                  {% set time_phrase = "Today" if f.is_daytime else "Tonight" %}
+                {% elif date_diff == 1 %}
+                  {% set time_phrase = "Tomorrow" if f.is_daytime else "Tomorrow night" %}
+                {% endif %}
+                
+                {% if precip_prob > 0 %}
+                  {% set phrase = time_phrase ~ ", expect " ~ cond ~ " with a temperature of " ~ temp ~ " degrees and a " ~ precip_prob ~ " percent chance of precipitation." %}
+                {% else %}
+                  {% set phrase = time_phrase ~ ", expect " ~ cond ~ " with a temperature of " ~ temp ~ " degrees." %}
+                {% endif %}
+                
+                {% set ns.sentences = ns.sentences + [phrase] %}
+              {% endif %}
+            {% endfor %}
+          {% endif %}
           
-          {# Combine all the sentences with a space in between #}
           {{ ns.sentences | join(' ') }}
         {% else %}
-          I'm sorry, I couldn't retrieve the forecast data.
+          I'm sorry, I couldn't retrieve the {{forecast_type | replace("_"," ")}} forecast data.
         {% endif %}
 
   # 3. Route the spoken response back to the device
