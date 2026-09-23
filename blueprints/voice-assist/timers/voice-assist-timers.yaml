@@ -52,8 +52,9 @@ action:
       target_sec: >-
         {%- set when = when_raw | lower | replace('.','') -%}
         
-        {# Convert spelled-out speech-to-text words to actual digits #}
+        {# Convert spelled-out speech-to-text words and natural durations to actual digits #}
         {%- set num_map = (
+          ('half an hour', '30 minutes'), ('half hour', '30 minutes'), ('an hour', '1 hour'), ('a minute', '1 minute'), ('a second', '1 second'),
           ('twenty one', '21'), ('twenty two', '22'), ('twenty three', '23'), ('twenty four', '24'), ('twenty five', '25'), ('twenty six', '26'), ('twenty seven', '27'), ('twenty eight', '28'), ('twenty nine', '29'),
           ('thirty one', '31'), ('thirty two', '32'), ('thirty three', '33'), ('thirty four', '34'), ('thirty five', '35'), ('thirty six', '36'), ('thirty seven', '37'), ('thirty eight', '38'), ('thirty nine', '39'),
           ('forty one', '41'), ('forty two', '42'), ('forty three', '43'), ('forty four', '44'), ('forty five', '45'), ('forty six', '46'), ('forty seven', '47'), ('forty eight', '48'), ('forty nine', '49'),
@@ -68,69 +69,86 @@ action:
         {%- endfor -%}
         {%- set text_val = ns.time_str -%}
         
-        {%- set days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'] -%}
-        {%- set target_day_idx = -1 -%}
-        {%- for d in days -%}
-          {%- if d in text_val -%}
-            {%- set target_day_idx = loop.index0 -%}
-          {%- endif -%}
-        {%- endfor -%}
-        {%- set is_tomorrow = 'tomorrow' in text_val -%}
-        {%- set is_pm = 'pm' in text_val or 'p m' in text_val or 'tonight' in text_val or 'evening' in text_val -%}
-        {%- set is_am = 'am' in text_val or 'a m' in text_val or 'morning' in text_val -%}
+        {# Branch 1: Is this a relative duration? (e.g., "15 minutes") #}
+        {%- set is_duration = 'minute' in text_val or 'hour' in text_val or 'second' in text_val -%}
         
-        {# Regex sweeps through and grabs ONLY numbers, ignoring any rogue STT text #}
-        {%- set numbers = text_val | regex_findall('[0-9]+') -%}
-        
-        {%- if numbers | length >= 2 -%}
-          {%- set h = numbers[0] | int(0) -%}
-          {%- set m = numbers[1] | int(0) -%}
-        {%- elif numbers | length == 1 -%}
-          {%- set num_str = numbers[0] | string -%}
-          {%- if num_str | length == 4 -%}
-            {%- set h = num_str[:2] | int(0) -%}
-            {%- set m = num_str[2:] | int(0) -%}
-          {%- elif num_str | length == 3 -%}
-            {%- set h = num_str[:1] | int(0) -%}
-            {%- set m = num_str[1:] | int(0) -%}
+        {%- if is_duration -%}
+          {%- set h_match = text_val | regex_findall('([0-9]+)\s*hour') -%}
+          {%- set m_match = text_val | regex_findall('([0-9]+)\s*minute') -%}
+          {%- set s_match = text_val | regex_findall('([0-9]+)\s*second') -%}
+          
+          {%- set dur_h = h_match[0] | int(0) if h_match else 0 -%}
+          {%- set dur_m = m_match[0] | int(0) if m_match else 0 -%}
+          {%- set dur_s = s_match[0] | int(0) if s_match else 0 -%}
+          
+          {{- (dur_h * 3600) + (dur_m * 60) + dur_s -}}
+          
+        {# Branch 2: This is an absolute time (e.g., "4:30 pm") #}
+        {%- else -%}
+          {%- set days = ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday', 'sunday'] -%}
+          {%- set target_day_idx = -1 -%}
+          {%- for d in days -%}
+            {%- if d in text_val -%}
+              {%- set target_day_idx = loop.index0 -%}
+            {%- endif -%}
+          {%- endfor -%}
+          {%- set is_tomorrow = 'tomorrow' in text_val -%}
+          {%- set is_pm = 'pm' in text_val or 'p m' in text_val or 'tonight' in text_val or 'evening' in text_val -%}
+          {%- set is_am = 'am' in text_val or 'a m' in text_val or 'morning' in text_val -%}
+          
+          {# Regex sweeps through and grabs ONLY numbers, ignoring any rogue STT text #}
+          {%- set numbers = text_val | regex_findall('[0-9]+') -%}
+          
+          {%- if numbers | length >= 2 -%}
+            {%- set h = numbers[0] | int(0) -%}
+            {%- set m = numbers[1] | int(0) -%}
+          {%- elif numbers | length == 1 -%}
+            {%- set num_str = numbers[0] | string -%}
+            {%- if num_str | length == 4 -%}
+              {%- set h = num_str[:2] | int(0) -%}
+              {%- set m = num_str[2:] | int(0) -%}
+            {%- elif num_str | length == 3 -%}
+              {%- set h = num_str[:1] | int(0) -%}
+              {%- set m = num_str[1:] | int(0) -%}
+            {%- else -%}
+              {%- set h = num_str | int(0) -%}
+              {%- set m = 0 -%}
+            {%- endif -%}
           {%- else -%}
-            {%- set h = num_str | int(0) -%}
+            {%- set h = 12 -%} {# Default if absolutely no numbers are found #}
             {%- set m = 0 -%}
           {%- endif -%}
-        {%- else -%}
-          {%- set h = 12 -%} {# Default if absolutely no numbers are found #}
-          {%- set m = 0 -%}
-        {%- endif -%}
-        
-        {%- if is_pm and h < 12 -%}
-          {%- set h = h + 12 -%}
-        {%- elif is_am and h == 12 -%}
-          {%- set h = 0 -%}
-        {%- endif -%}
-        
-        {%- set h = [0, [h, 23] | min] | max -%}
-        {%- set m = [0, [m, 59] | min] | max -%}
-        {%- set target = today_at("%02d:%02d" % (h, m)) -%}
-        
-        {%- if not is_am and not is_pm and h < 12 and target < now() -%}
-          {%- set target = target + timedelta(hours=12) -%}
-        {%- endif -%}
-        
-        {%- if target_day_idx != -1 -%}
-          {%- set current_day_idx = now().weekday() -%}
-          {%- set days_ahead = target_day_idx - current_day_idx -%}
-          {%- if days_ahead < 0 or (days_ahead == 0 and target < now()) -%}
-            {%- set days_ahead = days_ahead + 7 -%}
+          
+          {%- if is_pm and h < 12 -%}
+            {%- set h = h + 12 -%}
+          {%- elif is_am and h == 12 -%}
+            {%- set h = 0 -%}
           {%- endif -%}
-          {%- set target = target + timedelta(days=days_ahead) -%}
-        {%- elif is_tomorrow -%}
-          {%- set target = target + timedelta(days=1) -%}
-        {%- else -%}
-          {%- if target < now() -%}
+          
+          {%- set h = [0, [h, 23] | min] | max -%}
+          {%- set m = [0, [m, 59] | min] | max -%}
+          {%- set target = today_at("%02d:%02d" % (h, m)) -%}
+          
+          {%- if not is_am and not is_pm and h < 12 and target < now() -%}
+            {%- set target = target + timedelta(hours=12) -%}
+          {%- endif -%}
+          
+          {%- if target_day_idx != -1 -%}
+            {%- set current_day_idx = now().weekday() -%}
+            {%- set days_ahead = target_day_idx - current_day_idx -%}
+            {%- if days_ahead < 0 or (days_ahead == 0 and target < now()) -%}
+              {%- set days_ahead = days_ahead + 7 -%}
+            {%- endif -%}
+            {%- set target = target + timedelta(days=days_ahead) -%}
+          {%- elif is_tomorrow -%}
             {%- set target = target + timedelta(days=1) -%}
+          {%- else -%}
+            {%- if target < now() -%}
+              {%- set target = target + timedelta(days=1) -%}
+            {%- endif -%}
           {%- endif -%}
+          {{- (target - now()).total_seconds() | int(0) -}}
         {%- endif -%}
-        {{- (target - now()).total_seconds() | int(0) -}}
 
       hours: "{{ ((target_sec | int(0)) // 3600) | int(0) }}"
       minutes: "{{ (((target_sec | int(0)) % 3600) // 60) | int(0) }}"
