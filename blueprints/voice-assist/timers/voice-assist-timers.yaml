@@ -1,6 +1,6 @@
 blueprint:
   name: Voice Satellite - Absolute Timer/Alarm
-  description: "Sets a timer on an Assist Satellite by calculating the duration until an absolute time. Uses Regex to ignore junk text."
+  description: "Sets a timer on an Assist Satellite by calculating the duration until an absolute time. Uses Regex to ignore junk text. Automatically names absolute timers based on the time of day."
   domain: automation
   input:
     timer_sentences:
@@ -34,7 +34,7 @@ condition: []
 action:
   - variables:
       when_raw: "{{ trigger.slots.when | default('12:00 pm') }}"
-      timer_name: "{{ trigger.slots.name | default('Timer') | title }}"
+      explicit_name: "{{ trigger.slots.name | default('') | title }}"
       fallback_entity: !input fallback_satellite
       
       device_id: "{{ trigger.device_id | default('') }}"
@@ -153,6 +153,19 @@ action:
       hours: "{{ ((target_sec | int(0)) // 3600) | int(0) }}"
       minutes: "{{ (((target_sec | int(0)) % 3600) // 60) | int(0) }}"
       seconds: "{{ ((target_sec | int(0)) % 60) | int(0) }}"
+
+      timer_name: >-
+        {% if explicit_name != '' %}
+          {{ explicit_name }}
+        {% else %}
+          {% set text_val = when_raw | lower %}
+          {% set is_duration = 'minute' in text_val or 'hour' in text_val or 'second' in text_val %}
+          {% if not is_duration %}
+            {{ when_raw | title | replace('Am', 'AM') | replace('Pm', 'PM') }}
+          {% else %}
+            Timer
+          {% endif %}
+        {% endif %}
 
   - if:
       - condition: template
