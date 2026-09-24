@@ -32,7 +32,8 @@ It doesn't work well. 😅
 https://github.com/iamjoshk/home-assistant-collection/blob/main/blueprints/voice-assist/timers/voice-assist-timers.yaml
 ```
 
-Works with the [Voice Satellite Card](https://github.com/jxlarrea/voice-satellite-card-integration)'s `voice_satellite.start_timer` action to set timers by name and includes setting timers for specific time of day in addition to duration timers.
+Works with the [Voice Satellite Card](https://github.com/jxlarrea/voice-satellite-card-integration)'s `voice_satellite.start_timer` action to set timers by name and includes setting timers for specific time of day in addition to duration timers. When setting a timer for a specific time of day, it uses the time of day, including day if not today, as the timer name.
+> Note: Timers are currently limited to 24 hours with Voice Satellite. See here: https://github.com/jxlarrea/voice-satellite-card-integration/issues/185
 
 ### Weather Forecast
 ##### Blueprint import url: 
